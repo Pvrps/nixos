@@ -9,7 +9,8 @@
   home.stateVersion = "24.11";
 
   home.packages = with pkgs; [
-
+    ripgrep
+    fd
   ];
 
   xdg.configFile."niri/config.kdl".source = ./niri.kdl;
