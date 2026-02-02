@@ -12,6 +12,8 @@
   networking.hostName = "desktop";
   networking.networkmanager.enable = true;
 
+  hardware.bluetooth.enable = true;
+
   time.timeZone = "America/New_York"; # Change this
   i18n.defaultLocale = "en_US.UTF-8";
 
@@ -56,6 +58,9 @@
       user = "greeter";
     };
   };
+
+  services.upower.enable = true;
+  services.power-profiles-daemon.enable = true;
 
   xdg.portal = {
     enable = true;
