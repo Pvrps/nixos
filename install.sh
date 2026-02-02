@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+W#!/usr/bin/env bash
 set -euo pipefail
 
 # NixOS Automated Install Script
@@ -24,7 +24,7 @@ log_warn() {
 }
 
 # Check if running as root
-if [ "$EUID" -ne 0 ]; then 
+if [ "$EUID" -ne 0 ]; then
     log_error "Please run as root (use sudo)"
     exit 1
 fi
@@ -59,7 +59,7 @@ fi
 log_info "Disk partitioning completed successfully."
 
 # Step 3: Generate hardware config
-if [ -f "$SCRIPTS_DIR/systems/desktop/hardware.nix" ]; then
+if [ -f "$SCRIPT_DIR/systems/desktop/hardware.nix" ]; then
     log_info "hardware.nix already exists; skipping";
 else
     log_info "Generating hardware configuration..."
@@ -73,11 +73,14 @@ fi
 # Step 4: Create age key for sops-nix
 AGE_DIR="/mnt/persist/system/sops/age"
 AGE_KEY_FILE="$AGE_DIR/keys.txt"
+TMP_KEY_FILE="$SCRIPT_DIR/keys.txt"
 
 mkdir -p "$AGE_DIR"
 
-if [ -f "$AGE_KEY_FILE" ]; then
-    log_info "Using existing age key at $AGE_KEY_FILE"
+if [ -f "$TMP_KEY_FILE" ]; then
+    log_info "Using existing age key at $TMP_KEY_FILE"
+    cp "$TMP_KEY_FILE" "$AGE_KEY_FILE"
+    rm -f "$TMP_KEY_FILE"
 else
     log_info "Creating age key for sops-nix..."
     if ! nix-shell -p age --run "age-keygen -o $AGE_KEY_FILE"; then
@@ -96,23 +99,25 @@ chown 600 "$AGE_KEY_FILE"
 mkdir -p /mnt/persist/home/purps
 chown -R 1000:1000 /mnt/persist/home/purps
 
+SECRETS_FILE="$SCRIPT_DIR/systems/desktop/secrets.yaml"
 
-# Extract public key (everything after "public key: ")
-PUBLIC_KEY=$(grep "# public key:" "$AGE_KEY_FILE" | sed 's/.*public key: //')
-if [ -z "$PUBLIC_KEY" ]; then
-    log_error "Failed to extract public key from age key file."
-    exit 1
-fi
-log_info "Public key: $PUBLIC_KEY"
+if [ -f "$SECRETS_FILE" ]; then
+    log_info "secrets.yaml already exists; skipping"
+else
+    # Extract public key (everything after "public key: ")
+    PUBLIC_KEY=$(grep "# public key:" "$AGE_KEY_FILE" | sed 's/.*public key: //')
+    if [ -z "$PUBLIC_KEY" ]; then
+        log_error "Failed to extract public key from age key file."
+        exit 1
+    fi
+    log_info "Public key: $PUBLIC_KEY"
 
-# Step 5: Update .sops.yaml with the generated public key
-log_info "Updating .sops.yaml with the generated public key..."
-SOPS_YAML="$SCRIPT_DIR/.sops.yaml"
+    # Step 5: Update .sops.yaml with the generated public key
+    log_info "Updating .sops.yaml with the generated public key..."
+    SOPS_YAML="$SCRIPT_DIR/.sops.yaml"
 
-cp "$SOPS_YAML" "$SOPS_YAML.backup"
-
-# Update .sops.yaml with the new public key
-cat > "$SOPS_YAML" <<EOF
+    # Update .sops.yaml with the new public key
+    cat > "$SOPS_YAML" <<EOF
 creation_rules:
   - path_regex: systems/desktop/secrets\.yaml\$
     key_groups:
@@ -120,48 +125,48 @@ creation_rules:
           - $PUBLIC_KEY
 EOF
 
-log_info ".sops.yaml updated successfully."
+    log_info ".sops.yaml updated successfully."
 
-# Step 6: Prompt for and create encrypted password
-log_info "Creating encrypted password for user purps..."
+    # Step 6: Prompt for and create encrypted password
+    log_info "Creating encrypted password for user purps..."
 
-# Prompt for password
-echo -n "Enter password for user purps: "
-read -s USER_PASSWORD
-echo
-echo -n "Confirm password: "
-read -s USER_PASSWORD_CONFIRM
-echo
+    # Prompt for password
+    echo -n "Enter password for user purps: "
+    read -s USER_PASSWORD
+    echo
+    echo -n "Confirm password: "
+    read -s USER_PASSWORD_CONFIRM
+    echo
 
-if [ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]; then
-    log_error "Passwords do not match."
-    exit 1
+    if [ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]; then
+        log_error "Passwords do not match."
+        exit 1
+    fi
+
+    if [ -z "$USER_PASSWORD" ]; then
+        log_error "Password cannot be empty."
+        exit 1
+    fi
+
+    # Create hashed password and encrypt it with sops
+    log_info "Creating and encrypting secrets.yaml..."
+
+    # Generate password hash and create secrets.yaml
+    PASSWORD_HASH=$(echo -n "$USER_PASSWORD" | nix-shell -p mkpasswd --run "mkpasswd -m sha-512 --stdin" | tr -d '\n')
+    printf "purps-password: |\n %s\n" "$PASSWORD_HASH" > "$SECRETS_FILE"
+
+    # Clear password variables from memory
+    unset USER_PASSWORD
+    unset USER_PASSWORD_CONFIRM
+
+    # Encrypt the secrets file
+    if ! nix-shell -p sops --run "SOPS_AGE_KEY_FILE=$AGE_KEY_FILE sops -e -i $SECRETS_FILE"; then
+        log_error "Failed to encrypt secrets.yaml."
+        exit 1
+    fi
+
+    log_info "Password created and encrypted successfully."
 fi
-
-if [ -z "$USER_PASSWORD" ]; then
-    log_error "Password cannot be empty."
-    exit 1
-fi
-
-# Create hashed password and encrypt it with sops
-log_info "Creating and encrypting secrets.yaml..."
-SECRETS_FILE="$SCRIPT_DIR/systems/desktop/secrets.yaml"
-
-# Generate password hash and create secrets.yaml
-PASSWORD_HASH=$(echo -n "$USER_PASSWORD" | nix-shell -p mkpasswd --run "mkpasswd -m sha-512 --stdin" | tr -d '\n')
-printf "purps-password: |\n %s\n" "$PASSWORD_HASH" > "$SECRETS_FILE"
-
-# Clear password variables from memory
-unset USER_PASSWORD
-unset USER_PASSWORD_CONFIRM
-
-# Encrypt the secrets file
-if ! nix-shell -p sops --run "SOPS_AGE_KEY_FILE=$AGE_KEY_FILE sops -e -i $SECRETS_FILE"; then
-    log_error "Failed to encrypt secrets.yaml."
-    exit 1
-fi
-
-log_info "Password created and encrypted successfully."
 
 # Step 7: Copy config to persistent location
 log_info "Copying configuration to /mnt/persist/etc/nixos/..."
@@ -204,7 +209,6 @@ Installation completed successfully!
 
 ${GREEN}Your age key is stored at:${NC} $AGE_KEY_FILE
 ${GREEN}Configuration is at:${NC} $PERSISTENT_CONFIG
-${GREEN}Backup .sops.yaml saved at:${NC} $SOPS_YAML.backup
 
 ${YELLOW}Optional configuration edits:${NC}
    - Timezone: $PERSISTENT_CONFIG/systems/desktop/default.nix
