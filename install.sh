@@ -59,33 +59,43 @@ fi
 log_info "Disk partitioning completed successfully."
 
 # Step 3: Generate hardware config
-log_info "Generating hardware configuration..."
-if ! nixos-generate-config --no-filesystems --show-hardware-config > "$SCRIPT_DIR/systems/desktop/hardware.nix"; then
-    log_error "Failed to generate hardware configuration."
-    exit 1
+if [ -f "$SCRIPTS_DIR/systems/desktop/hardware.nix" ]; then
+    log_info "hardware.nix already exists; skipping";
+else
+    log_info "Generating hardware configuration..."
+    if ! nixos-generate-config --no-filesystems --show-hardware-config > "$SCRIPT_DIR/systems/desktop/hardware.nix"; then
+      log_error "Failed to generate hardware configuration."
+      exit 1
+    fi
+    log_info "Hardware configuration saved to systems/desktop/hardware.nix"
 fi
-log_info "Hardware configuration saved to systems/desktop/hardware.nix"
 
 # Step 4: Create age key for sops-nix
-log_info "Creating age key for sops-nix..."
 AGE_DIR="/mnt/persist/system/sops/age"
 AGE_KEY_FILE="$AGE_DIR/keys.txt"
 
 mkdir -p "$AGE_DIR"
 
-if ! nix-shell -p age --run "age-keygen -o $AGE_KEY_FILE"; then
-    log_error "Failed to generate age key."
-    exit 1
+if [ -f "$AGE_KEY_FILE" ]; then
+    log_info "Using existing age key at $AGE_KEY_FILE"
+else
+    log_info "Creating age key for sops-nix..."
+    if ! nix-shell -p age --run "age-keygen -o $AGE_KEY_FILE"; then
+        log_error "Failed to generate age key."
+        exit 1
+    fi
+    log_info "Age key created at $AGE_KEY_FILE"
 fi
 
 chown -R 0:0 "/mnt/persist/system"
 chown 700 "$AGE_DIR"
 chown 600 "$AGE_KEY_FILE"
 
+
 # Set correct ownership (UID 1000 for purps user)
 mkdir -p /mnt/persist/home/purps
 chown -R 1000:1000 /mnt/persist/home/purps
-log_info "Age key created at $AGE_KEY_FILE"
+
 
 # Extract public key (everything after "public key: ")
 PUBLIC_KEY=$(grep "# public key:" "$AGE_KEY_FILE" | sed 's/.*public key: //')
@@ -99,7 +109,6 @@ log_info "Public key: $PUBLIC_KEY"
 log_info "Updating .sops.yaml with the generated public key..."
 SOPS_YAML="$SCRIPT_DIR/.sops.yaml"
 
-# Create a backup of the original .sops.yaml
 cp "$SOPS_YAML" "$SOPS_YAML.backup"
 
 # Update .sops.yaml with the new public key
