@@ -1,6 +1,7 @@
 {
   imports = [
     ./helix.nix
+    ./noctalia.nix
     ./yazi.nix
     ./fish.nix
     ./foot.nix
@@ -8,5 +9,7 @@
     ./git.nix
     ./starship.nix
     ./ssh.nix
+    #./firefox.nix
+    ./zen.nix
   ];
 }

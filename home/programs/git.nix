@@ -16,7 +16,7 @@
         defaultBranch = "main";
       };
       commit = {
-        gpgsign = true;
+        gpgsign = false;
       };
       push = {
         default = "current";

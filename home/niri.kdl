@@ -1,3 +1,5 @@
+spawn-at-startup "noctalia-shell"
+
 input {
     keyboard {
         xkb { }
@@ -40,7 +42,9 @@ prefer-no-csd
 
 binds {
     Mod+Return { spawn "foot"; }
-    Mod+D { spawn "fuzzel"; }
+    //Mod+Shift+D { spawn "fuzzel"; }
+    Mod+Shift+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+    Mod+Shift+C { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
     Mod+Shift+Q { close-window; }
     Mod+Shift+E { quit; }
     Mod+Grave { toggle-overview; }
@@ -50,10 +54,10 @@ binds {
     Mod+Up    { focus-window-up-or-bottom; }
     Mod+Down  { focus-window-down-or-top; }
 
-    Mod+Ctrl+Left  { move-column-left-or-to-monitor-left; }
-    Mod+Ctrl+Right { move-column-right-or-to-monitor-right; }
-    Mod+Ctrl+Up    { move-window-up; }
-    Mod+Ctrl+Down  { move-window-down; }
+    Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
+    Mod+Shift+Right { move-column-right-or-to-monitor-right; }
+    Mod+Shift+Up    { move-window-up; }
+    Mod+Shift+Down  { move-window-down; }
 
     Mod+F { maximize-column; }
     Mod+Shift+F { fullscreen-window; }
