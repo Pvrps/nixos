@@ -1,4 +1,4 @@
-W#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # NixOS Automated Install Script
@@ -91,8 +91,8 @@ else
 fi
 
 chown -R 0:0 "/mnt/persist/system"
-chown 700 "$AGE_DIR"
-chown 600 "$AGE_KEY_FILE"
+chmod 700 "$AGE_DIR"
+chmod 600 "$AGE_KEY_FILE"
 
 
 # Set correct ownership (UID 1000 for purps user)
