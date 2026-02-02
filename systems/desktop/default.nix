@@ -41,7 +41,6 @@
   users.users.root.initialPassword = "changeme";
 
   programs.fish.enable = true;
-
   programs.niri.enable = true;
 
   services.pipewire = {
@@ -53,7 +52,7 @@
   services.greetd = {
     enable = true;
     settings.default_session = {
-      command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd niri-session";
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd niri-session";
       user = "greeter";
     };
   };
