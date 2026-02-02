@@ -1,0 +1,74 @@
+input {
+    keyboard {
+        xkb { }
+    }
+    mouse {
+        accel-speed 0.0
+    }
+    touchpad {
+        tap
+        natural-scroll
+    }
+}
+
+output "DP-2" {
+    mode "2560x1440@144"
+    position x=0 y=0
+    scale 1.5
+    focus-at-startup
+}
+
+output "DP-4" {
+    mode "2560x1440@144"
+    position x=1707 y=0
+    scale 1.5
+}
+
+layout {
+    gaps 8
+    default-column-width { proportion 0.5; }
+    focus-ring {
+        width 2
+        active-color "#7fc8ff"
+        inactive-color "#505050"
+    }
+}
+
+spawn-at-startup "foot"
+
+prefer-no-csd
+
+binds {
+    Mod+Return { spawn "foot"; }
+    Mod+D { spawn "fuzzel"; }
+    Mod+Shift+Q { close-window; }
+    Mod+Shift+E { quit; }
+
+    Mod+H { focus-column-left; }
+    Mod+J { focus-window-down; }
+    Mod+K { focus-window-up; }
+    Mod+L { focus-column-right; }
+
+    Mod+Shift+H { move-column-left; }
+    Mod+Shift+J { move-window-down; }
+    Mod+Shift+K { move-window-up; }
+    Mod+Shift+L { move-column-right; }
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+
+    Mod+F { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+
+    Print { screenshot; }
+    Mod+Print { screenshot-screen; }
+}

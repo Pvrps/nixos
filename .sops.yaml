@@ -1,0 +1,5 @@
+creation_rules:
+  - path_regex: systems/desktop/secrets\.yaml$
+    key_groups:
+      - age:
+          - age1hdsdpwmxzn35kmv5zkhwtkg0ntkgrdaczkh88xnydk73f707l4lswrqh86
