@@ -15,9 +15,6 @@
       };
       efi.canTouchEfiVariables = true;
     };
-    kernelParams = [
-      "usbcore.autosuspend=-1"
-    ];
   };
   
   networking.hostName = "desktop";
@@ -58,10 +55,12 @@
 
   programs.steam = {
     enable = true;
+    gamescopeSession.enable = true;
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
   };
   programs.gamemode.enable = true;
+  programs.gamescope.enable = true;
   
   services.pipewire = {
     enable = true;
@@ -80,11 +79,6 @@
   };
 
   services.upower.enable = true;
-  services.power-profiles-daemon.enable = true;
-
-  #services.udev.extraRules = ''
-  #  ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="046d", ATTR{idProduct}=="0ab7", ATTR{power/autosuspend}="-1"
-  #'';
 
   xdg.portal = {
     enable = true;
@@ -122,4 +116,5 @@
   ];
 
   system.stateVersion = "24.11";
+
 }
