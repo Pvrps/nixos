@@ -6,7 +6,7 @@ in
   xdg.configFile."niri/config.kdl".text = ''
     spawn-at-startup "noctalia-shell"
     spawn-at-startup "xwayland-satellite"
-
+    
     input {
         keyboard {
             xkb {
@@ -26,12 +26,14 @@ in
         mode "2560x1440@144"
         position x=0 y=0
         scale 1.5
+        variable-refresh-rate
         focus-at-startup
     }
 
     output "DP-4" {
         mode "2560x1440@144"
         position x=1707 y=0
+        variable-refresh-rate
         scale 1.5
     }
 
