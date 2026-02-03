@@ -11,5 +11,7 @@
     ./ssh.nix
     #./firefox.nix
     ./zen.nix
+    ./steam.nix
+    ./discord.nix
   ];
 }

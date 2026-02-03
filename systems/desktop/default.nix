@@ -45,10 +45,19 @@
   programs.fish.enable = true;
   programs.niri.enable = true;
 
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+  };
+  programs.gamemode.enable = true;
+  
   services.pipewire = {
     enable = true;
     alsa.enable = true;
+    alsa.support32Bit = true;
     pulse.enable = true;
+    jack.enable = true;
   };
 
   services.greetd = {
@@ -76,11 +85,19 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.graphics.enable = true;
+
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
   hardware.nvidia = {
     modesetting.enable = true;
     open = false;
   };
+
+  environment.systemPackages = [
+    pkgs.xwayland-satellite
+  ];
 
   system.stateVersion = "24.11";
 }
