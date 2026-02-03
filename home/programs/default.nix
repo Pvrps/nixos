@@ -2,6 +2,7 @@
   imports = [
     ./helix.nix
     ./noctalia.nix
+    ./niri.nix
     ./yazi.nix
     ./fish.nix
     ./foot.nix

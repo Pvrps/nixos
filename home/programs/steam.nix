@@ -7,7 +7,7 @@
   programs.mangohud = {
     enable = true;
     settings = {
-      full = false;
+      full = true;
       no_display = true;
       #cpu_temp = true;
       #gpu_temp = true;
@@ -18,9 +18,6 @@
 
       position = "top-right";
       width = 280;
-      alpha = 0.8;
-      background_alpha = 0.8;
-      font_size = 18;
     };
   };
 }

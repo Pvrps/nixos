@@ -39,11 +39,19 @@
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-parts.follows = "flake-parts";
+      };
+    };
     
     impermanence.url = "github:nix-community/impermanence";
   };
 
-  outputs = { self, flake-parts, nixpkgs, home-manager, sops-nix, disko, impermanence, ... }@inputs:
+  outputs = { self, flake-parts, nixpkgs, home-manager, sops-nix, disko, impermanence, stylix, ... }@inputs:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
 
@@ -56,10 +64,12 @@
             disko.nixosModules.disko
             sops-nix.nixosModules.sops
             home-manager.nixosModules.home-manager
+            stylix.nixosModules.stylix
             {
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
+                backupFileExtension = "backup";
                 extraSpecialArgs = { inherit inputs; };
                 users.purps = import ./home;
               };

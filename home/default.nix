@@ -13,8 +13,6 @@
     fd
   ];
 
-  xdg.configFile."niri/config.kdl".source = ./niri.kdl;
-
   services.mako = {
     enable = true;
     settings = {
