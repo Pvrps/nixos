@@ -4,8 +4,12 @@ let
 in
 {
   xdg.configFile."niri/config.kdl".text = ''
+    environment {
+        DISPLAY ":0"
+    }
+
+    spawn-at-startup "xwayland-satellite" ":0"
     spawn-at-startup "noctalia-shell"
-    spawn-at-startup "xwayland-satellite"
     
     input {
         keyboard {
