@@ -4,11 +4,22 @@
     ./hardware.nix
     ./disko.nix
     ./persist.nix
+    ./stylix.nix
   ];
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
+  boot = {
+    loader = {
+      systemd-boot = {
+        enable = true;
+        configurationLimit = 5;
+      };
+      efi.canTouchEfiVariables = true;
+    };
+    kernelParams = [
+      "usbcore.autosuspend=-1"
+    ];
+  };
+  
   networking.hostName = "desktop";
   networking.networkmanager.enable = true;
 
@@ -71,6 +82,10 @@
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
 
+  #services.udev.extraRules = ''
+  #  ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="046d", ATTR{idProduct}=="0ab7", ATTR{power/autosuspend}="-1"
+  #'';
+
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gnome ];
@@ -82,7 +97,14 @@
   ];
 
   nixpkgs.config.allowUnfree = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix = {
+    settings.experimental-features = [ "nix-command" "flakes" ];
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
+    };
+  };
 
   services.xserver.videoDrivers = [ "nvidia" ];
 
