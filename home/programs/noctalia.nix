@@ -10,7 +10,15 @@ in
   programs.noctalia-shell = {
     enable = true;
     settings = {
-      
+      dock = {
+        enabled = false;
+      };
+      wallpaper = {
+        enabled = false;
+      };
+      location = {
+        name = "Ontario";
+      };
     };
   };
 
