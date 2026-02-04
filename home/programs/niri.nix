@@ -8,6 +8,10 @@ in
         DISPLAY ":0"
     }
 
+    hotkey-overlay {
+        skip-at-startup
+    }
+
     spawn-at-startup "xwayland-satellite" ":0"
     spawn-at-startup "noctalia-shell"
 
