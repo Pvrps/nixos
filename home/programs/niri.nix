@@ -10,6 +10,10 @@ in
 
     spawn-at-startup "xwayland-satellite" ":0"
     spawn-at-startup "noctalia-shell"
+
+    window-rule {
+        open-maximized true
+    }
     
     input {
         keyboard {
@@ -66,7 +70,9 @@ in
         Mod+Right { focus-column-or-monitor-right; }
         Mod+Up    { focus-workspace-up; }
         Mod+Down  { focus-workspace-down; }
-
+        Mod+Ctrl+Left  { focus-monitor-left; }
+        Mod+Ctrl+Right { focus-monitor-right; }
+        
         Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
         Mod+Shift+Right { move-column-right-or-to-monitor-right; }
         Mod+Shift+Up    { move-column-to-workspace-up; }
