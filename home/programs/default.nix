@@ -15,5 +15,6 @@
     ./steam.nix
     ./discord.nix
     ./copilot-api.nix
+    ./claude.nix
   ];
 }
