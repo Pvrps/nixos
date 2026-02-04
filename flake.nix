@@ -47,11 +47,6 @@
         flake-parts.follows = "flake-parts";
       };
     };
-
-    claude-code = {
-      url = "github:sadjow/claude-code-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     
     impermanence.url = "github:nix-community/impermanence";
   };
