@@ -55,7 +55,6 @@ in
         }
     }
 
-    spawn-at-startup "foot"
     prefer-no-csd
 
     binds {
