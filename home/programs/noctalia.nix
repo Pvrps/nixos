@@ -14,7 +14,7 @@ in
         enabled = false;
       };
       wallpaper = {
-        enabled = false;
+        enabled = true;
       };
       location = {
         name = "Ontario";
