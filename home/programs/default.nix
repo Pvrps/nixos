@@ -10,9 +10,9 @@
     ./git.nix
     ./starship.nix
     ./ssh.nix
-    #./firefox.nix
     ./zen.nix
     ./steam.nix
     ./discord.nix
+    ./opencode.nix
   ];
 }

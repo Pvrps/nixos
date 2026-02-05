@@ -10,7 +10,7 @@
       core = {
         whitespace = "fix,-indent-with-non-tab,trailing-space,cr-at-eol";
         autocrlf = true;
-        sshCOmmand = "ssh";
+        sshCommand = "ssh";
       };
       init = {
         defaultBranch = "main";
