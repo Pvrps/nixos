@@ -47,11 +47,16 @@
         flake-parts.follows = "flake-parts";
       };
     };
+
+    opencode = {
+      url = "github:anomalyco/opencode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     
     impermanence.url = "github:nix-community/impermanence";
   };
 
-  outputs = { self, flake-parts, nixpkgs, home-manager, sops-nix, disko, impermanence, stylix, ... }@inputs:
+  outputs = { self, flake-parts, nixpkgs, home-manager, sops-nix, disko, impermanence, stylix, opencode, ... }@inputs:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
 
