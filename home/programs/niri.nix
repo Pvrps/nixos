@@ -1,8 +1,10 @@
-{ pkgs, config, ... }:
-let
-  colors = config.lib.stylix.colors.withHashtag;
-in
 {
+  pkgs,
+  config,
+  ...
+}: let
+  colors = config.lib.stylix.colors.withHashtag;
+in {
   xdg.configFile."niri/config.kdl".text = ''
     environment {
         DISPLAY ":0"
@@ -18,11 +20,11 @@ in
     window-rule {
         open-maximized true
     }
-    
+
     input {
         keyboard {
             xkb {
-                
+
             }
         }
         mouse {
@@ -76,7 +78,7 @@ in
         Mod+Down  { focus-workspace-down; }
         Mod+Ctrl+Left  { focus-monitor-left; }
         Mod+Ctrl+Right { focus-monitor-right; }
-        
+
         Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
         Mod+Shift+Right { move-column-right-or-to-monitor-right; }
         Mod+Shift+Up    { move-column-to-workspace-up; }
@@ -87,4 +89,3 @@ in
     }
   '';
 }
-

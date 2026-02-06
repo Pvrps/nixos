@@ -1,5 +1,4 @@
-{ lib, ... }:
-{
+{lib, ...}: {
   disko.devices = {
     disk.main = {
       type = "disk";
@@ -14,22 +13,22 @@
               type = "filesystem";
               format = "vfat";
               mountpoint = "/boot";
-              mountOptions = [ "umask=0077" ];
+              mountOptions = ["umask=0077"];
             };
           };
           root = {
             size = "100%";
             content = {
               type = "btrfs";
-              extraArgs = [ "-f" ];
+              extraArgs = ["-f"];
               subvolumes = {
                 "/nix" = {
                   mountpoint = "/nix";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = ["compress=zstd" "noatime"];
                 };
                 "/persist" = {
                   mountpoint = "/persist";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = ["compress=zstd" "noatime"];
                 };
                 "/swap" = {
                   mountpoint = "/.swap";
@@ -44,7 +43,7 @@
 
     nodev."/" = {
       fsType = "tmpfs";
-      mountOptions = [ "defaults" "size=2G" "mode=755" ];
+      mountOptions = ["defaults" "size=2G" "mode=755"];
     };
   };
 

@@ -1,8 +1,7 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   programs.starship = {
     enable = true;
-    
+
     enableFishIntegration = true;
     enableZshIntegration = true;
     enableBashIntegration = true;
@@ -61,7 +60,7 @@
         format = "[$user]($style) ";
         style_user = "fg:#A385FF";
         show_always = true;
-        aliases = { "Purps" = "purps"; };
+        aliases = {"Purps" = "purps";};
       };
 
       directory = {
