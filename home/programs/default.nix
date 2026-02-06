@@ -14,5 +14,6 @@
     ./steam.nix
     ./discord.nix
     ./opencode.nix
+    ./lazygit.nix
   ];
 }
