@@ -1,6 +1,5 @@
-{ inputs, ... }:
-{
-  imports = [ inputs.impermanence.nixosModules.impermanence ];
+{inputs, ...}: {
+  imports = [inputs.impermanence.nixosModules.impermanence];
 
   # System-level persistence only
   environment.persistence."/persist" = {
@@ -22,7 +21,7 @@
 
   fileSystems."/home" = {
     device = "/persist/home";
-    options = [ "bind" ];
+    options = ["bind"];
     neededForBoot = true;
   };
 

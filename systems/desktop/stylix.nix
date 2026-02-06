@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   stylix = {
     enable = true;
 
@@ -11,7 +10,7 @@
       base02 = "393B44"; # inkBg3     (Selection)
       base03 = "5C6066"; # gray5      (Comments)
       base04 = "75797f"; # gray4      (Dark FG)
-    
+
       # Foreground: Switched to 'fg2' (brighter) for high contrast
       base05 = "f2f1ef"; # fg2        (Main Text - Bright White)
       base06 = "ffffff"; # pearlWhite (Lightest Text)

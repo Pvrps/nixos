@@ -1,5 +1,8 @@
-{ pkgs, inputs, ...}:
 {
+  pkgs,
+  inputs,
+  ...
+}: {
   imports = [
     inputs.nixcord.homeModules.nixcord
   ];
@@ -8,12 +11,11 @@
     enable = true;
 
     discord.vencord.enable = true;
-    
+
     config = {
       useQuickCss = true;
       frameless = true;
       themeLinks = [
-        
       ];
       plugins = {
         ClearURLs.enable = true;

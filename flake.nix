@@ -11,12 +11,12 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
     sops-nix = {
       url = "github:mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -52,18 +52,30 @@
       url = "github:anomalyco/opencode";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
     impermanence.url = "github:nix-community/impermanence";
   };
 
-  outputs = { self, flake-parts, nixpkgs, home-manager, sops-nix, disko, impermanence, stylix, opencode, ... }@inputs:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux" ];
+  outputs = {
+    self,
+    flake-parts,
+    nixpkgs,
+    home-manager,
+    sops-nix,
+    disko,
+    impermanence,
+    stylix,
+    opencode,
+    ...
+  } @ inputs:
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      systems = ["x86_64-linux"];
 
       flake = {
         nixosConfigurations.desktop = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
+
+          specialArgs = {inherit inputs;};
           modules = [
             ./systems/desktop
             disko.nixosModules.disko
@@ -75,7 +87,7 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 backupFileExtension = "backup";
-                extraSpecialArgs = { inherit inputs; };
+                extraSpecialArgs = {inherit inputs;};
                 users.purps = import ./home;
               };
             }
@@ -83,9 +95,9 @@
         };
       };
 
-      perSystem = { pkgs, ... }: {
+      perSystem = {pkgs, ...}: {
         devShells.default = pkgs.mkShell {
-          packages = with pkgs; [ sops age ssh-to-age ];
+          packages = with pkgs; [sops age ssh-to-age];
         };
       };
     };

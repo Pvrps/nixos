@@ -1,20 +1,23 @@
-{ pkgs, inputs, ... }:
 {
+  pkgs,
+  inputs,
+  ...
+}: {
   imports = [
     inputs.zen-browser.homeModules.twilight
   ];
 
-  stylix.targets.zen-browser.profileNames = [ "Personal" ];
+  stylix.targets.zen-browser.profileNames = ["Personal"];
 
   programs.zen-browser = {
     enable = true;
-    languagePacks = [ "en-US" ];
+    languagePacks = ["en-US"];
 
     profiles.Personal = {
       id = 0;
       name = "Personal";
       isDefault = true;
-      
+
       mods = [
         "a6335949-4465-4b71-926c-4a52d34bc9c0" # Better Find Bar
         "f7c71d9a-bce2-420f-ae44-a64bd92975ab" # Better Unloaded Tabs
@@ -28,7 +31,7 @@
         "c8d9e6e6-e702-4e15-8972-3596e57cf398" # Zen Back Forward
       ];
     };
-        
+
     policies = {
       AutofillAddressEnabled = false;
       AutofillCreditCardEnabled = false;
@@ -42,14 +45,14 @@
       NoDefaultBookmarks = true;
       OfferToSaveLogins = false;
       PasswordManagerEnabled = false;
-      
+
       EnableTrackingProtection = {
         Value = true;
         Locked = true;
         Cryptomining = true;
         Fingerprinting = true;
       };
-      
+
       FirefoxHome = {
         Search = true;
         Pocket = false;
@@ -59,7 +62,7 @@
         SponsoredPocket = false;
         SponsoredTopSites = false;
       };
-      
+
       SearchSuggestEnabled = true;
       DefaultSearchEngine = "Google";
 

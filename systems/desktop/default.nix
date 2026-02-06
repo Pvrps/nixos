@@ -1,5 +1,9 @@
-{ pkgs, inputs, config, ... }:
 {
+  pkgs,
+  inputs,
+  config,
+  ...
+}: {
   imports = [
     ./hardware.nix
     ./disko.nix
@@ -16,7 +20,7 @@
       efi.canTouchEfiVariables = true;
     };
   };
-  
+
   networking.hostName = "desktop";
   networking.networkmanager.enable = true;
 
@@ -28,7 +32,7 @@
   users.mutableUsers = false;
   users.users.purps = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
+    extraGroups = ["wheel" "networkmanager" "video" "audio"];
     shell = pkgs.fish;
   };
 
@@ -61,7 +65,7 @@
   };
   programs.gamemode.enable = true;
   programs.gamescope.enable = true;
-  
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -82,7 +86,7 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gnome ];
+    extraPortals = [pkgs.xdg-desktop-portal-gnome];
   };
 
   fonts.packages = with pkgs; [
@@ -92,7 +96,7 @@
 
   nixpkgs.config.allowUnfree = true;
   nix = {
-    settings.experimental-features = [ "nix-command" "flakes" ];
+    settings.experimental-features = ["nix-command" "flakes"];
     gc = {
       automatic = true;
       dates = "weekly";
@@ -100,7 +104,7 @@
     };
   };
 
-  services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = ["nvidia"];
 
   hardware.graphics = {
     enable = true;
@@ -116,5 +120,4 @@
   ];
 
   system.stateVersion = "24.11";
-
 }
