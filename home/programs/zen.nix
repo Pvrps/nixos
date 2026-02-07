@@ -86,6 +86,14 @@
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/enhancer-for-youtube/latest.xpi";
           installation_mode = "force_installed";
         };
+        "moz-addon-prod@7tv.app" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/7tv-extension/latest.xpi";
+          installation_mode = "force_installed";
+        };
+        "{aecec67f-0d10-4fa7-b7c7-609a2db280cf}" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey/latest.xpi";
+          installation_mode = "force_installed";
+        };
       };
     };
   };
