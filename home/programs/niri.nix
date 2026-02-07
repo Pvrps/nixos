@@ -48,8 +48,8 @@ in {
     output "DP-4" {
         mode "2560x1440@144"
         position x=1707 y=0
-        variable-refresh-rate
         scale 1.5
+        variable-refresh-rate
     }
 
     layout {
@@ -64,7 +64,10 @@ in {
 
     prefer-no-csd
 
+    screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
     binds {
+        Mod+Shift+S { screenshot; }
+
         Mod+Return { spawn "foot"; }
         Mod+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
         Mod+C { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
