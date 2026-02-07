@@ -66,7 +66,8 @@ in {
 
     screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
     binds {
-        Mod+Shift+S { screenshot; }
+        Mod+Shift+S { spawn "screenshot-tool"; }
+        Mod+Shift+C { spawn "recording-tool"; }
 
         Mod+Return { spawn "foot"; }
         Mod+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
