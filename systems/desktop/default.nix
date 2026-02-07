@@ -52,7 +52,7 @@
     };
   };
   users.users.purps.hashedPasswordFile = config.sops.secrets."purps-password".path;
-  users.users.root.initialPassword = "changeme";
+  users.users.root.hashedPassword = "!";
 
   programs.fish.enable = true;
   programs.niri.enable = true;
