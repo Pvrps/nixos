@@ -15,5 +15,6 @@
     ./discord.nix
     ./opencode.nix
     ./lazygit.nix
+    ./capture.nix
   ];
 }
