@@ -2,7 +2,7 @@
   screenshot-tool = pkgs.writeShellScriptBin "screenshot-tool" ''
     DIR="$HOME/Pictures/Screenshots"
     mkdir -p "$DIR"
-    FILE="$DIR/$(date +'%Y-%m-%d-%H-%M-%S').png"
+    FILE="$DIR/$(date +'%Y-%m-%d_%H-%M-%S').png"
 
     if AREA=$(${pkgs.slurp}/bin/slurp); then
       ${pkgs.grim}/bin/grim -g "$AREA" - | tee "$FILE" | ${pkgs.wl-clipboard}/bin/wl-copy
@@ -34,7 +34,7 @@
         fi
       fi
     else
-      FILE="$DIR/$(date +'%Y-%m-%d-%H-%M-%S').mp4"
+      FILE="$DIR/$(date +'%Y-%m-%d_%H-%M-%S').mp4"
 
       if AREA=$(${pkgs.slurp}/bin/slurp); then
         echo "$FILE" > "$RECFILE"

@@ -16,5 +16,7 @@
     ./opencode.nix
     ./lazygit.nix
     ./capture.nix
+    ./clapper.nix
+    ./imv.nix
   ];
 }
