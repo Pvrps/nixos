@@ -9,8 +9,7 @@
   xdg.desktopEntries.steam = {
     name = "Steam";
     genericName = "Application Distribution Platform";
-    #exec = "env MANGOHUD=1 steam %U";
-    exec = "steam %U";
+    exec = "sh -c \"nohup steam %U > /dev/null 2>&1 &\"";
     icon = "steam";
     terminal = false;
     categories = ["Network" "FileTransfer" "Game"];
