@@ -33,7 +33,7 @@
   users.mutableUsers = false;
   users.users.purps = {
     isNormalUser = true;
-    extraGroups = ["wheel" "networkmanager" "video" "audio"];
+    extraGroups = ["wheel" "networkmanager" "video" "audio" "input"];
     shell = pkgs.fish;
   };
 
