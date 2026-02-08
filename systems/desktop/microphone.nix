@@ -49,6 +49,7 @@
               }
               playback.props = {
                 media.class = Audio/Source
+                node.name = "rnnoise_source"
               }
             }
           }

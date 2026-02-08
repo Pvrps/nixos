@@ -17,6 +17,18 @@ in {
     spawn-at-startup "xwayland-satellite" ":11"
     spawn-at-startup "noctalia-shell"
 
+    spawn-at-startup "bash" "-c" "for i in {1..20}; do pactl list short sources | grep -q 'rnnoise_source' && { pactl set-default-source rnnoise_source; break; }; sleep 0.5; done"
+
+    spawn-at-startup "bash" "-c" "steam -silent > /dev/null 2>&1"
+    spawn-at-startup "bash" "-c" "discord --start-minimized > /dev/null 2>&1"
+
+    window-rule {
+        match app-id="discord" title="Discord Updater"
+        match app-id="discord" title="Checking for updates..."
+        open-maximized false
+        open-floating true
+    }
+
     window-rule {
         open-maximized true
     }
