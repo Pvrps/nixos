@@ -64,7 +64,7 @@ in {
         mode "2560x1440@144"
         position x=0 y=0
         scale 1.5
-        variable-refresh-rate
+        variable-refresh-rate on-demand=true
         focus-at-startup
     }
 
@@ -72,7 +72,7 @@ in {
         mode "2560x1440@144"
         position x=1707 y=0
         scale 1.5
-        variable-refresh-rate
+        variable-refresh-rate on-demand=true
     }
 
     layout {
