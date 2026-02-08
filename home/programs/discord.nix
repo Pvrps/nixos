@@ -67,11 +67,11 @@
           enable = true;
           autoDisable = false;
         };
-        silentTyping.enable = true;
+        silentTyping.enable = false;
         startupTimings.enable = true;
         superReactionTweaks.enable = true;
         typingIndicator.enable = true;
-        typingTweaks.enable = true;
+        typingTweaks.enable = false;
         unlockedAvatarZoom.enable = true;
         volumeBooster.enable = true;
         whoReacted.enable = true;
