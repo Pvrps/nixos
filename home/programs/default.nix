@@ -18,5 +18,6 @@
     ./capture.nix
     ./clapper.nix
     ./imv.nix
+    ./rustdesk.nix
   ];
 }
