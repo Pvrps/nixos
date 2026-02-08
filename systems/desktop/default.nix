@@ -117,7 +117,6 @@
   };
 
   environment.systemPackages = [
-    pkgs.xwayland-satellite
   ];
 
   system.stateVersion = "24.11";
