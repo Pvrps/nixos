@@ -6,10 +6,9 @@
   colors = config.lib.stylix.colors.withHashtag;
 
   pactl = "${pkgs.pulseaudio}/bin/pactl";
-  xdpyinfo = "${pkgs.xorg.xdpyinfo}/bin/xdpyinfo";
   xwayland_satellite = "${pkgs.xwayland-satellite}/bin/xwayland-satellite";
 
-  wait_x11 = "for i in {1..60}; do ${xdpyinfo} -display :11 >/dev/null 2>&1 && break; sleep 0.5; done";
+  wait_net = "nm-online -q --timeout=30 || true";
 in {
   xdg.configFile."niri/config.kdl".text = ''
     environment {
@@ -25,8 +24,8 @@ in {
 
     spawn-at-startup "bash" "-c" "for i in {1..20}; do ${pactl} list short sources | grep -q 'rnnoise_source' && { ${pactl} set-default-source rnnoise_source; break; }; sleep 0.5; done"
 
-    spawn-at-startup "bash" "-c" "${wait_x11}; steam -silent > /dev/null 2>&1"
-    spawn-at-startup "bash" "-c" "${wait_x11}; discord --start-minimized > /dev/null 2>&1"
+    spawn-at-startup "bash" "-c" "${wait_net}; steam -silent > /dev/null 2>&1"
+    spawn-at-startup "bash" "-c" "${wait_net}; discord --start-minimized > /dev/null 2>&1"
 
     window-rule {
         match app-id="steam" title="^notificationtoasts_"
