@@ -7,14 +7,14 @@
 in {
   xdg.configFile."niri/config.kdl".text = ''
     environment {
-        DISPLAY ":0"
+        DISPLAY ":11"
     }
 
     hotkey-overlay {
         skip-at-startup
     }
 
-    spawn-at-startup "xwayland-satellite" ":0"
+    spawn-at-startup "xwayland-satellite" ":11"
     spawn-at-startup "noctalia-shell"
 
     window-rule {
