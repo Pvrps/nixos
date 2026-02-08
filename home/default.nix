@@ -12,6 +12,10 @@
     fd
   ];
 
+  home.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+  };
+
   services.mako = {
     enable = true;
     settings = {
