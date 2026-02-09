@@ -25,16 +25,32 @@
   networking.hostName = "desktop";
   networking.networkmanager.enable = true;
 
-  hardware.bluetooth.enable = true;
+  hardware = {
+    bluetooth.enable = true;
+    graphics = {
+      enable = true;
+      enable32Bit = true;
+    };
+    nvidia = {
+      modesetting.enable = true;
+      open = false;
+    };
+  };
 
   time.timeZone = "America/New_York"; # Change this
   i18n.defaultLocale = "en_US.UTF-8";
 
-  users.mutableUsers = false;
-  users.users.purps = {
-    isNormalUser = true;
-    extraGroups = ["wheel" "networkmanager" "video" "audio" "input"];
-    shell = pkgs.fish;
+  users = {
+    mutableUsers = false;
+    users = {
+      purps = {
+        isNormalUser = true;
+        extraGroups = ["wheel" "networkmanager" "video" "audio" "input"];
+        shell = pkgs.fish;
+        hashedPasswordFile = config.sops.secrets."purps-password".path;
+      };
+      root.hashedPassword = "!";
+    };
   };
 
   sops = {
@@ -52,38 +68,38 @@
       };
     };
   };
-  users.users.purps.hashedPasswordFile = config.sops.secrets."purps-password".path;
-  users.users.root.hashedPassword = "!";
 
-  programs.fish.enable = true;
-  programs.niri.enable = true;
-
-  programs.steam = {
-    enable = true;
-    gamescopeSession.enable = true;
-    remotePlay.openFirewall = true;
-    dedicatedServer.openFirewall = true;
-  };
-  programs.gamemode.enable = true;
-  programs.gamescope.enable = true;
-
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    jack.enable = true;
-  };
-
-  services.greetd = {
-    enable = true;
-    settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd niri-session";
-      user = "greeter";
+  programs = {
+    fish.enable = true;
+    niri.enable = true;
+    steam = {
+      enable = true;
+      gamescopeSession.enable = true;
+      remotePlay.openFirewall = true;
+      dedicatedServer.openFirewall = true;
     };
+    gamemode.enable = true;
+    gamescope.enable = true;
   };
 
-  services.upower.enable = true;
+  services = {
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      jack.enable = true;
+    };
+    greetd = {
+      enable = true;
+      settings.default_session = {
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd niri-session";
+        user = "greeter";
+      };
+    };
+    upower.enable = true;
+    xserver.videoDrivers = ["nvidia"];
+  };
 
   xdg.portal = {
     enable = true;
@@ -103,17 +119,6 @@
       dates = "weekly";
       options = "--delete-older-than 30d";
     };
-  };
-
-  services.xserver.videoDrivers = ["nvidia"];
-
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
-  hardware.nvidia = {
-    modesetting.enable = true;
-    open = false;
   };
 
   environment.systemPackages = [

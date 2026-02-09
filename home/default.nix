@@ -4,17 +4,19 @@
     ./scripts
   ];
 
-  home.username = "purps";
-  home.homeDirectory = "/home/purps";
-  home.stateVersion = "24.11";
+  home = {
+    username = "purps";
+    homeDirectory = "/home/purps";
+    stateVersion = "24.11";
 
-  home.packages = with pkgs; [
-    ripgrep
-    fd
-  ];
+    packages = with pkgs; [
+      ripgrep
+      fd
+    ];
 
-  home.sessionVariables = {
-    NIXOS_OZONE_WL = "1";
+    sessionVariables = {
+      NIXOS_OZONE_WL = "1";
+    };
   };
 
   services.mako = {

@@ -28,9 +28,15 @@ in {
     spawn-at-startup "bash" "-c" "${wait_net}; discord --start-minimized > /dev/null 2>&1"
 
     window-rule {
-        match app-id="steam" title="^notificationtoasts_"
+        open-maximized true
+    }
+
+    window-rule {
+        match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
         open-floating true
         open-maximized false
+        open-focused false
+        focus-ring off
     }
 
     window-rule {
@@ -38,10 +44,6 @@ in {
         match app-id="discord" title="Checking for updates..."
         open-floating true
         open-maximized false
-    }
-
-    window-rule {
-        open-maximized true
     }
 
     input {
