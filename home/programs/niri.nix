@@ -24,7 +24,7 @@ in {
 
     spawn-at-startup "bash" "-c" "for i in {1..20}; do ${pactl} list short sources | grep -q 'rnnoise_source' && { ${pactl} set-default-source rnnoise_source; break; }; sleep 0.5; done"
 
-    spawn-at-startup "bash" "-c" "${wait_net}; steam -silent > /dev/null 2>&1"
+    spawn-at-startup "bash" "-c" "${wait_net}; env GDK_SCALE=1.5 steam -system-composer -silent > /dev/null 2>&1"
     spawn-at-startup "bash" "-c" "${wait_net}; discord --start-minimized > /dev/null 2>&1"
 
     window-rule {
@@ -36,7 +36,7 @@ in {
         open-floating true
         open-maximized false
         open-focused false
-        focus-ring off
+        focus-ring { width 0; }
     }
 
     window-rule {
