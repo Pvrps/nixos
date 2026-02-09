@@ -5,25 +5,38 @@
     NOTIFY="${pkgs.libnotify}/bin/notify-send"
     WL_COPY="${pkgs.wl-clipboard}/bin/wl-copy"
     GREP="${pkgs.gnugrep}/bin/grep"
+    GUM="${pkgs.gum}/bin/gum"
 
     URL="$1"
+
+    # 1. Validation
     if [[ -z "$URL" ]]; then
-      $NOTIFY "No repository URL provided"
+      echo "Usage: gitingest <url>"
       exit 1
     fi
 
-    if [[ -z "$URL" ]] || ! echo "$URL" | $GREP -E -q '^https?://.+/.+'; then
-       $NOTIFY "GitIngest Failed" "Invalid URL: '$URL'. Expecting https://host/user/repo"
+    if ! echo "$URL" | $GREP -E -q '^https?://.+/.+'; then
+       $NOTIFY "GitIngest Failed" "Invalid URL. Expecting https://host/user/repo"
        exit 1
     fi
 
-    RESPONSE=$($CURL -sS -X POST "https://gitingest.com/api/ingest" \
+    RESPONSE=$($GUM spin --spinner dot --title "Ingesting repository..." --show-output -- \
+      $CURL -sS --fail --max-time 60 -X POST "https://gitingest.com/api/ingest" \
       -H "Content-Type: application/json" \
       -d "{\"input_text\":\"$URL\", \"max_file_size\":10000}")
+
+    EXIT_CODE=$?
+
+    if [ $EXIT_CODE -ne 0 ]; then
+       $NOTIFY "GitIngest Failed" "Server timeout or connection error."
+       echo "Error: Failed to reach gitingest.com (Exit code: $EXIT_CODE)"
+       exit 1
+    fi
 
     if echo "$RESPONSE" | $GREP -q "\"detail\""; then
        ERR=$(echo "$RESPONSE" | $JQ -r '.detail[0].msg // .detail // "Unknown API error"')
        $NOTIFY "GitIngest Failed" "$ERR"
+       echo "API Error: $ERR"
        exit 1
     fi
 
@@ -36,6 +49,7 @@
     echo "$RESPONSE" | $JQ -r '.summary + "\n\n" + .tree + "\n\n" + .content' | $WL_COPY
 
     $NOTIFY "GitIngest" "Copied contents of $URL"
+    echo "✓ Copied to clipboard!"
   '';
 in {
   home.packages = [
