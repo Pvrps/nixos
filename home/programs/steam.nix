@@ -9,7 +9,7 @@
   xdg.desktopEntries.steam = {
     name = "Steam";
     genericName = "Application Distribution Platform";
-    exec = "sh -c \"niri msg action focus-window --matching app-id=steam || nohup env GDK_SCALE=1.5 steam -system-composer %U > /dev/null 2>&1 &\"";
+    exec = "sh -c \"niri msg action focus-window --matching app-id=steam || nohup steam -system-composer %U > /dev/null 2>&1 &\"";
     icon = "steam";
     terminal = false;
     categories = ["Network" "FileTransfer" "Game"];
