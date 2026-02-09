@@ -4,7 +4,7 @@
   config,
   ...
 }: let
-  colors = config.lib.stylix.colors;
+  inherit (config.lib.stylix) colors;
 in {
   imports = [
     inputs.noctalia.homeModules.default
