@@ -98,3 +98,4 @@ When configuring applications, you must follow this priority order:
 5.  **Troubleshooting:**
     *   **"Read-only file system":** You are likely trying to modify `/nix/store` directly. Modify source files in `/persist/etc/nixos`.
     *   **"File exists":** When switching, if a file conflicts with a managed file, ask the user before forcing or deleting.
+6.  **Research:** If you are unsure about a specific configuration syntax, option, or error message, use the internet to research it before guessing.
