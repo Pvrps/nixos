@@ -1,6 +1,7 @@
 {pkgs, ...}: {
   imports = [
     ./programs
+    ./scripts
   ];
 
   home.username = "purps";
