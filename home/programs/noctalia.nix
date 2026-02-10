@@ -31,7 +31,7 @@ in {
         enableShadows = true;
       };
       ui = {
-        boxBorderEnabled = false;
+        boxBorderEnabled = true;
       };
       notifications = {
         location = "top_right";
