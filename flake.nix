@@ -53,6 +53,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    prismlauncher = {
+      url = "github:PrismLauncher/PrismLauncher";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     impermanence.url = "github:nix-community/impermanence";
   };
 
@@ -66,6 +71,7 @@
     impermanence,
     stylix,
     opencode,
+    prismlauncher,
     ...
   } @ inputs:
     flake-parts.lib.mkFlake {inherit inputs;} {
