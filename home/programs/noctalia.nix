@@ -22,6 +22,23 @@ in {
       location = {
         name = "Ontario";
       };
+      general = {
+        radiusRatio = 0;
+        iRadiusRatio = 0;
+        boxRadiusRatio = 0;
+        screenRadiusRatio = 0;
+        scaleRatio = 0.75;
+        enableShadows = true;
+      };
+      ui = {
+        boxBorderEnabled = false;
+      };
+      notifications = {
+        location = "top_right";
+      };
+      appLauncher = {
+        sortByMostUsed = true;
+      };
     };
   };
 
