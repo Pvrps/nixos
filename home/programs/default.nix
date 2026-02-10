@@ -15,10 +15,10 @@
     ./discord.nix
     ./opencode.nix
     ./lazygit.nix
-    ./capture.nix
     ./clapper.nix
     ./imv.nix
     ./rustdesk.nix
     ./java.nix
+    ./prismlauncher.nix
   ];
 }
