@@ -117,5 +117,12 @@ in {
         Mod+F { maximize-column; }
         Mod+Shift+F { fullscreen-window; }
     }
+
+    gestures {
+        hot-corners {
+            off
+        }
+    }
+
   '';
 }
