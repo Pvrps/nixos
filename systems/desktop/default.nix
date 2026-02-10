@@ -102,7 +102,7 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = [pkgs.xdg-desktop-portal-gtk];
+    extraPortals = [pkgs.xdg-desktop-portal-gnome];
   };
 
   fonts.packages = with pkgs; [
