@@ -19,5 +19,6 @@
     ./clapper.nix
     ./imv.nix
     ./rustdesk.nix
+    ./java.nix
   ];
 }
