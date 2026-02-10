@@ -3,7 +3,7 @@
   inputs,
   ...
 }: let
-  opencodePkg = inputs.opencode.packages.${pkgs.system}.default;
+  opencodePkg = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.default;
 in {
   home.packages = [
     opencodePkg
