@@ -26,7 +26,7 @@ in {
     spawn-at-startup "bash" "-c" "for i in {1..20}; do ${pactl} list short sources | grep -q 'rnnoise_source' && { ${pactl} set-default-source rnnoise_source; break; }; sleep 0.5; done"
 
     spawn-at-startup "bash" "-c" "${wait_net}; steam -system-composer -silent > /dev/null 2>&1"
-    spawn-at-startup "bash" "-c" "${wait_net}; discord --start-minimized > /dev/null 2>&1"
+    spawn-at-startup "bash" "-c" "${wait_net}; vesktop --start-minimized > /dev/null 2>&1"
 
     window-rule {
         open-maximized true
@@ -42,8 +42,8 @@ in {
     }
 
     window-rule {
-        match app-id="discord" title="Discord Updater"
-        match app-id="discord" title="Checking for updates..."
+        match app-id="vesktop" title="Discord Updater"
+        match app-id="vesktop" title="Checking for updates..."
         open-floating true
         open-maximized false
     }
