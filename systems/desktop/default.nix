@@ -19,6 +19,7 @@
       };
       efi.canTouchEfiVariables = true;
     };
+    kernelParams = ["nvidia-drm.modeset=1"];
   };
 
   networking.hostName = "desktop";
@@ -114,7 +115,13 @@
     noto-fonts
   ];
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs = {
+    config = {
+      allowUnfree = true;
+      cudaSupport = true;
+    };
+  };
+
   nix = {
     settings = {
       experimental-features = ["nix-command" "flakes"];
