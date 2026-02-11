@@ -82,7 +82,10 @@
     gamescope.enable = true;
   };
 
-  security.pam.services.greetd.enableGnomeKeyring = true;
+  security = {
+    pam.services.greetd.enableGnomeKeyring = true;
+    rtkit.enable = true;
+  };
 
   services = {
     pipewire = {
@@ -143,9 +146,18 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
-    seahorse
-  ];
+  environment = {
+    systemPackages = with pkgs; [
+      seahorse
+      nvidia-vaapi-driver
+      libva-utils
+    ];
+    sessionVariables = {
+      GBM_BACKEND = "nvidia-drm";
+      __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+      LIBVA_DRIVER_NAME = "nvidia";
+    };
+  };
 
   system.stateVersion = "24.11";
 }
