@@ -1,7 +1,6 @@
 {
   pkgs,
   config,
-  inputs,
   ...
 }: {
   imports = [
@@ -10,7 +9,6 @@
     ./persist.nix
     ./stylix.nix
     ./microphone.nix
-    inputs.nix-flatpak.nixosModules.nix-flatpak
   ];
 
   boot = {
