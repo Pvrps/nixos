@@ -20,6 +20,6 @@
     ./rustdesk.nix
     ./java.nix
     ./prismlauncher.nix
-    ./obs.nix
+    ./flatpak.nix
   ];
 }

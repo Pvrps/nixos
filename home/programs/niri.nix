@@ -20,6 +20,7 @@ in {
     }
 
     spawn-at-startup "${xwayland_satellite}" ":11"
+    spawn-at-startup "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon" "--start" "--components=secrets"
     spawn-at-startup "noctalia-shell"
 
     spawn-at-startup "bash" "-c" "for i in {1..20}; do ${pactl} list short sources | grep -q 'rnnoise_source' && { ${pactl} set-default-source rnnoise_source; break; }; sleep 0.5; done"
@@ -98,6 +99,7 @@ in {
         Mod+Return { spawn "foot"; }
         Mod+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
         Mod+C { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
+
         Mod+Q { close-window; }
         Mod+Shift+Grave { quit; }
         Mod+Tab { toggle-overview; }
@@ -106,6 +108,7 @@ in {
         Mod+Right { focus-column-or-monitor-right; }
         Mod+Up    { focus-workspace-up; }
         Mod+Down  { focus-workspace-down; }
+        Mod+Z     { toggle-window-floating; }
         Mod+Ctrl+Left  { focus-monitor-left; }
         Mod+Ctrl+Right { focus-monitor-right; }
 
