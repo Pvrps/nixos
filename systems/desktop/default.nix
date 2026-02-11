@@ -1,6 +1,7 @@
 {
   pkgs,
   config,
+  inputs,
   ...
 }: {
   imports = [
@@ -9,6 +10,7 @@
     ./persist.nix
     ./stylix.nix
     ./microphone.nix
+    inputs.nix-flatpak.nixosModules.nix-flatpak
   ];
 
   boot = {
@@ -81,6 +83,8 @@
     gamescope.enable = true;
   };
 
+  security.pam.services.greetd.enableGnomeKeyring = true;
+
   services = {
     pipewire = {
       enable = true;
@@ -97,6 +101,8 @@
       };
     };
     upower.enable = true;
+    gnome.gnome-keyring.enable = true;
+    flatpak.enable = true;
     xserver.videoDrivers = ["nvidia"];
   };
 
@@ -132,7 +138,8 @@
     };
   };
 
-  environment.systemPackages = [
+  environment.systemPackages = with pkgs; [
+    seahorse
   ];
 
   system.stateVersion = "24.11";
