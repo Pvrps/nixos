@@ -64,7 +64,7 @@ in {
         }
     }
 
-    output "DP-2" {
+    output "DP-1" {
         mode "2560x1440@144"
         position x=0 y=0
         scale 1.5
@@ -72,7 +72,7 @@ in {
         focus-at-startup
     }
 
-    output "DP-4" {
+    output "DP-3" {
         mode "2560x1440@144"
         position x=1707 y=0
         scale 1.5

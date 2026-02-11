@@ -28,6 +28,7 @@
     packages = [
       "com.obsproject.Studio"
       "com.github.tchx84.Flatseal"
+      "org.freedesktop.Platform.Gstreamer.nvenc"
     ];
   };
 }
