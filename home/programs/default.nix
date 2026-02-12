@@ -21,5 +21,6 @@
     ./java.nix
     ./prismlauncher.nix
     ./flatpak.nix
+    ./kilocodecli.nix
   ];
 }
