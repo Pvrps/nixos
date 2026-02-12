@@ -2,11 +2,9 @@
   pkgs,
   inputs,
   ...
-}: let
-  opencodePkg = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.default;
-in {
-  home.packages = [
-    opencodePkg
+}: {
+  home.packages = with inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}; [
+    opencode
   ];
 
   home.file.".config/opencode/opencode.json".text = builtins.toJSON {

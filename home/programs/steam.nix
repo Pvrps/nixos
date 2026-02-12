@@ -19,7 +19,7 @@
   programs.mangohud = {
     enable = true;
     settings = {
-      fpt_limit = 144;
+      fps_limit = 144;
 
       round_corners = 20;
       text_outline = false;
@@ -39,7 +39,7 @@
       vram = true;
 
       fps = true;
-      frametime = false;
+      frametime = true;
       frame_timing = 1;
 
       histogram_height = 24;

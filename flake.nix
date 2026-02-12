@@ -48,11 +48,6 @@
       };
     };
 
-    opencode = {
-      url = "github:anomalyco/opencode";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     prismlauncher = {
       url = "github:PrismLauncher/PrismLauncher";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -60,6 +55,11 @@
 
     nix-flatpak = {
       url = "github:gmodena/nix-flatpak/?ref=latest";
+    };
+
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     impermanence.url = "github:nix-community/impermanence";
@@ -74,9 +74,9 @@
     disko,
     impermanence,
     stylix,
-    opencode,
     prismlauncher,
     nix-flatpak,
+    llm-agents,
     ...
   } @ inputs:
     flake-parts.lib.mkFlake {inherit inputs;} {
