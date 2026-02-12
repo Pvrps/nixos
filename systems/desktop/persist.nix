@@ -10,6 +10,7 @@
       "/var/lib/nixos"
       "/var/lib/systemd/coredump"
       "/var/lib/NetworkManager"
+      "/var/lib/greetd"
       "/etc/NetworkManager/system-connections"
       "/system/sops/age"
     ];
