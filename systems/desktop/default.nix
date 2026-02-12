@@ -98,7 +98,7 @@
     greetd = {
       enable = true;
       settings.default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd niri-session";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd niri-session";
         user = "greeter";
       };
     };
@@ -146,6 +146,7 @@
       dates = "weekly";
       options = "--delete-older-than 30d";
     };
+    optimise.automatic = true;
   };
 
   environment = {
