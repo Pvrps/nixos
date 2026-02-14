@@ -39,6 +39,12 @@ in {
         open-focused false
         default-floating-position x=10 y=10 relative-to="bottom-right"
         focus-ring { width 0; }
+        block-out-from "screencast"
+    }
+
+    layer-rule {
+        match namespace=r#"^noctalia-notifications"#
+        block-out-from "screencast"
     }
 
     window-rule {
