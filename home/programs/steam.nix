@@ -19,8 +19,6 @@
   programs.mangohud = {
     enable = true;
     settings = {
-      fps_limit = 144;
-
       round_corners = 20;
       text_outline = false;
       font_size = lib.mkForce 24;
