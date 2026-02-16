@@ -48,11 +48,6 @@
       };
     };
 
-    prismlauncher = {
-      url = "github:PrismLauncher/PrismLauncher";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nix-flatpak = {
       url = "github:gmodena/nix-flatpak/?ref=latest";
     };
@@ -74,7 +69,6 @@
     disko,
     impermanence,
     stylix,
-    prismlauncher,
     nix-flatpak,
     llm-agents,
     ...

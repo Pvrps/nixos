@@ -1,9 +1,5 @@
-{
-  pkgs,
-  inputs,
-  ...
-}: {
+{pkgs, ...}: {
   home.packages = [
-    inputs.prismlauncher.packages.${pkgs.stdenv.hostPlatform.system}.prismlauncher
+    pkgs.prismlauncher
   ];
 }
