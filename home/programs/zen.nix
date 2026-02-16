@@ -7,8 +7,6 @@
     inputs.zen-browser.homeModules.twilight
   ];
 
-  home.sessionVariables.MOZ_LEGACY_PROFILES = 1;
-
   stylix.targets.zen-browser.profileNames = ["Personal"];
 
   xdg.mimeApps.defaultApplications = {
@@ -43,6 +41,11 @@
     };
 
     policies = {
+      Preferences = {
+        "browser.startup.page" = 3;
+        "browser.sessionStore.resume_from_crash" = true;
+      };
+
       AutofillAddressEnabled = false;
       AutofillCreditCardEnabled = false;
       DisableAppUpdate = true;
