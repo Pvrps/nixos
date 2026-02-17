@@ -11,7 +11,7 @@
   home.packages = [pkgs.easyeffects];
 
   home.activation.linkEasyEffectsPreset = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    PRESET_DIR="$HOME/.local/easyeffects/input"
+    PRESET_DIR="$HOME/.local/share/easyeffects/input"
     PRESET_LINK="$PRESET_DIR/blue_yeti.json"
     PRESET_SOURCE="/persist/etc/nixos/home/programs/easyeffects/blue_yeti.json"
 

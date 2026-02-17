@@ -8,7 +8,6 @@
     ./disko.nix
     ./persist.nix
     ./stylix.nix
-    ./microphone.nix
   ];
 
   boot = {
