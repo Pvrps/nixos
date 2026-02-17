@@ -20,6 +20,7 @@
       if [[ $REPLY =~ ^[Yy]$ ]]; then
         $GIT -C "$CONFIG_DIR" add -- "$PRESET_FILE"
         $GIT -C "$CONFIG_DIR" commit -m "Update EasyEffects preset"
+        $GIT -C "$CONFIG_DIR" push
 
         echo ""
         echo "✓ Changes committed!"
