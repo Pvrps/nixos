@@ -22,5 +22,6 @@
     ./prismlauncher.nix
     ./flatpak.nix
     ./kilocodecli.nix
+    ./easyeffects
   ];
 }
