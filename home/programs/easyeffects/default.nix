@@ -5,7 +5,7 @@
 }: {
   services.easyeffects = {
     enable = true;
-    preset = "RNNoise";
+    preset = "blue_yeti";
   };
 
   home.packages = [pkgs.easyeffects];
