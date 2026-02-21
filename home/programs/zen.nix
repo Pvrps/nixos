@@ -19,6 +19,7 @@
 
   programs.zen-browser = {
     enable = true;
+    suppressXdgMigrationWarning = true;
     languagePacks = ["en-US"];
 
     profiles.Personal = {
