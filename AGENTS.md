@@ -66,21 +66,34 @@ When configuring applications, you must follow this priority order:
     *   Use `xdg.configFile."<app>/config".text` or `home.file`.
     *   Avoid creating imperative write scripts.
 
-## 4. Directory Structure
+## 4. Directory Structure & Modularity
+
+This repository strictly separates reusable logic (modules) from specific instantiations (systems and users).
 
 *   `flake.nix`: The flake entry point.
-*   `systems/desktop/`: Configuration specific to the `desktop` host.
-    *   `default.nix`: Main system entry point.
-    *   `hardware.nix`: Hardware scan/config.
-    *   `disko.nix`: Disk partitioning.
-    *   `persist.nix`: Impermanence definitions.
-*   `home/`: Home Manager configuration (user-level).
-    *   `default.nix`: Main Home Manager entry point.
-    *   `programs/`: Individual program modules (e.g., `git.nix`, `fish.nix`).
-    *   `scripts/`: Custom shell scripts managed by Nix (e.g., `gitingest.nix`).
+*   `modules/`: Reusable, generic NixOS and Home Manager building blocks.
+    *   `nixos/`: System-level modules (`core.nix`, `users.nix`, `gaming.nix`, `custom.nix`, etc.).
+    *   `home-manager/`: User-level modules, including granular program setups (`programs/`) and custom options (`custom.nix`).
+        *   **CRITICAL:** These modules should *never* contain hardcoded user preferences, secrets, or themes. They must remain generic and expose settings via `config.custom.*`.
+*   `systems/`: Instantiated machines.
+    *   `desktop/`: Configuration specific to the `desktop` host.
+        *   `default.nix`: Main system entry point (imports from `modules/nixos`).
+        *   `hardware.nix`, `disko.nix`, `persist.nix`: Host-specific definitions.
+*   `home/`: Instantiated Home Manager configurations.
+    *   `users/<username>/`: User-specific profiles (e.g., `purps`).
+        *   `default.nix`: User entry point. Imports specific modules from `modules/home-manager` and defines their `custom.*` options, secrets, and desktop environments.
+        *   `stylix.nix`: User-specific theming.
 *   `secrets.yaml`: Encrypted secrets file.
 
-## 5. Code Style & Patterns
+## 5. Configuration Decoupling Rules
+
+*   **Avoid Hardcoding:** If a program module (e.g. `zen.nix`, `steam.nix`) requires a user-specific setting (like a username, extension list, or custom startup command), do *not* hardcode it in the module.
+*   **Use `custom.nix`:** Expose those settings by defining `lib.mkOption` within `modules/nixos/custom.nix` or `modules/home-manager/custom.nix`.
+*   **Configure in `home/users/<user>`:** Set the actual values for those options inside the user's `default.nix` using the `custom.<option>` attributes.
+*   **Theming is User-Level:** Global theming like cursors and fonts are configured per-user via Stylix inside their own `home/users/<user>/stylix.nix`.
+*   **Secrets:** Sops secrets should generally be provisioned system-wide inside `modules/nixos/users.nix` (e.g. `config.sops.secrets."github-ssh-key".path`) and passed to user modules via `custom` options (e.g., `custom.ssh.githubKeyPath`).
+
+## 6. Code Style & Patterns
 
 *   **Trust the Tools:** Follow `alejandra` and `statix`.
 *   **Functional Patterns:** Use `let ... in` bindings for local variables.
@@ -89,7 +102,7 @@ When configuring applications, you must follow this priority order:
     *   Example: `passwordFile = config.sops.secrets."user-password".path;`
 *   **Theming:** Do not hardcode font names or color hex codes if Stylix covers it. Let Stylix handle the global look and feel.
 
-## 6. Agent Operational Rules
+## 7. Agent Operational Rules
 
 1.  **Safety First:** NEVER run `nixos-rebuild switch` without first running `nixos-rebuild dry-build` or `nix flake check` and receiving user confirmation.
 2.  **Impermanence Awareness:** Remember that writing to files outside of `/persist` via shell commands is temporary. Always implement changes via Nix configuration files.
@@ -100,6 +113,6 @@ When configuring applications, you must follow this priority order:
     *   **"File exists":** When switching, if a file conflicts with a managed file, ask the user before forcing or deleting.
 6.  **Research:** If you are unsure about a specific configuration syntax, option, or error message, use the internet to research it before guessing.
 
-## 7. Tips
+## 8. Tips
 
 1.  **Command not found:** Feel free to use `nix-shell -p <package>` if you need to temporarily use a tool that the system does not have.

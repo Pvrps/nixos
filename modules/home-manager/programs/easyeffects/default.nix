@@ -1,19 +1,20 @@
 {
+  config,
   pkgs,
   lib,
   ...
 }: {
   services.easyeffects = {
     enable = true;
-    preset = "blue_yeti";
+    preset = config.custom.easyeffects.preset;
   };
 
   home.packages = [pkgs.easyeffects];
 
   home.activation.linkEasyEffectsPreset = lib.hm.dag.entryAfter ["writeBoundary"] ''
     PRESET_DIR="$HOME/.local/share/easyeffects/input"
-    PRESET_LINK="$PRESET_DIR/blue_yeti.json"
-    PRESET_SOURCE="/persist/etc/nixos/home/programs/easyeffects/blue_yeti.json"
+    PRESET_LINK="$PRESET_DIR/${config.custom.easyeffects.preset}.json"
+    PRESET_SOURCE="${config.custom.easyeffects.presetSource}"
 
     mkdir -p "$PRESET_DIR"
 

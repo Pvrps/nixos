@@ -6,16 +6,6 @@
   home.packages = with pkgs; [
   ];
 
-  xdg.desktopEntries.steam = {
-    name = "Steam";
-    genericName = "Application Distribution Platform";
-    exec = "sh -c \"niri msg action focus-window --matching app-id=steam || nohup steam -system-composer %U > /dev/null 2>&1 &\"";
-    icon = "steam";
-    terminal = false;
-    categories = ["Network" "FileTransfer" "Game"];
-    mimeType = ["x-scheme-handler/steam" "x-scheme-handler/steamlink"];
-  };
-
   programs.mangohud = {
     enable = true;
     settings = {

@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   inputs,
   ...
 }: {
@@ -25,10 +26,6 @@
     update.auto.enable = false;
     uninstallUnmanaged = false;
 
-    packages = [
-      "com.obsproject.Studio"
-      "com.github.tchx84.Flatseal"
-      "org.freedesktop.Platform.Gstreamer.nvenc"
-    ];
+    packages = config.custom.flatpak.packages;
   };
 }

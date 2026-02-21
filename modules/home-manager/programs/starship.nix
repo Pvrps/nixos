@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
   programs.starship = {
     enable = true;
 
@@ -60,7 +64,6 @@
         format = "[$user]($style) ";
         style_user = "fg:#A385FF";
         show_always = true;
-        aliases = {"Purps" = "purps";};
       };
 
       directory = {

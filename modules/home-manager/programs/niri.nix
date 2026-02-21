@@ -9,6 +9,7 @@
   xwayland_satellite = "${pkgs.xwayland-satellite}/bin/xwayland-satellite";
 
   wait_net = "nm-online -q --timeout=30 || true";
+  startupLines = builtins.concatStringsSep "\n    " (map (cmd: ''spawn-at-startup ${cmd}'') config.custom.niri.startupCommands);
 in {
   xdg.configFile."niri/config.kdl".text = ''
     environment {
@@ -19,14 +20,7 @@ in {
         skip-at-startup
     }
 
-    spawn-at-startup "${xwayland_satellite}" ":11"
-    spawn-at-startup "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon" "--start" "--components=secrets"
-    spawn-at-startup "noctalia-shell"
-
-    spawn-at-startup "bash" "-c" "for i in {1..20}; do ${pactl} list short sources | grep -q 'rnnoise_source' && { ${pactl} set-default-source rnnoise_source; break; }; sleep 0.5; done"
-
-    spawn-at-startup "bash" "-c" "${wait_net}; steam -system-composer -silent > /dev/null 2>&1"
-    spawn-at-startup "bash" "-c" "${wait_net}; vesktop --start-minimized > /dev/null 2>&1"
+    ${startupLines}
 
     window-rule {
         open-maximized true

@@ -12,7 +12,6 @@
       "/var/lib/NetworkManager"
       "/var/lib/greetd"
       "/etc/NetworkManager/system-connections"
-      "/system/sops/age"
     ];
 
     files = [

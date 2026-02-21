@@ -1,10 +1,10 @@
-_: {
+{config, ...}: {
   programs.git = {
     enable = true;
     settings = {
       user = {
-        name = "purps";
-        email = "github@purps.ca";
+        name = config.custom.git.userName;
+        email = config.custom.git.userEmail;
       };
       core = {
         whitespace = "fix,-indent-with-non-tab,trailing-space,cr-at-eol";

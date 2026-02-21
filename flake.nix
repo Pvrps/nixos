@@ -86,14 +86,13 @@
             disko.nixosModules.disko
             sops-nix.nixosModules.sops
             home-manager.nixosModules.home-manager
-            stylix.nixosModules.stylix
+            nix-flatpak.nixosModules.nix-flatpak
             {
               home-manager = {
-                useGlobalPkgs = true;
                 useUserPackages = true;
                 backupFileExtension = "backup";
                 extraSpecialArgs = {inherit inputs;};
-                users.purps = import ./home;
+                users.purps = import ./home/users/purps;
               };
             }
           ];
