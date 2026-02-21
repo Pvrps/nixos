@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Nix
         uses: cachix/install-nix-action@v30
@@ -24,13 +22,13 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github@purps.ca"
+
       - name: Update flake.lock
         run: nix flake update --commit-lock-file
 
-      - name: Commit & Push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore(flake): update inputs automatically"
-          commit_author: "github-actions[bot] <github@purps.ca>"
-          branch: main
-          file_pattern: 'flake.lock'
+      - name: Push changes
+        run: git push
