@@ -215,7 +215,14 @@
   xdg.desktopEntries.steam = {
     name = "Steam";
     genericName = "Application Distribution Platform";
-    exec = "sh -c \"niri msg action focus-window --matching app-id=steam || nohup steam -system-composer %U > /dev/null 2>&1 &\"";
+    exec = "${pkgs.writeShellScript "launch-steam" ''
+      id=$(${pkgs.niri}/bin/niri msg -j windows | ${pkgs.jq}/bin/jq -r '.[] | select(.app_id == "steam" and (.title | test("^notificationtoasts") | not)) | .id' | head -n 1)
+      if [ -n "$id" ]; then
+          ${pkgs.niri}/bin/niri msg action focus-window --id "$id"
+      else
+          nohup steam -system-composer "$@" > /dev/null 2>&1 &
+      fi
+    ''} %U";
     icon = "steam";
     terminal = false;
     categories = ["Network" "FileTransfer" "Game"];
