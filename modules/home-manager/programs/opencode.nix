@@ -18,29 +18,25 @@
       - **FATAL ERROR:** Do not run `mkdir <name>` in `~`. Always use `mkdir -p ~/Development/<name> && cd ~/Development/<name>`.
     - **Scripting:** Write scripts ONLY in `bash`/`sh`. NEVER write scripts in `fish`.
 
-    ## 2. TD TASK MANAGEMENT & VERIFICATION (MANDATORY GATEWAY)
-    **FATAL ERROR:** You are strictly forbidden from creating files, writing code, or running build commands until you have created and started a task in `td`.
-    **FATAL ERROR:** NEVER run `td done`, `td close`, or `td approve` on your own work. ALWAYS use `td review`.
-    1. If the `td` database is missing, run `td init` first.
-    2. `td usage --new-session`
-    3. `td create "Descriptive title" --type feature --priority P1`
-    4. `td start <id>` (Use the full ID, e.g., `td-123abc`)
-    5. *...write the code...*
-    6. **MANDATORY VERIFICATION:** You MUST run the project's specific type-check and build commands to verify it compiles. Do not proceed to review if there are errors.
-    7. `td review <id>`
-    8. **TERMINAL STATE CONSTRAINT:** Once you run `td review`, your task is COMPLETE. You MUST immediately stop using tools and stop running terminal commands (no `ls`, no `ps`, no `pwd`). You must output a SINGLE, concise final message, and then you MUST STOP generating text. DO NOT loop and DO NOT repeat your final message.
+    ## 2. THE MANDATORY WORKFLOW (STEP-BY-STEP)
+    **FATAL ERROR:** You are strictly forbidden from writing code until you have completed steps 1 through 5 in exact order.
 
-    ## 3. VERSION CONTROL (GIT)
-    **FATAL ERROR:** NEVER write code, commit, or push directly to the `main` or `master` branch.
-    - **Initialization:** If starting a new project, you MUST initialize git (`git init`). Create an initial commit on `main` before doing any further work.
-    - **Branching:** You MUST create and switch to a descriptive feature branch before modifying or writing any code (e.g., `git switch -c feature/<descriptive-name>`).
-    - **Committing:** Stage and commit your changes with clear, descriptive commit messages before concluding the task and running `td review`.
-    - **Ignored Files:** NEVER attempt to track or commit agent state directories (`.todo/`, `.sidecar/`). If `git status` shows them, ignore them. Add them to the project's `.gitignore`.
+    1. **Task Management:** If `td` database is missing, run `td init`. Then run `td usage --new-session`, `td create "Title" --type feature --priority P1`, and `td start <id>`.
+    2. **Directory & Git Init:** `mkdir -p ~/Development/<name>`, `cd` into it, and IMMEDIATELY run `git init`.
+    3. **Project Scaffold (Main Branch):** If starting a new project, run your scaffolding command NOW. Once scaffolding is complete, run `git add .` and `git commit -m "chore: initial project scaffold"` on the `main` branch.
+    4. **Feature Branching:** **FATAL ERROR:** NEVER do your actual manual coding on `main`. IMMEDIATELY run `git switch -c feature/<descriptive-name>`.
+    5. **Development:** *...write your feature code...*
+    6. **Verification:** You MUST run the project's specific type-check and build commands to verify it compiles. Do not proceed if there are errors.
+    7. **Commit Changes:** Stage and commit your feature work: `git add .` and `git commit -m "feat: description"`.
+    8. **Review & Stop:** Run `td review <id>`. Once you run this, your task is COMPLETE. Output a SINGLE, concise final message, and STOP generating text. DO NOT run further commands (`ls`, `pwd`, etc.).
+
+    ## 3. VERSION CONTROL RULES
+    - **Ignored Files:** NEVER attempt to track or commit agent state directories (`.todo/`, `.sidecar/`). If `git status` shows them, add them to `.gitignore`.
+    - **Workflow enforcement:** All commits after the initial project scaffold MUST happen on a `feature/*` branch.
 
     ## 4. PROJECT-SPECIFIC CONTEXT (AGENTS.md)
-    - **Initialization:** Whenever you initialize a brand new project, you MUST create a local `AGENTS.md` file in the project root.
-    - **Documentation:** Use this project-level `AGENTS.md` to document persistent architectural decisions, specific libraries used, database schemas, and custom commands.
-    - **Reading:** Whenever you start a task in an existing project, you MUST read the project-root `AGENTS.md` to understand the specific rules and architecture of that codebase before writing any code.
+    - **Initialization:** Whenever you initialize a brand new project, you MUST create a local `AGENTS.md` file in the project root. Document persistent architectural decisions, libraries used, and custom commands.
+    - **Reading:** Whenever you start a task in an existing project, you MUST read the project-root `AGENTS.md` before writing any code.
 
     ## 5. DEPENDENCY MANAGEMENT (NIX ONLY)
     **FATAL ERROR:** NEVER use `npm -g`, `pip install`, `cargo install`, or `brew`.
