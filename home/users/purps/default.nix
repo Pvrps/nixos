@@ -5,8 +5,11 @@
 }: {
   imports = [
     inputs.stylix.homeModules.stylix
+
     ./stylix.nix
+
     ../../../modules/home-manager/custom.nix
+
     ../../../modules/home-manager/programs/helix.nix
     ../../../modules/home-manager/programs/noctalia.nix
     ../../../modules/home-manager/programs/niri.nix
@@ -30,6 +33,7 @@
     ../../../modules/home-manager/programs/flatpak.nix
     ../../../modules/home-manager/programs/kilocodecli.nix
     ../../../modules/home-manager/programs/easyeffects
+    ../../../modules/home-manager/programs/sidecar.nix
 
     ../../../modules/home-manager/scripts/capture.nix
     ../../../modules/home-manager/scripts/gitingest.nix
