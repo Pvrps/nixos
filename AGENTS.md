@@ -5,6 +5,7 @@ This repository contains the NixOS system configuration for the `desktop` system
 ## 1. System Architecture & Critical Concepts
 
 *   **Flake-based:** The entry point is `flake.nix`. All dependencies and outputs are defined there.
+*   **FATAL ERROR (Flakes & Git):** Nix Flakes strictly ignore files that are not tracked by Git. **If you create a new file, you MUST run `git add <file>` BEFORE running `nix flake check` or `nixos-rebuild`.** Otherwise, Nix will output a "path does not exist" error.
 *   **Impermanence (Ephemeral Root):** The root filesystem (`/`) is a `tmpfs` and is wiped on every boot.
     *   **Persistent Data:** All permanent configuration and data reside in `/persist`.
     *   **Implication:** Do NOT manually edit files in `/etc` or `/home` expecting them to survive a reboot. You must configure them via Nix modules (e.g., `environment.etc` or Home Manager).
@@ -23,7 +24,7 @@ Before submitting any changes, run these commands to ensure correctness and styl
     ```bash
     nix run nixpkgs#statix -- check .
     ```
-*   **Format (Alejandra):** strictly enforces the project's formatting style.
+*   **Format (Alejandra):** Strictly enforces the project's formatting style.
     ```bash
     nix run nixpkgs#alejandra -- .
     ```
@@ -39,17 +40,8 @@ Before submitting any changes, run these commands to ensure correctness and styl
     nixos-rebuild dry-build --flake .#desktop
     ```
 
-**Step 3: Application (Only when explicitly requested)**
-*   **Switch System:**
-    Applies the configuration to the running system.
-    ```bash
-    sudo nixos-rebuild switch --flake .#desktop
-    ```
-*   **Boot System:**
-    Builds the configuration and sets it as the default for the next boot.
-    ```bash
-    sudo nixos-rebuild boot --flake .#desktop
-    ```
+**Step 3: Application (NEVER DO THIS)**
+*   **FATAL ERROR:** NEVER apply changes to the running system. Do not run `sudo nixos-rebuild switch` or `sudo nixos-rebuild boot`. Your job is to write and verify the code, not deploy it.
 
 ## 3. Configuration Strategy (Home Manager vs. Manual)
 
@@ -102,17 +94,32 @@ This repository strictly separates reusable logic (modules) from specific instan
     *   Example: `passwordFile = config.sops.secrets."user-password".path;`
 *   **Theming:** Do not hardcode font names or color hex codes if Stylix covers it. Let Stylix handle the global look and feel.
 
-## 7. Agent Operational Rules
+## 7. Custom-Packaged Programs
 
-1.  **Safety First:** NEVER run `nixos-rebuild switch` without first running `nixos-rebuild dry-build` or `nix flake check` and receiving user confirmation.
-2.  **Impermanence Awareness:** Remember that writing to files outside of `/persist` via shell commands is temporary. Always implement changes via Nix configuration files.
+Some programs in `modules/home-manager/programs/` are not available in nixpkgs and are packaged locally using `buildGoModule`. 
+
+When updating these, both `hash` and `vendorHash` must be re-derived:
+1. Set them to `lib.fakeHash` (or `""`).
+2. Run the build to force an SRI hash mismatch error.
+3. Copy the correct hashes from the error output and paste them into the code.
+4. **CRITICAL:** Always set `doCheck = false;` to avoid Nix build sandbox failures (tests usually require network/git access).
+
+Currently custom-packaged:
+*   `sidecar.nix` — github.com/marcus/sidecar
+*   `td.nix` — github.com/marcus/td
+
+## 8. Agent Operational Rules
+
+1.  **Safety First:** Always run `nixos-rebuild dry-build` or `nix flake check` before concluding your work.
+2.  **Impermanence Awareness:** Remember that writing to files outside of `/persist` via shell commands is temporary. Always implement changes declaratively in this project directory.
 3.  **Secret Safety:** Never read `secrets.yaml` directly or output its contents. Use `sops` tools if interaction is required (and requested by the user).
 4.  **Context:** Before editing `flake.nix`, read it to understand existing inputs and overlays.
 5.  **Troubleshooting:**
-    *   **"Read-only file system":** You are likely trying to modify `/nix/store` directly. Modify source files in `/persist/etc/nixos`.
-    *   **"File exists":** When switching, if a file conflicts with a managed file, ask the user before forcing or deleting.
-6.  **Research:** If you are unsure about a specific configuration syntax, option, or error message, use the internet to research it before guessing.
+    *   **"Read-only file system":** You are likely trying to modify `/nix/store` directly. Modify local source files in the project directory instead.
+    *   **"File exists":** When evaluating/building, if a file conflicts with a managed file, ask the user before forcing or deleting.
+6.  **TD Integration:** You MUST adhere to the global task management rules. Run `td usage --new-session` at the start. When the work is verified and complete, run `td review <id>`. NEVER run `td handoff`, `td done`, or `td close`.
 
-## 8. Tips
+## 9. Tips
 
-1.  **Command not found:** Feel free to use `nix-shell -p <package>` if you need to temporarily use a tool that the system does not have.
+1.  **Command not found:** Use `nix-shell -p <package>` or `nix run nixpkgs#<package>` if you need to temporarily use a tool that the system does not have.
+2.  **Researching Options:** If you are unsure of the exact Home Manager or NixOS configuration syntax, use your `WebFetch` tool to search `https://mynixos.com` or `https://search.nixos.org/options`. Do not guess Nix options, as they frequently change.
