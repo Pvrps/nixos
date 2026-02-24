@@ -35,6 +35,7 @@
     - **Initialization:** If starting a new project, you MUST initialize git (`git init`). Create an initial commit on `main` before doing any further work.
     - **Branching:** You MUST create and switch to a descriptive feature branch before modifying or writing any code (e.g., `git switch -c feature/<descriptive-name>`).
     - **Committing:** Stage and commit your changes with clear, descriptive commit messages before concluding the task and running `td review`.
+    - **Ignored Files:** NEVER attempt to track or commit agent state directories (`.todo/`, `.sidecar/`). If `git status` shows them, ignore them. Add them to the project's `.gitignore`.
 
     ## 4. PROJECT-SPECIFIC CONTEXT (AGENTS.md)
     - **Initialization:** Whenever you initialize a brand new project, you MUST create a local `AGENTS.md` file in the project root.
