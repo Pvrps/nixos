@@ -6,7 +6,7 @@
 }: {
   services.easyeffects = {
     enable = true;
-    preset = config.custom.easyeffects.preset;
+    inherit (config.custom.easyeffects) preset;
   };
 
   home.packages = [pkgs.easyeffects];

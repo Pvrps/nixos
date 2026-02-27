@@ -23,7 +23,7 @@
     suppressXdgMigrationWarning = true;
     languagePacks = ["en-US"];
 
-    profiles = config.custom.zen.profiles;
+    inherit (config.custom.zen) profiles;
 
     policies = {
       Preferences = {

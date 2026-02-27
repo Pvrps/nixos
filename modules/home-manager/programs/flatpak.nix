@@ -26,6 +26,6 @@
     update.auto.enable = false;
     uninstallUnmanaged = false;
 
-    packages = config.custom.flatpak.packages;
+    inherit (config.custom.flatpak) packages;
   };
 }

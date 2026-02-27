@@ -45,7 +45,7 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = config.custom.desktop.extraPortals;
+    inherit (config.custom.desktop) extraPortals;
   };
 
   environment.systemPackages = with pkgs; [

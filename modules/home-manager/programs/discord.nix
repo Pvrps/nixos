@@ -19,7 +19,7 @@
       frameless = true;
       themeLinks = [
       ];
-      plugins = config.custom.discord.plugins;
+      inherit (config.custom.discord) plugins;
     };
   };
 }
