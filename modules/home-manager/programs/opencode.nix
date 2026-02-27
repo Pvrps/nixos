@@ -24,7 +24,7 @@ in {
               command = [
                 "${pkgs.bash}/bin/bash"
                 "-c"
-                "npx -y @upstash/context7-mcp --api-key $(cat ${cfg.apiKeyPath})"
+                "npx -y @upstash/context7-mcp --api-key $(cat ${cfg.apiKeyPath} | tr -d '\n')"
               ];
               enabled = true;
             };
