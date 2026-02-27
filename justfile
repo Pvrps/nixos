@@ -9,3 +9,8 @@ switch:
 # Dry build the configuration without switching
 build:
     nixos-rebuild dry-build --flake .#desktop
+
+# Format and lint the code
+validate:
+    nix run nixpkgs#alejandra -- .
+    nix run nixpkgs#statix -- check .
