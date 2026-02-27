@@ -5,7 +5,7 @@
   lib,
   ...
 }: let
-  context7 = config.custom.context7;
+  context7 = config.custom.opencode.context7;
 in {
   home = {
     packages = with inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};

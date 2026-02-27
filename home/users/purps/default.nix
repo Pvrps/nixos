@@ -96,9 +96,11 @@
     ssh = {
       githubKeyPath = "/run/secrets/github-ssh-key";
     };
-    context7 = {
-      enable = true;
-      apiKeyPath = "/run/secrets/context7-api-key";
+    opencode = {
+      context7 = {
+        enable = true;
+        apiKeyPath = "/run/secrets/context7-api-key";
+      };
     };
     flatpak = {
       packages = [

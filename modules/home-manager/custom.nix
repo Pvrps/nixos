@@ -63,11 +63,13 @@
         description = "Nixcord plugins configuration";
       };
     };
-    context7 = {
-      enable = lib.mkEnableOption "Context7 MCP Server";
-      apiKeyPath = lib.mkOption {
-        type = lib.types.str;
-        description = "Path to the Context7 API key secret";
+    opencode = {
+      context7 = {
+        enable = lib.mkEnableOption "Context7 MCP Server";
+        apiKeyPath = lib.mkOption {
+          type = lib.types.str;
+          description = "Path to the Context7 API key secret";
+        };
       };
     };
   };
