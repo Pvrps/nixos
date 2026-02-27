@@ -1,11 +1,34 @@
 {
   pkgs,
   inputs,
+  config,
+  lib,
   ...
-}: {
-  home.packages = with inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}; [
-    opencode
-  ];
+}: let
+  cfg = config.custom.context7;
+in {
+  home.packages = with inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+    [
+      opencode
+    ]
+    ++ lib.optionals cfg.enable [pkgs.nodejs];
+
+  home.file.".config/opencode/opencode.json" = lib.mkIf cfg.enable {
+    text = builtins.toJSON {
+      "$schema" = "https://opencode.ai/config.json";
+      mcp = {
+        context7 = {
+          type = "local";
+          command = [
+            "${pkgs.bash}/bin/bash"
+            "-c"
+            "npx -y @upstash/context7-mcp --api-key $(cat ${cfg.apiKeyPath})"
+          ];
+          enabled = true;
+        };
+      };
+    };
+  };
 
   home.file.".config/opencode/AGENTS.md".text = ''
     # OpenCode Autonomous Agent Protocols

@@ -16,7 +16,6 @@
     ../../../modules/home-manager/programs/yazi.nix
     ../../../modules/home-manager/programs/fish.nix
     ../../../modules/home-manager/programs/foot.nix
-    ../../../modules/home-manager/programs/fuzzel.nix
     ../../../modules/home-manager/programs/git.nix
     ../../../modules/home-manager/programs/starship.nix
     ../../../modules/home-manager/programs/ssh.nix
@@ -31,9 +30,7 @@
     ../../../modules/home-manager/programs/java.nix
     ../../../modules/home-manager/programs/prismlauncher.nix
     ../../../modules/home-manager/programs/flatpak.nix
-    ../../../modules/home-manager/programs/kilocodecli.nix
     ../../../modules/home-manager/programs/easyeffects
-    ../../../modules/home-manager/programs/sidecar.nix
 
     ../../../modules/home-manager/scripts/capture.nix
     ../../../modules/home-manager/scripts/gitingest.nix
@@ -98,6 +95,10 @@
     };
     ssh = {
       githubKeyPath = "/run/secrets/github-ssh-key";
+    };
+    context7 = {
+      enable = true;
+      apiKeyPath = "/run/secrets/context7-api-key";
     };
     flatpak = {
       packages = [
