@@ -5,17 +5,17 @@
   lib,
   ...
 }: let
-  cfg = config.custom.context7;
+  context7 = config.custom.context7;
 in {
   home = {
     packages = with inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
       [
         opencode
       ]
-      ++ lib.optionals cfg.enable [pkgs.nodejs];
+      ++ lib.optionals context7.enable [pkgs.nodejs];
 
     file = {
-      ".config/opencode/opencode.json" = lib.mkIf cfg.enable {
+      ".config/opencode/opencode.json" = lib.mkIf context7.enable {
         text = builtins.toJSON {
           "$schema" = "https://opencode.ai/config.json";
           mcp = {
@@ -24,7 +24,7 @@ in {
               command = [
                 "${pkgs.bash}/bin/bash"
                 "-c"
-                "npx -y @upstash/context7-mcp --api-key $(cat ${cfg.apiKeyPath} | tr -d '\n')"
+                "npx -y @upstash/context7-mcp --api-key $(cat ${context7.apiKeyPath} | tr -d '\n')"
               ];
               enabled = true;
             };

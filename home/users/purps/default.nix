@@ -233,6 +233,4 @@
     categories = ["Network" "FileTransfer" "Game"];
     mimeType = ["x-scheme-handler/steam" "x-scheme-handler/steamlink"];
   };
-
-  services.mako.enable = false;
 }
