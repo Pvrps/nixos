@@ -12,5 +12,7 @@ _: {
     ../../modules/nixos/desktop.nix
   ];
 
+  networking.firewall.allowedTCPPorts = [5173];
+
   sops.defaultSopsFile = ./secrets.yaml;
 }
