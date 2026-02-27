@@ -101,7 +101,12 @@
 
       perSystem = {pkgs, ...}: {
         devShells.default = pkgs.mkShell {
-          packages = with pkgs; [sops age ssh-to-age];
+          packages = with pkgs; [
+            sops
+            age
+            ssh-to-age
+            just
+          ];
         };
       };
     };
