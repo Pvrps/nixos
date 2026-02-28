@@ -38,6 +38,8 @@
     ../../../modules/home-manager/scripts/micsave.nix
   ];
 
+  nixpkgs.config.allowUnfree = true;
+
   dconf.settings = {
     "org/gtk/settings/file-chooser" = {
       show-hidden = true;

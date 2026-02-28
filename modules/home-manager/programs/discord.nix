@@ -11,8 +11,10 @@
   programs.nixcord = {
     enable = true;
 
-    discord.enable = false;
-    vesktop.enable = true;
+    #discord.enable = true;
+    discord.vencord.enable = true;
+
+    #vesktop.enable = true;
 
     config = {
       useQuickCss = true;
