@@ -11,8 +11,8 @@
     ../../../modules/home-manager/custom.nix
 
     ../../../modules/home-manager/programs/helix.nix
-    # ../../../modules/home-manager/programs/noctalia.nix
-    ../../../modules/home-manager/programs/dankmaterialshell.nix
+    ../../../modules/home-manager/programs/noctalia.nix
+    #../../../modules/home-manager/programs/dankmaterialshell.nix
     ../../../modules/home-manager/programs/niri.nix
     ../../../modules/home-manager/programs/yazi.nix
     ../../../modules/home-manager/programs/fish.nix
