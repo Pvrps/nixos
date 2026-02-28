@@ -18,7 +18,6 @@
       libva-utils
     ];
     sessionVariables = {
-      GBM_BACKEND = "nvidia-drm";
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";
       LIBVA_DRIVER_NAME = "nvidia";
       PROTON_ENABLE_NVAPI = "1";
