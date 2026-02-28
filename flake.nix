@@ -58,6 +58,10 @@
     };
 
     impermanence.url = "github:nix-community/impermanence";
+    dms = {
+      url = "github:AvengeMedia/DankMaterialShell/stable";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
