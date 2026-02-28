@@ -1,6 +1,9 @@
 {config, ...}: {
   programs.git = {
     enable = true;
+    attributes = [
+      "* text=auto eol=lf"
+    ];
     settings = {
       user = {
         name = config.custom.git.userName;
