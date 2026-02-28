@@ -20,7 +20,7 @@
 
     settings = {
       showDock = false;
-      blurredWallpaperLayer = true;
+      blurredWallpaperLayer = false;
       blurWallpaperOnOverview = true;
       useAutoLocation = false;
 
