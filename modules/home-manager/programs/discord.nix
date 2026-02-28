@@ -12,9 +12,9 @@
     enable = true;
 
     #discord.enable = true;
-    discord.vencord.enable = true;
+    #discord.vencord.enable = true;
 
-    #vesktop.enable = true;
+    vesktop.enable = true;
 
     config = {
       useQuickCss = true;
