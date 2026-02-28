@@ -215,6 +215,10 @@
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey/latest.xpi";
           installation_mode = "force_installed";
         };
+        "izer@camelcamelcamel.com" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/the-camelizer-price-history-ch/latest.xpi";
+          installation_mode = "force_installed";
+        };
       };
     };
   };
