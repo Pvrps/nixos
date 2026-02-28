@@ -8,7 +8,7 @@
       };
       core = {
         whitespace = "fix,-indent-with-non-tab,trailing-space,cr-at-eol";
-        autocrlf = true;
+        autocrlf = false;
         sshCommand = "ssh";
       };
       init = {
