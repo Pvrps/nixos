@@ -49,5 +49,19 @@ in {
         # Let Stylix naturally handle the color themes, fonts, and opacity!
       };
     };
+
+    custom.niri.keybinds = [
+      # Note: enable only one shell (dankmaterialshell or noctalia), not both,
+      # to avoid conflicting Mod+D and Mod+C keybinds.
+      ''Mod+D { spawn "dms" "ipc" "call" "spotlight" "toggle"; }''
+      ''Mod+C { spawn "dms" "ipc" "call" "control-center" "toggle"; }''
+    ];
+
+    custom.niri.layerRules = [
+      ''layer-rule {
+    match namespace=r#"^dms-notifications"#
+    block-out-from "screencast"
+}''
+    ];
   };
 }

@@ -9,5 +9,9 @@ in {
       settings = {
       };
     };
+
+    custom.niri.keybinds = [
+      ''Mod+Return { spawn "foot"; }''
+    ];
   };
 }

@@ -34,6 +34,21 @@
         default = [];
         description = "List of full shell commands to run on Niri startup";
       };
+      keybinds = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "Extra keybind lines to include in the niri binds block";
+      };
+      windowRules = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "Extra window-rule blocks to include in the niri config";
+      };
+      layerRules = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "Extra layer-rule blocks to include in the niri config";
+      };
     };
     ssh = {
       githubKeyPath = lib.mkOption {

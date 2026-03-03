@@ -39,5 +39,17 @@ in {
         histogram_height = 24;
       };
     };
+
+    custom.niri.windowRules = [
+      ''window-rule {
+    match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
+    open-floating true
+    open-maximized false
+    open-focused false
+    default-floating-position x=10 y=10 relative-to="bottom-right"
+    focus-ring { width 0; }
+    block-out-from "screencast"
+}''
+    ];
   };
 }

@@ -80,5 +80,19 @@ in {
         mOnSurface = "#${colors.base05}";
       };
     };
+
+    custom.niri.keybinds = [
+      # Note: enable only one shell (noctalia or dankmaterialshell), not both,
+      # to avoid conflicting Mod+D and Mod+C keybinds.
+      ''Mod+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }''
+      ''Mod+C { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }''
+    ];
+
+    custom.niri.layerRules = [
+      ''layer-rule {
+    match namespace=r#"^noctalia-notifications"#
+    block-out-from "screencast"
+}''
+    ];
   };
 }

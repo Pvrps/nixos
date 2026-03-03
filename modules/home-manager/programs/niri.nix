@@ -7,6 +7,9 @@
   colors = config.lib.stylix.colors.withHashtag;
 
   startupLines = builtins.concatStringsSep "\n    " (map (cmd: ''spawn-at-startup ${cmd}'') config.custom.niri.startupCommands);
+  extraKeybindLines = builtins.concatStringsSep "\n          " config.custom.niri.keybinds;
+  extraWindowRules = builtins.concatStringsSep "\n\n" config.custom.niri.windowRules;
+  extraLayerRules = builtins.concatStringsSep "\n\n" config.custom.niri.layerRules;
 in {
   options.custom.programs.niri.enable = lib.mkEnableOption "Niri Wayland compositor";
 
@@ -28,34 +31,9 @@ in {
           open-maximized true
       }
 
-      window-rule {
-          match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
-          open-floating true
-          open-maximized false
-          open-focused false
-          default-floating-position x=10 y=10 relative-to="bottom-right"
-          focus-ring { width 0; }
-          block-out-from "screencast"
-      }
+      ${extraWindowRules}
 
-      layer-rule {
-          match namespace=r#"^noctalia-notifications"#
-          block-out-from "screencast"
-      }
-
-      layer-rule {
-          match namespace=r#"^dms-notifications"#
-          block-out-from "screencast"
-      }
-
-      window-rule {
-          match app-id="vesktop" title="Discord Updater"
-          match app-id="discord" title="Discord Updater"
-          match app-id="vesktop" title="Checking for updates..."
-          match app-id="discord" title="Checking for updates..."
-          open-floating true
-          open-maximized false
-      }
+      ${extraLayerRules}
 
       input {
           keyboard {
@@ -102,12 +80,7 @@ in {
 
       screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
       binds {
-          Mod+Shift+S { spawn "screenshot-tool"; }
-          Mod+Shift+C { spawn "recording-tool"; }
-
-          Mod+Return { spawn "foot"; }
-          Mod+D { spawn "bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell ipc call launcher toggle; else dms ipc call spotlight toggle; fi"; }
-          Mod+C { spawn "bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell ipc call controlCenter toggle; else dms ipc call control-center toggle; fi"; }
+          ${extraKeybindLines}
 
           Mod+Q { close-window; }
           Mod+Shift+Grave { quit; }

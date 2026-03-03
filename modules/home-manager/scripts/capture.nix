@@ -70,5 +70,10 @@ in {
       screenshot-tool
       recording-tool
     ];
+
+    custom.niri.keybinds = [
+      ''Mod+Shift+S { spawn "screenshot-tool"; }''
+      ''Mod+Shift+C { spawn "recording-tool"; }''
+    ];
   };
 }
