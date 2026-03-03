@@ -14,6 +14,13 @@ in {
   options.custom.programs.dankmaterialshell.enable = lib.mkEnableOption "DankMaterialShell";
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !config.custom.programs.noctalia.enable;
+        message = "dankmaterialshell and noctalia cannot both be enabled — they share Mod+D and Mod+C keybinds.";
+      }
+    ];
+
     programs.dank-material-shell = {
       enable = true;
       enableCalendarEvents = false; # Disabled due to khal build failure on unstable
@@ -51,17 +58,15 @@ in {
     };
 
     custom.niri.keybinds = [
-      # Note: enable only one shell (dankmaterialshell or noctalia), not both,
-      # to avoid conflicting Mod+D and Mod+C keybinds.
       ''Mod+D { spawn "dms" "ipc" "call" "spotlight" "toggle"; }''
       ''Mod+C { spawn "dms" "ipc" "call" "control-center" "toggle"; }''
     ];
 
     custom.niri.layerRules = [
       ''layer-rule {
-    match namespace=r#"^dms-notifications"#
-    block-out-from "screencast"
-}''
+          match namespace=r#"^dms-notifications"#
+          block-out-from "screencast"
+      }''
     ];
   };
 }

@@ -34,6 +34,16 @@
         default = [];
         description = "List of full shell commands to run on Niri startup";
       };
+      xwaylandDisplay = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Xwayland display socket (e.g. \":11\"). Requires xwayland-satellite in startupCommands. When set, adds DISPLAY to niri's environment block.";
+      };
+      outputs = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "List of niri output {} KDL blocks (one string per monitor)";
+      };
       keybinds = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [];

@@ -54,7 +54,7 @@
     programs = {
       helix.enable = true;
       noctalia.enable = true;
-      # dankmaterialshell.enable = true;
+      dankmaterialshell.enable = false;
       niri.enable = true;
       yazi.enable = true;
       fish.enable = true;
@@ -99,6 +99,22 @@
         ''"bash" "-c" "nm-online -q --timeout=30 || true; steam -system-composer -silent > /dev/null 2>&1"''
         ''"bash" "-c" "nm-online -q --timeout=30 || true; vesktop --start-minimized > /dev/null 2>&1"''
         #''"bash" "-c" "nm-online -q --timeout=30 || true; discord --start-minimized > /dev/null 2>&1"''
+      ];
+      xwaylandDisplay = ":11";
+      outputs = [
+        ''output "DP-1" {
+              mode "2560x1440@144"
+              position x=0 y=0
+              scale 1.5
+              variable-refresh-rate on-demand=true
+              focus-at-startup
+          }''
+        ''output "DP-3" {
+              mode "2560x1440@144"
+              position x=1707 y=0
+              scale 1.5
+              variable-refresh-rate on-demand=true
+          }''
       ];
     };
     ssh = {

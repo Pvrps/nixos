@@ -27,7 +27,7 @@ in {
           defaultBranch = "main";
         };
         commit = {
-          gpgsign = false;
+          gpgsign = false; # TODO: configure GPG signing
         };
         push = {
           default = "current";
@@ -47,8 +47,8 @@ in {
         url = {
           "git@github.com:".insteadOf = [
             "gh:"
-            "git://://github.com"
-            "https://://github.com"
+            "git://github.com/"
+            "https://github.com/"
           ];
         };
         safe.directory = "/persist/etc/nixos";
