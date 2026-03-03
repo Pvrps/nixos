@@ -44,6 +44,16 @@
         default = [];
         description = "List of niri output {} KDL blocks (one string per monitor)";
       };
+      defaultTerminal = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = ''
+          Command for the default terminal emulator.
+          When set, niri binds Mod+Return to spawn this command.
+          Only one terminal module should set this at a time (use lib.mkDefault
+          to get a conflict error if two modules both claim the default terminal).
+        '';
+      };
       keybinds = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [];

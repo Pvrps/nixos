@@ -10,9 +10,16 @@
   # Each list is joined so all entries render at the correct column in the KDL.
   # Startup commands are top-level nodes separated by a single newline.
   startupLines = lib.concatStringsSep "\n" (map (cmd: "spawn-at-startup ${cmd}") niriCfg.startupCommands);
+  # Generate the Mod+Return terminal keybind only when a default terminal is configured.
+  terminalKeybind = lib.optionalString (niriCfg.defaultTerminal != null)
+    ''Mod+Return { spawn "${niriCfg.defaultTerminal}"; }'';
   # Keybinds live inside binds {}; after template stripping they sit at col 4,
   # so subsequent entries use "\n    " to maintain the 4-space indentation.
-  keybindLines = lib.concatStringsSep "\n    " niriCfg.keybinds;
+  # terminalKeybind is prepended (with separator) only when non-empty.
+  allKeybinds =
+    lib.optional (terminalKeybind != "") terminalKeybind
+    ++ niriCfg.keybinds;
+  keybindLines = lib.concatStringsSep "\n    " allKeybinds;
   # Blocks are top-level KDL nodes separated by blank lines.
   windowRuleBlocks = lib.concatStringsSep "\n\n" niriCfg.windowRules;
   layerRuleBlocks = lib.concatStringsSep "\n\n" niriCfg.layerRules;
