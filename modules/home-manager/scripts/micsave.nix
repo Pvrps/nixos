@@ -1,4 +1,10 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.custom.scripts.micsave;
   micsave = pkgs.writeShellScriptBin "micsave" ''
     set -euo pipefail
 
@@ -37,5 +43,9 @@
     fi
   '';
 in {
-  home.packages = [micsave];
+  options.custom.scripts.micsave.enable = lib.mkEnableOption "MicSave EasyEffects preset commit tool";
+
+  config = lib.mkIf cfg.enable {
+    home.packages = [micsave];
+  };
 }

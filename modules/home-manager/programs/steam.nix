@@ -1,36 +1,43 @@
 {
   pkgs,
   lib,
+  config,
   ...
-}: {
-  home.packages = with pkgs; [
-  ];
+}: let
+  cfg = config.custom.programs.steam;
+in {
+  options.custom.programs.steam.enable = lib.mkEnableOption "Steam gaming with MangoHud";
 
-  programs.mangohud = {
-    enable = true;
-    settings = {
-      round_corners = 20;
-      text_outline = false;
-      font_size = lib.mkForce 24;
+  config = lib.mkIf cfg.enable {
+    home.packages = with pkgs; [
+    ];
 
-      position = "top-right";
-      table_columns = 3;
-      cell_padding_vertical = 8;
+    programs.mangohud = {
+      enable = true;
+      settings = {
+        round_corners = 20;
+        text_outline = false;
+        font_size = lib.mkForce 24;
 
-      gpu_stats = true;
-      gpu_temp = true;
+        position = "top-right";
+        table_columns = 3;
+        cell_padding_vertical = 8;
 
-      cpu_stats = true;
-      cpu_temp = true;
+        gpu_stats = true;
+        gpu_temp = true;
 
-      ram = true;
-      vram = true;
+        cpu_stats = true;
+        cpu_temp = true;
 
-      fps = true;
-      frametime = true;
-      frame_timing = 1;
+        ram = true;
+        vram = true;
 
-      histogram_height = 24;
+        fps = true;
+        frametime = true;
+        frame_timing = 1;
+
+        histogram_height = 24;
+      };
     };
   };
 }

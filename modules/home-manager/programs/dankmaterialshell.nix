@@ -4,44 +4,50 @@
   config,
   lib,
   ...
-}: {
+}: let
+  cfg = config.custom.programs.dankmaterialshell;
+in {
   imports = [
     inputs.dms.homeModules.dank-material-shell
   ];
 
-  programs.dank-material-shell = {
-    enable = true;
-    enableCalendarEvents = false; # Disabled due to khal build failure on unstable
+  options.custom.programs.dankmaterialshell.enable = lib.mkEnableOption "DankMaterialShell";
 
-    # Stylix doesn't natively handle DMS wallpapers yet, so we bridge it here
-    session = {
-      wallpaperPath = "${config.stylix.image}";
-    };
+  config = lib.mkIf cfg.enable {
+    programs.dank-material-shell = {
+      enable = true;
+      enableCalendarEvents = false; # Disabled due to khal build failure on unstable
 
-    settings = {
-      showDock = false;
-      blurredWallpaperLayer = false;
-      blurWallpaperOnOverview = true;
-      useAutoLocation = false;
+      # Stylix doesn't natively handle DMS wallpapers yet, so we bridge it here
+      session = {
+        wallpaperPath = "${config.stylix.image}";
+      };
 
-      # "general" equivalent
-      cornerRadius = 0;
-      squareCorners = true;
-      fontScale = 0.75;
-      iconScale = 0.75;
-      notificationPopupShadowEnabled = true;
+      settings = {
+        showDock = false;
+        blurredWallpaperLayer = false;
+        blurWallpaperOnOverview = true;
+        useAutoLocation = false;
 
-      # "ui" equivalent
-      borderEnabled = true;
-      workspaceFocusedBorderEnabled = true;
+        # "general" equivalent
+        cornerRadius = 0;
+        squareCorners = true;
+        fontScale = 0.75;
+        iconScale = 0.75;
+        notificationPopupShadowEnabled = true;
 
-      # "notifications" equivalent
-      notificationPopupPosition = 2; # top_right
+        # "ui" equivalent
+        borderEnabled = true;
+        workspaceFocusedBorderEnabled = true;
 
-      # "appLauncher" equivalent
-      sortAppsAlphabetically = false;
+        # "notifications" equivalent
+        notificationPopupPosition = 2; # top_right
 
-      # Let Stylix naturally handle the color themes, fonts, and opacity!
+        # "appLauncher" equivalent
+        sortAppsAlphabetically = false;
+
+        # Let Stylix naturally handle the color themes, fonts, and opacity!
+      };
     };
   };
 }

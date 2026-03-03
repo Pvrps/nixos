@@ -1,5 +1,10 @@
 {lib, ...}: {
   options.custom = {
+    system = {
+      wayland = {
+        enable = lib.mkEnableOption "Wayland compositor active";
+      };
+    };
     git = {
       userName = lib.mkOption {
         type = lib.types.str;

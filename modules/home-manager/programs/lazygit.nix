@@ -1,9 +1,19 @@
-{pkgs, ...}: {
-  programs.lazygit = {
-    enable = true;
+{
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.custom.programs.lazygit;
+in {
+  options.custom.programs.lazygit.enable = lib.mkEnableOption "Lazygit terminal UI for git";
 
-    enableZshIntegration = true;
-    enableBashIntegration = true;
-    enableFishIntegration = true;
+  config = lib.mkIf cfg.enable {
+    programs.lazygit = {
+      enable = true;
+
+      enableZshIntegration = true;
+      enableBashIntegration = true;
+      enableFishIntegration = true;
+    };
   };
 }

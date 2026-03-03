@@ -1,77 +1,84 @@
 {
   pkgs,
+  lib,
   config,
   ...
-}: {
-  programs.starship = {
-    enable = true;
+}: let
+  cfg = config.custom.programs.starship;
+in {
+  options.custom.programs.starship.enable = lib.mkEnableOption "Starship cross-shell prompt";
 
-    enableFishIntegration = true;
-    enableZshIntegration = true;
-    enableBashIntegration = true;
+  config = lib.mkIf cfg.enable {
+    programs.starship = {
+      enable = true;
 
-    settings = {
-      "$schema" = "https://starship.rs/config-schema.json";
+      enableFishIntegration = true;
+      enableZshIntegration = true;
+      enableBashIntegration = true;
 
-      format = pkgs.lib.concatStrings [
-        "$os"
-        "$shell"
-        "$username"
-        "$git_branch"
-        "$directory"
-        "$line_break"
-        "$character"
-      ];
+      settings = {
+        "$schema" = "https://starship.rs/config-schema.json";
 
-      character = {
-        success_symbol = "[❯](bold green)";
-        error_symbol = "[❯](bold red)";
-      };
+        format = pkgs.lib.concatStrings [
+          "$os"
+          "$shell"
+          "$username"
+          "$git_branch"
+          "$directory"
+          "$line_break"
+          "$character"
+        ];
 
-      git_branch = {
-        disabled = false;
-        format = "[$symbol$branch(:$remote_branch)]($style) ";
-        style = "white";
-        symbol = "";
-      };
-
-      os = {
-        disabled = false;
-        format = "$symbol ";
-        symbols = {
-          Unknown = "[unknown](bold dimmed black)";
-          Debian = "[debian](bold fg:#A80030)";
-          Ubuntu = "[ubuntu](bold fg:#E95420)";
-          Windows = "[windows](bold fg:#00A4EF)";
-          NixOS = "[nix](bold fg:#8AE9ff)";
-          Kali = "[kali](bold fg:#25867B)";
+        character = {
+          success_symbol = "[❯](bold green)";
+          error_symbol = "[❯](bold red)";
         };
-      };
 
-      shell = {
-        disabled = false;
-        format = "[$indicator]($style) ";
-        style = "bold dimmed black";
-        unknown_indicator = "[unknown](bold dimmed black)";
-        bash_indicator = "[bsh](bold fg:#F9F1A5)";
-        pwsh_indicator = "[psh](bold fg:#F9F1A5)";
-        nu_indicator = "[nu](bold fg:#F9F1A5)";
-        fish_indicator = "[fsh](bold fg:#F9F1A5)";
-      };
+        git_branch = {
+          disabled = false;
+          format = "[$symbol$branch(:$remote_branch)]($style) ";
+          style = "white";
+          symbol = "";
+        };
 
-      username = {
-        disabled = false;
-        format = "[$user]($style) ";
-        style_user = "fg:#A385FF";
-        show_always = true;
-      };
+        os = {
+          disabled = false;
+          format = "$symbol ";
+          symbols = {
+            Unknown = "[unknown](bold dimmed black)";
+            Debian = "[debian](bold fg:#A80030)";
+            Ubuntu = "[ubuntu](bold fg:#E95420)";
+            Windows = "[windows](bold fg:#00A4EF)";
+            NixOS = "[nix](bold fg:#8AE9ff)";
+            Kali = "[kali](bold fg:#25867B)";
+          };
+        };
 
-      directory = {
-        disabled = false;
-        format = "[$path]($style)[$read_only]($read_only_style) ";
-        style = "bold dimmed white";
-        truncation_length = 1;
-        fish_style_pwd_dir_length = 1;
+        shell = {
+          disabled = false;
+          format = "[$indicator]($style) ";
+          style = "bold dimmed black";
+          unknown_indicator = "[unknown](bold dimmed black)";
+          bash_indicator = "[bsh](bold fg:#F9F1A5)";
+          pwsh_indicator = "[psh](bold fg:#F9F1A5)";
+          nu_indicator = "[nu](bold fg:#F9F1A5)";
+          fish_indicator = "[fsh](bold fg:#F9F1A5)";
+        };
+
+        username = {
+          disabled = false;
+          format = "[$user]($style) ";
+          style_user = "fg:#A385FF";
+          show_always = true;
+        };
+
+        directory = {
+          disabled = false;
+          format = "[$path]($style)[$read_only]($read_only_style) ";
+          style = "bold dimmed white";
+          truncation_length = 1;
+          fish_style_pwd_dir_length = 1;
+        };
       };
     };
   };

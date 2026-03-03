@@ -2,26 +2,33 @@
   pkgs,
   config,
   inputs,
+  lib,
   ...
-}: {
+}: let
+  cfg = config.custom.programs.discord;
+in {
   imports = [
     inputs.nixcord.homeModules.nixcord
   ];
 
-  programs.nixcord = {
-    enable = true;
+  options.custom.programs.discord.enable = lib.mkEnableOption "Discord via nixcord/vesktop";
 
-    #discord.enable = true;
-    #discord.vencord.enable = true;
+  config = lib.mkIf cfg.enable {
+    programs.nixcord = {
+      enable = true;
 
-    vesktop.enable = true;
+      #discord.enable = true;
+      #discord.vencord.enable = true;
 
-    config = {
-      useQuickCss = true;
-      frameless = true;
-      themeLinks = [
-      ];
-      inherit (config.custom.discord) plugins;
+      vesktop.enable = true;
+
+      config = {
+        useQuickCss = true;
+        frameless = true;
+        themeLinks = [
+        ];
+        inherit (config.custom.discord) plugins;
+      };
     };
   };
 }

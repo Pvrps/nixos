@@ -1,4 +1,10 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.custom.scripts.capture;
   screenshot-tool = pkgs.writeShellScriptBin "screenshot-tool" ''
     DIR="$HOME/Pictures/Screenshots"
     mkdir -p "$DIR"
@@ -50,8 +56,19 @@
     fi
   '';
 in {
-  home.packages = [
-    screenshot-tool
-    recording-tool
-  ];
+  options.custom.scripts.capture.enable = lib.mkEnableOption "Screenshot and recording capture tools";
+
+  config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = config.custom.system.wayland.enable;
+        message = "capture script requires a Wayland compositor (uses grim, slurp, wl-clipboard).";
+      }
+    ];
+
+    home.packages = [
+      screenshot-tool
+      recording-tool
+    ];
+  };
 }

@@ -1,138 +1,141 @@
 {
-  pkgs,
   config,
+  lib,
   ...
 }: let
+  cfg = config.custom.programs.niri;
   colors = config.lib.stylix.colors.withHashtag;
 
-  pactl = "${pkgs.pulseaudio}/bin/pactl";
-  xwayland_satellite = "${pkgs.xwayland-satellite}/bin/xwayland-satellite";
-
-  wait_net = "nm-online -q --timeout=30 || true";
   startupLines = builtins.concatStringsSep "\n    " (map (cmd: ''spawn-at-startup ${cmd}'') config.custom.niri.startupCommands);
 in {
-  xdg.configFile."niri/config.kdl".text = ''
-    environment {
-        DISPLAY ":11"
-    }
+  options.custom.programs.niri.enable = lib.mkEnableOption "Niri Wayland compositor";
 
-    hotkey-overlay {
-        skip-at-startup
-    }
+  config = lib.mkIf cfg.enable {
+    custom.system.wayland.enable = true;
 
-    ${startupLines}
+    xdg.configFile."niri/config.kdl".text = ''
+      environment {
+          DISPLAY ":11"
+      }
 
-    window-rule {
-        open-maximized true
-    }
+      hotkey-overlay {
+          skip-at-startup
+      }
 
-    window-rule {
-        match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
-        open-floating true
-        open-maximized false
-        open-focused false
-        default-floating-position x=10 y=10 relative-to="bottom-right"
-        focus-ring { width 0; }
-        block-out-from "screencast"
-    }
+      ${startupLines}
 
-    layer-rule {
-        match namespace=r#"^noctalia-notifications"#
-        block-out-from "screencast"
-    }
+      window-rule {
+          open-maximized true
+      }
 
-    layer-rule {
-        match namespace=r#"^dms-notifications"#
-        block-out-from "screencast"
-    }
+      window-rule {
+          match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
+          open-floating true
+          open-maximized false
+          open-focused false
+          default-floating-position x=10 y=10 relative-to="bottom-right"
+          focus-ring { width 0; }
+          block-out-from "screencast"
+      }
 
-    window-rule {
-        match app-id="vesktop" title="Discord Updater"
-        match app-id="discord" title="Discord Updater"
-        match app-id="vesktop" title="Checking for updates..."
-        match app-id="discord" title="Checking for updates..."
-        open-floating true
-        open-maximized false
-    }
+      layer-rule {
+          match namespace=r#"^noctalia-notifications"#
+          block-out-from "screencast"
+      }
 
-    input {
-        keyboard {
-            xkb {
+      layer-rule {
+          match namespace=r#"^dms-notifications"#
+          block-out-from "screencast"
+      }
 
-            }
-        }
-        mouse {
-            accel-profile "flat"
-            accel-speed 0.15
-        }
-        touchpad {
-            tap
-            natural-scroll
-        }
-    }
+      window-rule {
+          match app-id="vesktop" title="Discord Updater"
+          match app-id="discord" title="Discord Updater"
+          match app-id="vesktop" title="Checking for updates..."
+          match app-id="discord" title="Checking for updates..."
+          open-floating true
+          open-maximized false
+      }
 
-    output "DP-1" {
-        mode "2560x1440@144"
-        position x=0 y=0
-        scale 1.5
-        variable-refresh-rate on-demand=true
-        focus-at-startup
-    }
+      input {
+          keyboard {
+              xkb {
 
-    output "DP-3" {
-        mode "2560x1440@144"
-        position x=1707 y=0
-        scale 1.5
-        variable-refresh-rate on-demand=true
-    }
+              }
+          }
+          mouse {
+              accel-profile "flat"
+              accel-speed 0.15
+          }
+          touchpad {
+              tap
+              natural-scroll
+          }
+      }
 
-    layout {
-        gaps 8
-        default-column-width { proportion 0.5; }
-        focus-ring {
-            width 2
-            active-color "${colors.base0D}"
-            inactive-color "${colors.base03}"
-        }
-    }
+      output "DP-1" {
+          mode "2560x1440@144"
+          position x=0 y=0
+          scale 1.5
+          variable-refresh-rate on-demand=true
+          focus-at-startup
+      }
 
-    prefer-no-csd
+      output "DP-3" {
+          mode "2560x1440@144"
+          position x=1707 y=0
+          scale 1.5
+          variable-refresh-rate on-demand=true
+      }
 
-    screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
-    binds {
-        Mod+Shift+S { spawn "screenshot-tool"; }
-        Mod+Shift+C { spawn "recording-tool"; }
+      layout {
+          gaps 8
+          default-column-width { proportion 0.5; }
+          focus-ring {
+              width 2
+              active-color "${colors.base0D}"
+              inactive-color "${colors.base03}"
+          }
+      }
 
-        Mod+Return { spawn "foot"; }
-        Mod+D { spawn "bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell ipc call launcher toggle; else dms ipc call spotlight toggle; fi"; }
-        Mod+C { spawn "bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell ipc call controlCenter toggle; else dms ipc call control-center toggle; fi"; }
+      prefer-no-csd
 
-        Mod+Q { close-window; }
-        Mod+Shift+Grave { quit; }
-        Mod+Tab { toggle-overview; }
+      screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
+      binds {
+          Mod+Shift+S { spawn "screenshot-tool"; }
+          Mod+Shift+C { spawn "recording-tool"; }
 
-        Mod+Left  { focus-column-or-monitor-left; }
-        Mod+Right { focus-column-or-monitor-right; }
-        Mod+Up    { focus-workspace-up; }
-        Mod+Down  { focus-workspace-down; }
-        Mod+Z     { toggle-window-floating; }
-        Mod+Ctrl+Left  { focus-monitor-left; }
-        Mod+Ctrl+Right { focus-monitor-right; }
+          Mod+Return { spawn "foot"; }
+          Mod+D { spawn "bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell ipc call launcher toggle; else dms ipc call spotlight toggle; fi"; }
+          Mod+C { spawn "bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell ipc call controlCenter toggle; else dms ipc call control-center toggle; fi"; }
 
-        Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
-        Mod+Shift+Right { move-column-right-or-to-monitor-right; }
-        Mod+Shift+Up    { move-column-to-workspace-up; }
-        Mod+Shift+Down  { move-column-to-workspace-down; }
+          Mod+Q { close-window; }
+          Mod+Shift+Grave { quit; }
+          Mod+Tab { toggle-overview; }
 
-        Mod+F { maximize-column; }
-        Mod+Shift+F { fullscreen-window; }
-    }
+          Mod+Left  { focus-column-or-monitor-left; }
+          Mod+Right { focus-column-or-monitor-right; }
+          Mod+Up    { focus-workspace-up; }
+          Mod+Down  { focus-workspace-down; }
+          Mod+Z     { toggle-window-floating; }
+          Mod+Ctrl+Left  { focus-monitor-left; }
+          Mod+Ctrl+Right { focus-monitor-right; }
 
-    gestures {
-        hot-corners {
-            off
-        }
-    }
+          Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
+          Mod+Shift+Right { move-column-right-or-to-monitor-right; }
+          Mod+Shift+Up    { move-column-to-workspace-up; }
+          Mod+Shift+Down  { move-column-to-workspace-down; }
 
-  '';
+          Mod+F { maximize-column; }
+          Mod+Shift+F { fullscreen-window; }
+      }
+
+      gestures {
+          hot-corners {
+              off
+          }
+      }
+
+    '';
+  };
 }
