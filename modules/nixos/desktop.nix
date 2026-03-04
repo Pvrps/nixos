@@ -20,13 +20,7 @@
       alsa.enable = true;
       alsa.support32Bit = true;
       pulse.enable = true;
-
-      wireplumber.extraConfig."99-spotify-volume"."stream.rules" = [
-        {
-          matches = [{"application.name" = "~Spotify.*";}];
-          actions."update-props"."state.restore-props" = false;
-        }
-      ];
+      jack.enable = true;
 
       extraConfig.pipewire."92-low-latency" = {
         "context.properties" = {

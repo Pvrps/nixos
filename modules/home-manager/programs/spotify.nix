@@ -25,5 +25,12 @@ in {
         hidePodcasts
       ];
     };
+
+    services.wireplumber.extraConfig."99-spotify-volume"."stream.rules" = [
+      {
+        matches = [{"application.name" = "~Spotify.*";}];
+        actions."update-props"."state.restore-props" = false;
+      }
+    ];
   };
 }
