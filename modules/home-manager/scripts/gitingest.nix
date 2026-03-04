@@ -1,4 +1,10 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.custom.scripts.gitingest;
   ingest-tool = pkgs.writeShellScriptBin "gitingest" ''
     JQ="${pkgs.jq}/bin/jq"
     CURL="${pkgs.curl}/bin/curl"
@@ -52,7 +58,18 @@
     echo "✓ Copied to clipboard!"
   '';
 in {
-  home.packages = [
-    ingest-tool
-  ];
+  options.custom.scripts.gitingest.enable = lib.mkEnableOption "GitIngest repository ingestion tool";
+
+  config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = config.custom.system.wayland.enable;
+        message = "gitingest script requires a Wayland compositor (uses wl-clipboard).";
+      }
+    ];
+
+    home.packages = [
+      ingest-tool
+    ];
+  };
 }

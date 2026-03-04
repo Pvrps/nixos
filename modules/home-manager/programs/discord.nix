@@ -2,26 +2,38 @@
   pkgs,
   config,
   inputs,
+  lib,
   ...
-}: {
+}: let
+  cfg = config.custom.programs.discord;
+in {
   imports = [
     inputs.nixcord.homeModules.nixcord
   ];
 
-  programs.nixcord = {
-    enable = true;
+  options.custom.programs.discord.enable = lib.mkEnableOption "Discord via nixcord/vesktop";
 
-    #discord.enable = true;
-    #discord.vencord.enable = true;
+  config = lib.mkIf cfg.enable {
+    programs.nixcord = {
+      enable = true;
+      vesktop.enable = true;
 
-    vesktop.enable = true;
-
-    config = {
-      useQuickCss = true;
-      frameless = true;
-      themeLinks = [
-      ];
-      inherit (config.custom.discord) plugins;
+      config = {
+        useQuickCss = true;
+        frameless = true;
+        themeLinks = [
+        ];
+        inherit (config.custom.discord) plugins;
+      };
     };
+
+    custom.niri.windowRules = [
+      ''window-rule {
+          match app-id="vesktop" title="Discord Updater"
+          match app-id="vesktop" title="Checking for updates..."
+          open-floating true
+          open-maximized false
+      }''
+    ];
   };
 }

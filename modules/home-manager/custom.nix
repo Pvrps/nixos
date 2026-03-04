@@ -1,5 +1,10 @@
 {lib, ...}: {
   options.custom = {
+    system = {
+      wayland = {
+        enable = lib.mkEnableOption "Wayland compositor active";
+      };
+    };
     git = {
       userName = lib.mkOption {
         type = lib.types.str;
@@ -28,6 +33,41 @@
         type = lib.types.listOf lib.types.str;
         default = [];
         description = "List of full shell commands to run on Niri startup";
+      };
+      xwaylandDisplay = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Xwayland display socket (e.g. \":11\"). Requires xwayland-satellite in startupCommands. When set, adds DISPLAY to niri's environment block.";
+      };
+      outputs = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "List of niri output {} KDL blocks (one string per monitor)";
+      };
+      defaultTerminal = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = ''
+          Command for the default terminal emulator.
+          When set, niri binds Mod+Return to spawn this command.
+          Only one terminal module should set this at a time (use lib.mkDefault
+          to get a conflict error if two modules both claim the default terminal).
+        '';
+      };
+      keybinds = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "Extra keybind lines to include in the niri binds block";
+      };
+      windowRules = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "Extra window-rule blocks to include in the niri config";
+      };
+      layerRules = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "Extra layer-rule blocks to include in the niri config";
       };
     };
     ssh = {

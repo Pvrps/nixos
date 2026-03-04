@@ -1,138 +1,121 @@
 {
-  pkgs,
   config,
+  lib,
   ...
 }: let
+  cfg = config.custom.programs.niri;
   colors = config.lib.stylix.colors.withHashtag;
+  niriCfg = config.custom.niri;
 
-  pactl = "${pkgs.pulseaudio}/bin/pactl";
-  xwayland_satellite = "${pkgs.xwayland-satellite}/bin/xwayland-satellite";
+  # Each list is joined so all entries render at the correct column in the KDL.
+  # Startup commands are top-level nodes separated by a single newline.
+  startupLines = lib.concatStringsSep "\n" (map (cmd: "spawn-at-startup ${cmd}") niriCfg.startupCommands);
+  # Generate the Mod+Return terminal keybind only when a default terminal is configured.
+  terminalKeybind = lib.optionalString (niriCfg.defaultTerminal != null)
+    ''Mod+Return { spawn "${niriCfg.defaultTerminal}"; }'';
+  # Keybinds live inside binds {}; after template stripping they sit at col 4,
+  # so subsequent entries use "\n    " to maintain the 4-space indentation.
+  # terminalKeybind is prepended (with separator) only when non-empty.
+  allKeybinds =
+    lib.optional (terminalKeybind != "") terminalKeybind
+    ++ niriCfg.keybinds;
+  keybindLines = lib.concatStringsSep "\n    " allKeybinds;
+  # Blocks are top-level KDL nodes separated by blank lines.
+  windowRuleBlocks = lib.concatStringsSep "\n\n" niriCfg.windowRules;
+  layerRuleBlocks = lib.concatStringsSep "\n\n" niriCfg.layerRules;
+  outputBlocks = lib.concatStringsSep "\n\n" niriCfg.outputs;
 
-  wait_net = "nm-online -q --timeout=30 || true";
-  startupLines = builtins.concatStringsSep "\n    " (map (cmd: ''spawn-at-startup ${cmd}'') config.custom.niri.startupCommands);
-in {
-  xdg.configFile."niri/config.kdl".text = ''
+  # Include the DISPLAY environment block only when xwaylandDisplay is set.
+  # Requires xwayland-satellite to be present in startupCommands.
+  # The trailing newline provides spacing before the next top-level block.
+  envBlock = lib.optionalString (niriCfg.xwaylandDisplay != null) ''
     environment {
-        DISPLAY ":11"
-    }
-
-    hotkey-overlay {
-        skip-at-startup
-    }
-
-    ${startupLines}
-
-    window-rule {
-        open-maximized true
-    }
-
-    window-rule {
-        match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
-        open-floating true
-        open-maximized false
-        open-focused false
-        default-floating-position x=10 y=10 relative-to="bottom-right"
-        focus-ring { width 0; }
-        block-out-from "screencast"
-    }
-
-    layer-rule {
-        match namespace=r#"^noctalia-notifications"#
-        block-out-from "screencast"
-    }
-
-    layer-rule {
-        match namespace=r#"^dms-notifications"#
-        block-out-from "screencast"
-    }
-
-    window-rule {
-        match app-id="vesktop" title="Discord Updater"
-        match app-id="discord" title="Discord Updater"
-        match app-id="vesktop" title="Checking for updates..."
-        match app-id="discord" title="Checking for updates..."
-        open-floating true
-        open-maximized false
-    }
-
-    input {
-        keyboard {
-            xkb {
-
-            }
-        }
-        mouse {
-            accel-profile "flat"
-            accel-speed 0.15
-        }
-        touchpad {
-            tap
-            natural-scroll
-        }
-    }
-
-    output "DP-1" {
-        mode "2560x1440@144"
-        position x=0 y=0
-        scale 1.5
-        variable-refresh-rate on-demand=true
-        focus-at-startup
-    }
-
-    output "DP-3" {
-        mode "2560x1440@144"
-        position x=1707 y=0
-        scale 1.5
-        variable-refresh-rate on-demand=true
-    }
-
-    layout {
-        gaps 8
-        default-column-width { proportion 0.5; }
-        focus-ring {
-            width 2
-            active-color "${colors.base0D}"
-            inactive-color "${colors.base03}"
-        }
-    }
-
-    prefer-no-csd
-
-    screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
-    binds {
-        Mod+Shift+S { spawn "screenshot-tool"; }
-        Mod+Shift+C { spawn "recording-tool"; }
-
-        Mod+Return { spawn "foot"; }
-        Mod+D { spawn "bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell ipc call launcher toggle; else dms ipc call spotlight toggle; fi"; }
-        Mod+C { spawn "bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell ipc call controlCenter toggle; else dms ipc call control-center toggle; fi"; }
-
-        Mod+Q { close-window; }
-        Mod+Shift+Grave { quit; }
-        Mod+Tab { toggle-overview; }
-
-        Mod+Left  { focus-column-or-monitor-left; }
-        Mod+Right { focus-column-or-monitor-right; }
-        Mod+Up    { focus-workspace-up; }
-        Mod+Down  { focus-workspace-down; }
-        Mod+Z     { toggle-window-floating; }
-        Mod+Ctrl+Left  { focus-monitor-left; }
-        Mod+Ctrl+Right { focus-monitor-right; }
-
-        Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
-        Mod+Shift+Right { move-column-right-or-to-monitor-right; }
-        Mod+Shift+Up    { move-column-to-workspace-up; }
-        Mod+Shift+Down  { move-column-to-workspace-down; }
-
-        Mod+F { maximize-column; }
-        Mod+Shift+F { fullscreen-window; }
-    }
-
-    gestures {
-        hot-corners {
-            off
-        }
+        DISPLAY "${niriCfg.xwaylandDisplay}"
     }
 
   '';
+in {
+  options.custom.programs.niri.enable = lib.mkEnableOption "Niri Wayland compositor";
+
+  config = lib.mkIf cfg.enable {
+    custom.system.wayland.enable = true;
+
+    xdg.configFile."niri/config.kdl".text = ''
+      ${envBlock}hotkey-overlay {
+          skip-at-startup
+      }
+
+      ${startupLines}
+
+      window-rule {
+          open-maximized true
+      }
+
+      ${windowRuleBlocks}
+
+      ${layerRuleBlocks}
+
+      input {
+          keyboard {
+              xkb {
+
+              }
+          }
+          mouse {
+              accel-profile "flat"
+              accel-speed 0.15
+          }
+          touchpad {
+              tap
+              natural-scroll
+          }
+      }
+
+      ${outputBlocks}
+
+      layout {
+          gaps 8
+          default-column-width { proportion 0.5; }
+          focus-ring {
+              width 2
+              active-color "${colors.base0D}"
+              inactive-color "${colors.base03}"
+          }
+      }
+
+      prefer-no-csd
+
+      screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
+      binds {
+          ${keybindLines}
+
+          Mod+Q { close-window; }
+          Mod+Shift+Grave { quit; }
+          Mod+Tab { toggle-overview; }
+
+          Mod+Left  { focus-column-or-monitor-left; }
+          Mod+Right { focus-column-or-monitor-right; }
+          Mod+Up    { focus-workspace-up; }
+          Mod+Down  { focus-workspace-down; }
+          Mod+Z     { toggle-window-floating; }
+          Mod+Ctrl+Left  { focus-monitor-left; }
+          Mod+Ctrl+Right { focus-monitor-right; }
+
+          Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
+          Mod+Shift+Right { move-column-right-or-to-monitor-right; }
+          Mod+Shift+Up    { move-column-to-workspace-up; }
+          Mod+Shift+Down  { move-column-to-workspace-down; }
+
+          Mod+F { maximize-column; }
+          Mod+Shift+F { fullscreen-window; }
+      }
+
+      gestures {
+          hot-corners {
+              off
+          }
+      }
+
+    '';
+  };
 }

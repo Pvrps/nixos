@@ -8,34 +8,7 @@
 
     ./stylix.nix
 
-    ../../../modules/home-manager/custom.nix
-
-    ../../../modules/home-manager/programs/helix.nix
-    ../../../modules/home-manager/programs/noctalia.nix
-    #../../../modules/home-manager/programs/dankmaterialshell.nix
-    ../../../modules/home-manager/programs/niri.nix
-    ../../../modules/home-manager/programs/yazi.nix
-    ../../../modules/home-manager/programs/fish.nix
-    ../../../modules/home-manager/programs/foot.nix
-    ../../../modules/home-manager/programs/git.nix
-    ../../../modules/home-manager/programs/starship.nix
-    ../../../modules/home-manager/programs/ssh.nix
-    ../../../modules/home-manager/programs/zen.nix
-    ../../../modules/home-manager/programs/steam.nix
-    ../../../modules/home-manager/programs/discord.nix
-    ../../../modules/home-manager/programs/opencode.nix
-    ../../../modules/home-manager/programs/lazygit.nix
-    ../../../modules/home-manager/programs/clapper.nix
-    ../../../modules/home-manager/programs/imv.nix
-    ../../../modules/home-manager/programs/rustdesk.nix
-    ../../../modules/home-manager/programs/java.nix
-    ../../../modules/home-manager/programs/prismlauncher.nix
-    ../../../modules/home-manager/programs/flatpak.nix
-    ../../../modules/home-manager/programs/easyeffects
-
-    ../../../modules/home-manager/scripts/capture.nix
-    ../../../modules/home-manager/scripts/gitingest.nix
-    ../../../modules/home-manager/scripts/micsave.nix
+    ../../../modules/home-manager
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -78,6 +51,37 @@
   };
 
   custom = {
+    programs = {
+      helix.enable = true;
+      noctalia.enable = true;
+      dankmaterialshell.enable = false;
+      niri.enable = true;
+      yazi.enable = true;
+      fish.enable = true;
+      foot.enable = true;
+      git.enable = true;
+      starship.enable = true;
+      ssh.enable = true;
+      zen.enable = true;
+      steam.enable = true;
+      discord.enable = true;
+      opencode.enable = true;
+      lazygit.enable = true;
+      clapper.enable = true;
+      imv.enable = true;
+      rustdesk.enable = true;
+      java.enable = true;
+      prismlauncher.enable = true;
+      flatpak.enable = true;
+      easyeffects.enable = true;
+    };
+
+    scripts = {
+      capture.enable = true;
+      gitingest.enable = true;
+      micsave.enable = true;
+    };
+
     git = {
       userName = "purps";
       userEmail = "github@purps.ca";
@@ -95,6 +99,22 @@
         ''"bash" "-c" "nm-online -q --timeout=30 || true; steam -system-composer -silent > /dev/null 2>&1"''
         ''"bash" "-c" "nm-online -q --timeout=30 || true; vesktop --start-minimized > /dev/null 2>&1"''
         #''"bash" "-c" "nm-online -q --timeout=30 || true; discord --start-minimized > /dev/null 2>&1"''
+      ];
+      xwaylandDisplay = ":11";
+      outputs = [
+        ''output "DP-1" {
+              mode "2560x1440@144"
+              position x=0 y=0
+              scale 1.5
+              variable-refresh-rate on-demand=true
+              focus-at-startup
+          }''
+        ''output "DP-3" {
+              mode "2560x1440@144"
+              position x=1707 y=0
+              scale 1.5
+              variable-refresh-rate on-demand=true
+          }''
       ];
     };
     ssh = {

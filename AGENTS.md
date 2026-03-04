@@ -94,7 +94,91 @@ This repository strictly separates reusable logic (modules) from specific instan
     *   Example: `passwordFile = config.sops.secrets."user-password".path;`
 *   **Theming:** Do not hardcode font names or color hex codes if Stylix covers it. Let Stylix handle the global look and feel.
 
-## 7. Custom-Packaged Programs
+## 7. Adding New Home Manager Modules
+
+Follow this checklist when creating a new module in `modules/home-manager/programs/` or `modules/home-manager/scripts/`.
+
+### 7.1 Module skeleton
+
+Every module must be opt-in and a no-op when disabled:
+
+```nix
+{lib, config, ...}: let
+  cfg = config.custom.programs.<name>;
+in {
+  options.custom.programs.<name>.enable = lib.mkEnableOption "<description>";
+
+  config = lib.mkIf cfg.enable {
+    # ... program config here
+  };
+}
+```
+
+*   Use `lib.mkEnableOption` — never enable anything unconditionally.
+*   Wrap the entire `config` block in `lib.mkIf cfg.enable`.
+*   Import the module in `home/users/<user>/default.nix` and set `custom.programs.<name>.enable = true;` there.
+
+### 7.2 User-driven configuration
+
+Modules must never hardcode user preferences, hardware identifiers, or environment-specific values.
+
+| What | Rule |
+|---|---|
+| Hardware identifiers (monitor names, display sockets) | Expose via `custom.*` option; set value in `home/users/<user>/default.nix` |
+| User-specific settings (usernames, paths, extension lists) | Same — `custom.*` option in `modules/home-manager/custom.nix`, value in user's `default.nix` |
+| Compositor keybinds | Use `custom.niri.keybinds` (list of KDL bind lines) — module appends its own entries |
+| Compositor window/layer rules | Use `custom.niri.windowRules` / `custom.niri.layerRules` — module appends its block |
+| Default terminal keybind (`Mod+Return`) | Set `custom.niri.defaultTerminal = lib.mkDefault "<cmd>";` — do NOT add to `keybinds` directly |
+
+### 7.3 Mutual exclusion
+
+If enabling two modules simultaneously would produce a broken or ambiguous config, enforce mutual exclusion explicitly:
+
+**Option A — Assertion (two incompatible features):**
+
+```nix
+assertions = [
+  {
+    assertion = !config.custom.programs.<other>.enable;
+    message = "<name> and <other> cannot both be enabled (they conflict on <reason>).";
+  }
+];
+```
+
+Use this for modules that share keybinds or otherwise conflict (e.g. `dankmaterialshell`/`noctalia`).
+
+**Option B — `lib.mkDefault` (single-selection option):**
+
+```nix
+custom.niri.defaultTerminal = lib.mkDefault "<cmd>";
+```
+
+Use this when only one module of a class (e.g. terminal emulator) should be active at a time. If two modules both set the same option with `lib.mkDefault`, Nix raises a merge conflict error at eval time — no extra assertion needed.
+
+### 7.4 Dependency assertions
+
+If a module requires another module to be enabled, assert it explicitly:
+
+```nix
+assertions = [
+  {
+    assertion = config.custom.programs.<dep>.enable;
+    message = "<name> requires custom.programs.<dep>.enable = true.";
+  }
+];
+```
+
+### 7.5 Checklist before submitting a new module
+
+- [ ] `mkEnableOption` + `mkIf cfg.enable` skeleton
+- [ ] No hardcoded user preferences or hardware identifiers
+- [ ] Compositor keybinds/rules registered via `custom.niri.*` options
+- [ ] Mutual exclusion asserted if the module conflicts with another (Option A or B above)
+- [ ] Dependencies asserted via `assertions`
+- [ ] Module imported in `home/users/<user>/default.nix` with `.enable = true;`
+- [ ] Any new `custom.*` options defined in `modules/home-manager/custom.nix`
+
+## 8. Custom-Packaged Programs
 
 Some programs in `modules/home-manager/programs/` are not available in nixpkgs and are packaged locally using `buildGoModule`. 
 
@@ -108,7 +192,7 @@ Currently custom-packaged:
 *   `sidecar.nix` — github.com/marcus/sidecar
 *   `td.nix` — github.com/marcus/td
 
-## 8. Agent Operational Rules
+## 9. Agent Operational Rules
 
 1.  **Safety First:** Always run `nixos-rebuild dry-build` or `nix flake check` before concluding your work.
 2.  **Impermanence Awareness:** Remember that writing to files outside of `/persist` via shell commands is temporary. Always implement changes declaratively in this project directory.
@@ -119,7 +203,7 @@ Currently custom-packaged:
     *   **"File exists":** When evaluating/building, if a file conflicts with a managed file, ask the user before forcing or deleting.
 6.  **TD Integration:** You MUST adhere to the global task management rules. Run `td usage --new-session` at the start. When the work is verified and complete, run `td review <id>`. NEVER run `td handoff`, `td done`, or `td close`.
 
-## 9. Tips
+## 10. Tips
 
 1.  **Command not found:** Use `nix-shell -p <package>` or `nix run nixpkgs#<package>` if you need to temporarily use a tool that the system does not have.
 2.  **Researching Options:** If you are unsure of the exact Home Manager or NixOS configuration syntax, use your `WebFetch` tool to search `https://mynixos.com` or `https://search.nixos.org/options`. Do not guess Nix options, as they frequently change.
