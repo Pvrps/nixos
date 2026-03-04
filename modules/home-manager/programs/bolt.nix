@@ -32,13 +32,19 @@ in {
     # sun.java2d.opengl=false — disables the Java2D OpenGL pipeline.  When
     #   XWayland resizes a window the OpenGL context retains its old dimensions
     #   and tiles/repeats the stale framebuffer, producing a "split" or
-    #   duplicated view of the RuneLite UI after any resize event.  Disabling
-    #   the pipeline falls back to XRender which handles resize correctly.
-    #   RuneLite's in-game rendering uses LWJGL directly and is unaffected.
+    #   duplicated view of the RuneLite UI after any resize event.
+    #
+    # sun.java2d.xrender=false — disables the Java2D XRender (hardware)
+    #   pipeline.  After disabling OpenGL, Java2D falls back to XRender, which
+    #   has the same stale-surface problem when RuneLite's Swing layout changes
+    #   size (e.g. opening/closing the sidebar panel).  Disabling XRender forces
+    #   fully software-rendered Java2D painting, which correctly repaints after
+    #   every layout change.  RuneLite's in-game rendering uses LWJGL directly
+    #   and is unaffected by either flag.
     xdg.dataFile."flatpak/overrides/com.adamcake.Bolt".text = ''
       [Environment]
       _JAVA_AWT_WM_NONREPARENTING=1
-      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=1 -Dsun.java2d.opengl=false
+      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=1 -Dsun.java2d.opengl=false -Dsun.java2d.xrender=false
     '';
 
     custom.niri.windowRules = [
