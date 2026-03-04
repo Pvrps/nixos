@@ -71,6 +71,7 @@
       imv.enable = true;
       rustdesk.enable = true;
       java.enable = true;
+      bolt.enable = true;
       prismlauncher.enable = true;
       flatpak.enable = true;
       easyeffects.enable = true;
