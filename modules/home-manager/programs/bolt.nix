@@ -17,11 +17,20 @@ in {
 
     custom.flatpak.packages = ["com.adamcake.Bolt"];
 
-    # Prevent Java/AWT from applying its own DPI scaling on top of XWayland's.
-    # Without this, RuneLite renders at a mismatched resolution which produces
-    # black bars around the game viewport on HiDPI displays (e.g. 1.5× Niri scale).
+    # Java AWT/Swing fixes for Wayland compositors:
+    #
+    # _JAVA_AWT_WM_NONREPARENTING=1 — tells AWT that the compositor does not
+    #   reparent windows (Wayland never does), so Java correctly tracks its own
+    #   window bounds and responds to resize events.  Without this the game
+    #   viewport stays at its initial small size and the rest of the window fills
+    #   with black bars regardless of the Niri window rule.
+    #
+    # sun.java2d.uiScale=1 — prevents Java from applying a second DPI-scaling
+    #   pass on top of XWayland's, which would otherwise produce an additional
+    #   resolution mismatch on HiDPI outputs.
     xdg.dataFile."flatpak/overrides/com.adamcake.Bolt".text = ''
       [Environment]
+      _JAVA_AWT_WM_NONREPARENTING=1
       JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=1
     '';
 
