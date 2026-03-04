@@ -30,7 +30,9 @@ in {
     # pw_stream_set_control(VOLUME, 1.0) calls on each track change.
     # Spotify is a native PipeWire client (not PA-compat), so pipewire-pulse
     # quirks are ineffective; only a WirePlumber-level hook can intercept it.
-    xdg.configFile."wireplumber/scripts/50-spotify-volume.lua".text = ''
+    # Script goes to $XDG_DATA_HOME (not $XDG_CONFIG_HOME) — WirePlumber's
+    # script/lua component loader only searches XDG_DATA_HOME/wireplumber/scripts/.
+    xdg.dataFile."wireplumber/scripts/50-spotify-volume.lua".text = ''
       -- Prevent Spotify from resetting its stream volume to 100% on track change.
       -- Strategy:
       --   1. On stream creation: after INIT_DELAY_MS, apply TARGET_VOLUME (outlasts
