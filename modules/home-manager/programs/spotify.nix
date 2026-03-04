@@ -26,16 +26,14 @@ in {
       ];
     };
 
-    xdg.configFile."wireplumber/wireplumber.conf.d/99-spotify-volume.conf".text = ''
-      stream.rules = [
+    xdg.configFile."pipewire/pipewire-pulse.conf.d/99-spotify-volume.conf".text = ''
+      pulse.rules = [
         {
           matches = [
             { application.process.binary = "spotify" }
           ]
           actions = {
-            update-props = {
-              state.restore-props = false
-            }
+            quirks = [ "block-sink-volume" ]
           }
         }
       ]
