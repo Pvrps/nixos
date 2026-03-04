@@ -102,19 +102,19 @@
       ];
       xwaylandDisplay = ":11";
       outputs = [
-        ''output "DP-1" {
-              mode "2560x1440@144"
-              position x=0 y=0
-              scale 1.5
-              variable-refresh-rate on-demand=true
-              focus-at-startup
-          }''
-        ''output "DP-3" {
-              mode "2560x1440@144"
-              position x=1707 y=0
-              scale 1.5
-              variable-refresh-rate on-demand=true
-          }''
+        ''          output "DP-1" {
+                        mode "2560x1440@144"
+                        position x=0 y=0
+                        scale 1.5
+                        variable-refresh-rate on-demand=true
+                        focus-at-startup
+                    }''
+        ''          output "DP-3" {
+                        mode "2560x1440@144"
+                        position x=1707 y=0
+                        scale 1.5
+                        variable-refresh-rate on-demand=true
+                    }''
       ];
     };
     ssh = {
@@ -130,7 +130,6 @@
       packages = [
         "com.obsproject.Studio"
         "com.github.tchx84.Flatseal"
-        "org.freedesktop.Platform.Gstreamer.nvenc"
       ];
     };
     discord = {
