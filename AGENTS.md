@@ -83,14 +83,6 @@ Checklist:
 - [ ] Imported and enabled in `home/users/<user>/default.nix`
 - [ ] New `custom.*` options declared in `modules/home-manager/custom.nix`
 
-## Custom-packaged programs (`buildGoModule`)
-
-`sidecar.nix` (github.com/marcus/sidecar) and `td.nix` (github.com/marcus/td) are packaged locally. To update hashes:
-1. Set `hash` and `vendorHash` to `lib.fakeHash`
-2. Run the build — it fails with the correct SRI hash in the error output
-3. Paste the new hashes in
-4. Keep `doCheck = false;` — tests require network/git access which the sandbox blocks
-
 ## Error reference
 
 | Error | Cause | Fix |
