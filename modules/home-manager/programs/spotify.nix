@@ -25,5 +25,12 @@ in {
         hidePodcasts
       ];
     };
+
+    custom.niri.windowRules = [
+      ''window-rule {
+          match app-id=r#"^spotify$"#
+          close-is-minimize true
+      }''
+    ];
   };
 }
