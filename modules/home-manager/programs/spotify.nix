@@ -26,11 +26,13 @@ in {
       ];
     };
 
-    services.wireplumber.extraConfig."99-spotify-volume"."stream.rules" = [
-      {
-        matches = [{"application.name" = "~Spotify.*";}];
-        actions."update-props"."state.restore-props" = false;
-      }
-    ];
+    xdg.configFile."wireplumber/wireplumber.conf.d/99-spotify-volume.conf".text = ''
+      stream.rules = ${builtins.toJSON [
+        {
+          matches = [{"application.name" = "~Spotify.*";}];
+          actions = {"update-props" = {"state.restore-props" = false;};};
+        }
+      ]}
+    '';
   };
 }
