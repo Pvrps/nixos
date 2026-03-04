@@ -26,11 +26,8 @@ in {
       ];
     };
 
-    custom.niri.windowRules = [
-      ''window-rule {
-          match app-id=r#"^spotify$"#
-          close-is-minimize true
-      }''
-    ];
+    xdg.configFile."wireplumber/wireplumber.conf.d/99-spotify-volume.conf".text = ''
+      wireplumber.settings = ${builtins.toJSON {"device.restore-profile-on-release" = false;}}
+    '';
   };
 }

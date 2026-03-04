@@ -30,12 +30,6 @@
           "default.clock.max-quantum" = 2048;
         };
       };
-
-      wireplumber.extraConfig."99-spotify-volume" = {
-        "wireplumber.settings" = {
-          "device.restore-profile-on-release" = false;
-        };
-      };
     };
     greetd = {
       enable = true;
