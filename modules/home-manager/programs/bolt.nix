@@ -28,10 +28,17 @@ in {
     # sun.java2d.uiScale=1 — prevents Java from applying a second DPI-scaling
     #   pass on top of XWayland's, which would otherwise produce an additional
     #   resolution mismatch on HiDPI outputs.
+    #
+    # sun.java2d.opengl=false — disables the Java2D OpenGL pipeline.  When
+    #   XWayland resizes a window the OpenGL context retains its old dimensions
+    #   and tiles/repeats the stale framebuffer, producing a "split" or
+    #   duplicated view of the RuneLite UI after any resize event.  Disabling
+    #   the pipeline falls back to XRender which handles resize correctly.
+    #   RuneLite's in-game rendering uses LWJGL directly and is unaffected.
     xdg.dataFile."flatpak/overrides/com.adamcake.Bolt".text = ''
       [Environment]
       _JAVA_AWT_WM_NONREPARENTING=1
-      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=1
+      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=1 -Dsun.java2d.opengl=false
     '';
 
     custom.niri.windowRules = [
