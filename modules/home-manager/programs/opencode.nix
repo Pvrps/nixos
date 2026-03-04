@@ -51,6 +51,8 @@ in {
             - apt/brew/yum are unavailable on NixOS — use `nix-shell -p <package>` for missing tools
             - Never push directly to `main`/`master`/`dev`; all changes on a `feature/<desc>` or `fix/<desc>` branch
             - One logical task per session; ignore unrelated issues
+          ''
+          + lib.optionalString context7.enable ''
 
             ## Pre-task
             - Use the `context7` MCP server for up-to-date library docs before writing code
