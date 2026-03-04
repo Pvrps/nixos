@@ -75,6 +75,7 @@
       prismlauncher.enable = true;
       flatpak.enable = true;
       easyeffects.enable = true;
+      gnomeKeyring.enable = true;
     };
 
     scripts = {
@@ -92,15 +93,6 @@
       presetSource = ../../../modules/home-manager/programs/easyeffects/blue_yeti.json;
     };
     niri = {
-      startupCommands = [
-        ''"${pkgs.xwayland-satellite}/bin/xwayland-satellite" ":11"''
-        ''"${pkgs.gnome-keyring}/bin/gnome-keyring-daemon" "--start" "--components=secrets"''
-        ''"bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell; else dms run --session; fi"''
-        ''"bash" "-c" "for i in {1..20}; do ${pkgs.pulseaudio}/bin/pactl list short sources | grep -q 'rnnoise_source' && { ${pkgs.pulseaudio}/bin/pactl set-default-source rnnoise_source; break; }; sleep 0.5; done"''
-        ''"bash" "-c" "nm-online -q --timeout=30 || true; steam -system-composer -silent > /dev/null 2>&1"''
-        ''"bash" "-c" "nm-online -q --timeout=30 || true; vesktop --start-minimized > /dev/null 2>&1"''
-        #''"bash" "-c" "nm-online -q --timeout=30 || true; discord --start-minimized > /dev/null 2>&1"''
-      ];
       xwaylandDisplay = ":11";
       outputs = [
         ''          output "DP-1" {

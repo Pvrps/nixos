@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   cfg = config.custom.programs.niri;
@@ -26,7 +27,7 @@
   outputBlocks = lib.concatStringsSep "\n\n" niriCfg.outputs;
 
   # Include the DISPLAY environment block only when xwaylandDisplay is set.
-  # Requires xwayland-satellite to be present in startupCommands.
+  # xwayland-satellite is automatically added to startupCommands when xwaylandDisplay is set.
   # The trailing newline provides spacing before the next top-level block.
   envBlock = lib.optionalString (niriCfg.xwaylandDisplay != null) ''
     environment {
@@ -39,6 +40,10 @@ in {
 
   config = lib.mkIf cfg.enable {
     custom.system.wayland.enable = true;
+
+    custom.niri.startupCommands = lib.mkIf (niriCfg.xwaylandDisplay != null) [
+      ''"${pkgs.xwayland-satellite}/bin/xwayland-satellite" "${niriCfg.xwaylandDisplay}"''
+    ];
 
     xdg.configFile."niri/config.kdl".text = ''
       ${envBlock}hotkey-overlay {

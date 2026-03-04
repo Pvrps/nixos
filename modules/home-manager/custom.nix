@@ -37,7 +37,7 @@
       xwaylandDisplay = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
-        description = "Xwayland display socket (e.g. \":11\"). Requires xwayland-satellite in startupCommands. When set, adds DISPLAY to niri's environment block.";
+        description = "Xwayland display socket (e.g. \":11\"). When set, adds DISPLAY to niri's environment block and automatically starts xwayland-satellite.";
       };
       outputs = lib.mkOption {
         type = lib.types.listOf lib.types.str;

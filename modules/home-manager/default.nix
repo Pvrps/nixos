@@ -11,6 +11,7 @@
     ./programs/flatpak.nix
     ./programs/foot.nix
     ./programs/git.nix
+    ./programs/gnome-keyring.nix
     ./programs/helix.nix
     ./programs/imv.nix
     ./programs/java.nix
