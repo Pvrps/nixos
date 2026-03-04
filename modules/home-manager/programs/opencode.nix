@@ -7,6 +7,7 @@
 }: let
   cfg = config.custom.programs.opencode;
   context7 = config.custom.opencode.context7;
+  superpowers = config.custom.opencode.superpowers;
 in {
   options.custom.programs.opencode.enable = lib.mkEnableOption "OpenCode AI coding assistant";
 
@@ -36,15 +37,30 @@ in {
           };
         };
 
-        ".config/opencode/AGENTS.md".text = ''
-          ## Hard constraints
-          - apt/brew/yum are unavailable on NixOS — use `nix-shell -p <package>` for missing tools
-          - Never push directly to `main`/`master`/`dev`; all changes on a `feature/<desc>` or `fix/<desc>` branch
-          - One logical task per session; ignore unrelated issues
+        ".config/opencode/plugins/superpowers.js" = lib.mkIf superpowers.enable {
+          source = "${inputs.superpowers}/.opencode/plugins/superpowers.js";
+        };
 
-          ## Pre-task
-          - Use the `context7` MCP server for up-to-date library docs before writing code
-        '';
+        ".config/opencode/skills/superpowers" = lib.mkIf superpowers.enable {
+          source = "${inputs.superpowers}/skills";
+        };
+
+        ".config/opencode/AGENTS.md".text =
+          ''
+            ## Hard constraints
+            - apt/brew/yum are unavailable on NixOS — use `nix-shell -p <package>` for missing tools
+            - Never push directly to `main`/`master`/`dev`; all changes on a `feature/<desc>` or `fix/<desc>` branch
+            - One logical task per session; ignore unrelated issues
+
+            ## Pre-task
+            - Use the `context7` MCP server for up-to-date library docs before writing code
+          ''
+          + lib.optionalString superpowers.enable ''
+
+            ## Superpowers
+            - Superpowers skills are available via OpenCode's native `skill` tool
+            - Use `skill` tool to list available skills (e.g. brainstorming, test-driven-development, writing-plans)
+          '';
       };
     };
   };
