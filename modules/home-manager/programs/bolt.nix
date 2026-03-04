@@ -44,26 +44,26 @@ in {
     xdg.dataFile."flatpak/overrides/com.adamcake.Bolt".text = ''
       [Environment]
       _JAVA_AWT_WM_NONREPARENTING=1
-      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=1 -Dsun.java2d.opengl=false -Dsun.java2d.xrender=false
+      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2 -Dsun.java2d.opengl=false -Dsun.java2d.xrender=false
     '';
 
     custom.niri.windowRules = [
       # Keep the small launcher window floating so it doesn't hijack a tile slot.
-      ''window-rule {
-          match app-id=r#"^com\.adamcake\.Bolt$"#
-          open-floating true
-          open-maximized false
-      }''
+      ''        window-rule {
+                  match app-id=r#"^com\.adamcake\.Bolt$"#
+                  open-floating true
+                  open-maximized false
+              }''
       # RuneLite game window – maximise on open so it fills the logical workspace.
-      ''window-rule {
-          match app-id=r#"^RuneLite$"#
-          open-maximized true
-      }''
+      ''        window-rule {
+                  match app-id=r#"^RuneLite$"#
+                  open-maximized true
+              }''
       # Jagex native client (launched by Bolt).
-      ''window-rule {
-          match app-id=r#"^jagex_launcher$"#
-          open-maximized true
-      }''
+      ''        window-rule {
+                  match app-id=r#"^jagex_launcher$"#
+                  open-maximized true
+              }''
     ];
   };
 }
