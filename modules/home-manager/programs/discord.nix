@@ -27,6 +27,10 @@ in {
       };
     };
 
+    custom.niri.startupCommands = [
+      ''"bash" "-c" "nm-online -q --timeout=30 || true; vesktop --start-minimized > /dev/null 2>&1"''
+    ];
+
     custom.niri.windowRules = [
       ''window-rule {
           match app-id="vesktop" title="Discord Updater"

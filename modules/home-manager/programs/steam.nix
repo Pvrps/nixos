@@ -40,6 +40,10 @@ in {
       };
     };
 
+    custom.niri.startupCommands = [
+      ''"bash" "-c" "nm-online -q --timeout=30 || true; steam -system-composer -silent > /dev/null 2>&1"''
+    ];
+
     custom.niri.windowRules = [
       ''window-rule {
           match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
