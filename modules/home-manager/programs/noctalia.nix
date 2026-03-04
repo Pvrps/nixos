@@ -97,7 +97,7 @@ in {
     custom.niri.layerRules = [
       ''layer-rule {
           match namespace=r#"^noctalia-notifications"#
-          block-out-from "screencast"
+          block-out-from "screen-capture"
       }''
     ];
   };
