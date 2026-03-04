@@ -57,6 +57,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    superpowers = {
+      url = "github:obra/superpowers";
+      flake = false;
+    };
+
     impermanence.url = "github:nix-community/impermanence";
     dms = {
       url = "github:AvengeMedia/DankMaterialShell/stable";

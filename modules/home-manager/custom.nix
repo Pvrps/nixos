@@ -111,6 +111,9 @@
           description = "Path to the Context7 API key secret";
         };
       };
+      superpowers = {
+        enable = lib.mkEnableOption "Superpowers skills and plugin for OpenCode";
+      };
     };
   };
 }

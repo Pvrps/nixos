@@ -119,6 +119,7 @@
         enable = true;
         apiKeyPath = "/run/secrets/context7-api-key";
       };
+      superpowers.enable = true;
     };
     flatpak = {
       packages = [
