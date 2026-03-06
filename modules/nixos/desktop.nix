@@ -5,6 +5,10 @@
 }: {
   hardware.bluetooth.enable = true;
 
+  # Geist must be a system-level font so Flatpak exposes it via /run/host/fonts.
+  # Home-manager fonts live in the Nix store and aren't reachable inside the sandbox.
+  fonts.packages = [pkgs.geist-font];
+
   programs = {
     niri.enable = true;
   };
