@@ -12,7 +12,8 @@
   # Startup commands are top-level nodes separated by a single newline.
   startupLines = lib.concatStringsSep "\n" (map (cmd: "spawn-at-startup ${cmd}") niriCfg.startupCommands);
   # Generate the Mod+Return terminal keybind only when a default terminal is configured.
-  terminalKeybind = lib.optionalString (niriCfg.defaultTerminal != null)
+  terminalKeybind =
+    lib.optionalString (niriCfg.defaultTerminal != null)
     ''Mod+Return { spawn "${niriCfg.defaultTerminal}"; }'';
   # Keybinds live inside binds {}; after template stripping they sit at col 4,
   # so subsequent entries use "\n    " to maintain the 4-space indentation.

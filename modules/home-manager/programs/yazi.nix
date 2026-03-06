@@ -1,4 +1,8 @@
-{lib, config, ...}: let
+{
+  lib,
+  config,
+  ...
+}: let
   cfg = config.custom.programs.yazi;
 in {
   options.custom.programs.yazi.enable = lib.mkEnableOption "Yazi terminal file manager";

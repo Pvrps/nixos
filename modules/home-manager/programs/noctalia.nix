@@ -95,10 +95,10 @@ in {
     ];
 
     custom.niri.layerRules = [
-      ''layer-rule {
-          match namespace=r#"^noctalia-notifications"#
-          block-out-from "screen-capture"
-      }''
+      ''        layer-rule {
+                  match namespace=r#"^noctalia-notifications"#
+                  block-out-from "screen-capture"
+              }''
     ];
   };
 }

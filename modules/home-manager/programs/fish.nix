@@ -1,4 +1,8 @@
-{lib, config, ...}: let
+{
+  lib,
+  config,
+  ...
+}: let
   cfg = config.custom.programs.fish;
 in {
   options.custom.programs.fish.enable = lib.mkEnableOption "Fish shell";

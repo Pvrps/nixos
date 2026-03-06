@@ -63,10 +63,10 @@ in {
     ];
 
     custom.niri.layerRules = [
-      ''layer-rule {
-          match namespace=r#"^dms-notifications"#
-          block-out-from "screen-capture"
-      }''
+      ''        layer-rule {
+                  match namespace=r#"^dms-notifications"#
+                  block-out-from "screen-capture"
+              }''
     ];
   };
 }

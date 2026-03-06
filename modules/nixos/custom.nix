@@ -7,7 +7,7 @@
     desktop = {
       extraPortals = lib.mkOption {
         type = lib.types.listOf lib.types.package;
-        default = [pkgs.xdg-desktop-portal-gnome];
+        default = with pkgs; [xdg-desktop-portal-gnome xdg-desktop-portal-gtk];
         description = "Extra XDG portals to install system-wide.";
       };
     };

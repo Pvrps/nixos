@@ -140,7 +140,7 @@
           pinOrder = 1;
         };
         shikiCodeblocks.enable = true;
-        spotifyControls.enable = true;
+        musicControls.enable = true;
         betterGifPicker.enable = true;
         biggerStreamPreview.enable = true;
         callTimer.enable = true;
@@ -187,6 +187,19 @@
         volumeBooster.enable = true;
         whoReacted.enable = true;
         youtubeAdblock.enable = true;
+        streamingCodecDisabler = {
+          enable = true;
+          disableVP8Codec = true;
+          disableVP9Codec = true;
+          disableAv1Codec = true;
+        };
+        fakeNitro = {
+          enable = true;
+          enableStreamQualityBypass = true;
+          enableEmojiBypass = true;
+          enableStickerBypass = true;
+        };
+        webScreenShareFixes.enable = true;
       };
     };
     zen = {
