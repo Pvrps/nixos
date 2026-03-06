@@ -18,6 +18,7 @@
     ./programs/lazygit.nix
     ./programs/niri.nix
     ./programs/noctalia.nix
+    ./programs/obs.nix
     ./programs/opencode.nix
     ./programs/prismlauncher.nix
     ./programs/rustdesk.nix

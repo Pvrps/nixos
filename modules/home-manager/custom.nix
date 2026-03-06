@@ -103,6 +103,22 @@
         description = "Nixcord plugins configuration";
       };
     };
+    obs = {
+      plugins = {
+        multiRtmp = {
+          enable = lib.mkEnableOption "obs-multi-rtmp multistream plugin";
+          version = lib.mkOption {
+            type = lib.types.str;
+            default = "0.7.3.2";
+            description = "GitHub release tag for obs-multi-rtmp";
+          };
+          hash = lib.mkOption {
+            type = lib.types.str;
+            description = "SHA256 hash of the .deb release asset";
+          };
+        };
+      };
+    };
     opencode = {
       context7 = {
         enable = lib.mkEnableOption "Context7 MCP Server";

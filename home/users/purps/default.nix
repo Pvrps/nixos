@@ -74,6 +74,7 @@
       bolt.enable = true;
       prismlauncher.enable = true;
       flatpak.enable = true;
+      obs.enable = true;
       easyeffects.enable = true;
       gnomeKeyring.enable = true;
       spotify.enable = true;
@@ -123,9 +124,16 @@
     };
     flatpak = {
       packages = [
-        "com.obsproject.Studio"
         "com.github.tchx84.Flatseal"
+        "com.usebottles.bottles"
       ];
+    };
+    obs = {
+      plugins.multiRtmp = {
+        enable = true;
+        version = "0.7.3.2";
+        hash = "sha256-ZPRYm2pUoTyJt9YTNOtBdItKTOxaE8y4DzJdYIt0Hus=";
+      };
     };
     discord = {
       plugins = {
