@@ -7,6 +7,7 @@
     ./programs/dankmaterialshell.nix
     ./programs/discord.nix
     ./programs/easyeffects
+    ./programs/firebot.nix
     ./programs/fish.nix
     ./programs/flatpak.nix
     ./programs/foot.nix
