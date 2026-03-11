@@ -26,7 +26,6 @@ in {
 
     programs.zen-browser = {
       enable = true;
-      suppressXdgMigrationWarning = true;
       languagePacks = ["en-US"];
 
       inherit (config.custom.zen) profiles;

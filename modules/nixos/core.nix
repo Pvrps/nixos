@@ -3,7 +3,7 @@
     loader = {
       systemd-boot = {
         enable = true;
-        configurationLimit = 5;
+        configurationLimit = 3;
       };
       efi.canTouchEfiVariables = true;
     };
@@ -37,7 +37,7 @@
     gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 30d";
+      options = "--delete-older-than 7d";
     };
     optimise.automatic = true;
   };
