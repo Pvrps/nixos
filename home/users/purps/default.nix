@@ -78,7 +78,7 @@
       easyeffects.enable = true;
       gnomeKeyring.enable = true;
       spotify.enable = true;
-      firebot.enable = true;
+      #firebot.enable = true;
     };
 
     scripts = {
