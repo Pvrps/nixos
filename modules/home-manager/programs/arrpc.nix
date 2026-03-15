@@ -21,6 +21,10 @@
         # Patch index.js to load detectable.json from ~/.config/arrpc/detectable.json if it exists,
         # otherwise fallback to the bundled one. This relies on the original file's `import fs from 'node:fs';`
         sed -i 's|import DetectableDBTemp from "./detectable.json" with { type: "json" };|let DetectableDBTemp = []; try { DetectableDBTemp = JSON.parse(fs.readFileSync(process.env.HOME + "/.config/arrpc/detectable.json", "utf8")); } catch(e) { DetectableDBTemp = JSON.parse(fs.readFileSync(new URL("./detectable.json", import.meta.url))); }|' src/process/index.js
+        # Patch to fix matching of native Linux games in paths with spaces.
+        # The original code only created 2-segment paths for .exe files, breaking matching for native games.
+        sed -i 's|if (noArgs.includes("\\\\.exe") || noArgs.includes("\\\\.x86_64")) {|const parts = noArgs.split("/");\\n  if (parts.length > 1) {|' src/process/index.js
+        sed -i 's|const last2 = noArgs.split("/").slice(-2).join("/");|const last2 = parts.slice(-2).join("/");|' src/process/index.js
       '';
   });
 
