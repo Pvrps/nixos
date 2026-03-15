@@ -19,8 +19,8 @@
       (old.postPatch or "")
       + ''
         # Patch index.js to load detectable.json from ~/.config/arrpc/detectable.json if it exists,
-        # otherwise fallback to the bundled one.
-        sed -i 's|import DetectableDBTemp from "./detectable.json" with { type: "json" };|import fs from "node:fs"; let DetectableDBTemp = []; try { DetectableDBTemp = JSON.parse(fs.readFileSync(process.env.HOME + "/.config/arrpc/detectable.json", "utf8")); } catch(e) { DetectableDBTemp = JSON.parse(fs.readFileSync(new URL("./detectable.json", import.meta.url))); }|' src/process/index.js
+        # otherwise fallback to the bundled one. This relies on the original file's `import fs from 'node:fs';`
+        sed -i 's|import DetectableDBTemp from "./detectable.json" with { type: "json" };|let DetectableDBTemp = []; try { DetectableDBTemp = JSON.parse(fs.readFileSync(process.env.HOME + "/.config/arrpc/detectable.json", "utf8")); } catch(e) { DetectableDBTemp = JSON.parse(fs.readFileSync(new URL("./detectable.json", import.meta.url))); }|' src/process/index.js
       '';
   });
 
