@@ -15,7 +15,7 @@
       hash = "sha256-LcwRkhggvHsMk29Gmjs68tAV675Zc8fqpgi4xglWfBI=";
     };
 
-    patches = [./arrpc.patch];
+    patches = [../patches/arrpc.patch];
   });
 
   # Script to fetch the latest Discord detectable games database
