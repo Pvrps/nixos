@@ -6,6 +6,7 @@
     ./programs/clapper.nix
     ./programs/dankmaterialshell.nix
     ./programs/discord.nix
+    ./programs/arrpc.nix
     ./programs/easyeffects
     ./programs/firebot.nix
     ./programs/fish.nix

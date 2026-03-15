@@ -23,7 +23,7 @@ in {
         frameless = true;
         themeLinks = [
         ];
-        inherit (config.custom.discord) plugins;
+        plugins = config.custom.discord.plugins // {webRichPresence.enable = true;};
       };
     };
 

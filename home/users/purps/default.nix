@@ -65,6 +65,7 @@
       zen.enable = true;
       steam.enable = true;
       discord.enable = true;
+      arrpc.enable = true;
       opencode.enable = true;
       lazygit.enable = true;
       clapper.enable = true;
