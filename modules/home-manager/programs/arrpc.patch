@@ -1,0 +1,28 @@
+--- a/src/process/index.js
++++ b/src/process/index.js
+@@ -5,7 +5,12 @@
+ import { dirname, join } from 'path';
+ import { fileURLToPath } from 'url';
+ 
+-import DetectableDBTemp from "./detectable.json" with { type: "json" };
++let DetectableDBTemp = [];
++try {
++  DetectableDBTemp = JSON.parse(fs.readFileSync(process.env.HOME + "/.config/arrpc/detectable.json", "utf8"));
++} catch(e) {
++  DetectableDBTemp = JSON.parse(fs.readFileSync(new URL("./detectable.json", import.meta.url)));
++}
+ DetectableDBTemp.push({
+   aliases: ["Obs"],
+   executables: [
+@@ -101,8 +106,9 @@
+ 
+   // For Windows-style exe paths, include the last 2 segments to catch DB entries
+   // We also need to match Linux Native executables, since we swap the suffix later for comparison
+-  if (noArgs.includes(".exe") || noArgs.includes(".x86_64")) {
+-    const last2 = noArgs.split("/").slice(-2).join("/");
++  const parts = noArgs.split("/");
++  if (parts.length > 1) {
++    const last2 = parts.slice(-2).join("/");
+     out.add(stripBitness(last2));
+   }
+ 
