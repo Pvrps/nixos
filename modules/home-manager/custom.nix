@@ -96,6 +96,34 @@
         description = "List of Flatpak packages to install";
       };
     };
+    yazi = {
+      sftp = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.submodule {
+          options = {
+            host = lib.mkOption {
+              type = lib.types.str;
+              description = "SFTP Host";
+            };
+            user = lib.mkOption {
+              type = lib.types.str;
+              description = "SFTP User";
+            };
+            port = lib.mkOption {
+              type = lib.types.int;
+              default = 22;
+              description = "SFTP Port";
+            };
+            passwordSecret = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Path to file containing the password";
+            };
+          };
+        });
+        default = {};
+        description = "SFTP server configurations for Yazi VFS";
+      };
+    };
     discord = {
       plugins = lib.mkOption {
         type = lib.types.attrsOf lib.types.anything;

@@ -124,6 +124,15 @@
       };
       superpowers.enable = true;
     };
+    yazi = {
+      sftp = {
+        windwaker = {
+          host = "10.0.10.16";
+          user = "root";
+          passwordSecret = "/run/secrets/sftp-windwaker-password";
+        };
+      };
+    };
     flatpak = {
       packages = [
         "com.github.tchx84.Flatseal"
