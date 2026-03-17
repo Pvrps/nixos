@@ -17,7 +17,7 @@
             };
           };
           root = {
-            size = "100%";
+            size = "1.5T";
             content = {
               type = "btrfs";
               extraArgs = ["-f"];
