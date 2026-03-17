@@ -92,6 +92,13 @@
       userName = "purps";
       userEmail = "github@purps.ca";
     };
+    fish = {
+      aliases = {
+        cp = "cp -i";
+        mv = "mv -i";
+        mkdir = "mkdir -p";
+      };
+    };
     easyeffects = {
       preset = "blue_yeti";
       presetSource = ../../../modules/home-manager/programs/easyeffects/blue_yeti.json;

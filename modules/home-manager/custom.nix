@@ -1,5 +1,12 @@
 {lib, ...}: {
   options.custom = {
+    fish = {
+      aliases = lib.mkOption {
+        type = lib.types.attrsOf lib.types.str;
+        default = {};
+        description = "Custom aliases for fish shell";
+      };
+    };
     system = {
       wayland = {
         enable = lib.mkEnableOption "Wayland compositor active";
