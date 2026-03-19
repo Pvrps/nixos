@@ -6,8 +6,7 @@
   ...
 }: let
   cfg = config.custom.programs.opencode;
-  context7 = config.custom.opencode.context7;
-  superpowers = config.custom.opencode.superpowers;
+  inherit (config.custom.opencode) context7 superpowers;
 in {
   options.custom.programs.opencode.enable = lib.mkEnableOption "OpenCode AI coding assistant";
 

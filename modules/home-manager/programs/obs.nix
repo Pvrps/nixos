@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.custom.programs.obs;
-  obs = config.custom.obs;
+  inherit (config.custom) obs;
 
   mkPlugin = {
     name,

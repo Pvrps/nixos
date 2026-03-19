@@ -85,20 +85,22 @@ in {
       };
     };
 
-    custom.niri.startupCommands = [
-      ''"bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell; else dms run --session; fi"''
-    ];
+    custom.niri = {
+      startupCommands = [
+        ''"bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell; else dms run --session; fi"''
+      ];
 
-    custom.niri.keybinds = [
-      ''Mod+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }''
-      ''Mod+C { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }''
-    ];
+      keybinds = [
+        ''Mod+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }''
+        ''Mod+C { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }''
+      ];
 
-    custom.niri.layerRules = [
-      ''        layer-rule {
-                  match namespace=r#"^noctalia-notifications"#
-                  block-out-from "screen-capture"
-              }''
-    ];
+      layerRules = [
+        ''          layer-rule {
+                      match namespace=r#"^noctalia-notifications"#
+                      block-out-from "screen-capture"
+                  }''
+      ];
+    };
   };
 }
