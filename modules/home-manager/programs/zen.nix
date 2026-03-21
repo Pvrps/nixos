@@ -24,6 +24,11 @@ in {
         default = {};
         description = "Zen browser extension settings";
       };
+      homepage = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Zen browser homepage URL";
+      };
     };
   };
 
@@ -48,6 +53,8 @@ in {
         Preferences = {
           "browser.startup.page" = 3;
           "browser.sessionStore.resume_from_crash" = true;
+        } // lib.optionalAttrs (cfg.homepage != null) {
+          "browser.startup.homepage" = cfg.homepage;
         };
 
         AutofillAddressEnabled = false;
@@ -84,6 +91,11 @@ in {
         DefaultSearchEngine = "Google";
 
         ExtensionSettings = cfg.extensionSettings;
+      } // lib.optionalAttrs (cfg.homepage != null) {
+        Homepage = {
+          URL = cfg.homepage;
+          Locked = false;
+        };
       };
     };
   };

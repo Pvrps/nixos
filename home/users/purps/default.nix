@@ -62,7 +62,10 @@
       git.enable = true;
       starship.enable = true;
       ssh.enable = true;
-      zen.enable = true;
+      zen = {
+        enable = true;
+        homepage = "https://homepage.windwaker.ca/";
+      };
       steam.enable = true;
       discord.enable = true;
       arrpc.enable = true;
