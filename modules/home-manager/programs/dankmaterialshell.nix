@@ -23,7 +23,7 @@ in {
 
     programs.dank-material-shell = {
       enable = true;
-      enableCalendarEvents = false; # Disabled due to khal build failure on unstable
+      enableCalendarEvents = true;
 
       # Stylix doesn't natively handle DMS wallpapers yet, so we bridge it here
       session = {
