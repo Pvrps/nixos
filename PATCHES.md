@@ -4,30 +4,44 @@ This document tracks programs in the NixOS configuration that require custom pat
 
 ## arRPC (`arrpc`)
 * **What**: Custom source override, local patch, and systemd pre-start fetch script.
-* **Why**: Overrides the official package to use the `OpenAsar/arrpc` branch (PR #143) to significantly improve Linux/Proton game detection. Includes a local patch (`arrpc.patch`) to properly match Linux native executables versus Windows `.exe` paths. Finally, a pre-start script fetches the latest Discord detectable games database securely from Discord's API before starting the service.
+* **Why**: The official `arrpc` package lacks robust Linux/Proton game detection and can struggle with native executable paths. These overrides ensure Discord Rich Presence correctly identifies what games are running on Linux.
 * **Last Revisited**: 2026-03-18
+* **Related Files**:
+  * `modules/home-manager/programs/arrpc.nix`: Overrides the official package source to use the `OpenAsar/arrpc` branch (PR #143). Also includes a systemd pre-start script to securely fetch the latest Discord detectable games database from Discord's API before the service starts.
+  * `modules/home-manager/patches/arrpc.patch`: A local patch applied to the Javascript source to properly match Linux native executable paths versus Windows `.exe` paths.
 
 ## Bolt (RuneScape / Jagex Launcher)
 * **What**: Java AWT/Swing environment variable overrides via Flatpak.
-* **Why**: Required to fix UI rendering issues under Wayland compositors. Sets `_JAVA_AWT_WM_NONREPARENTING=1` to allow Java to track its own window bounds correctly. Disables Java2D hardware acceleration (`sun.java2d.opengl=false`, `sun.java2d.xrender=false`) to fix a stale surface/split view problem when resizing. Prevents double DPI scaling with `sun.java2d.uiScale=2`.
+* **Why**: Required to fix critical UI rendering issues under Wayland compositors, such as incorrect window bounds, black bars, duplicate/split views when resizing, and improper DPI scaling.
 * **Last Revisited**: 2026-03-04
+* **Related Files**:
+  * `modules/home-manager/programs/bolt.nix`: Applies Flatpak overrides (`_JAVA_AWT_WM_NONREPARENTING=1`, `sun.java2d.opengl=false`, `sun.java2d.xrender=false`, `sun.java2d.uiScale=2`) directly to the `com.adamcake.Bolt` app data directory. Also sets specific Niri window rules to handle maximized state for the client.
 
 ## OBS Studio
 * **What**: Manual Flatpak plugin extraction workaround.
-* **Why**: Installs the `obs-multi-rtmp` plugin by manually downloading the `.deb` package, extracting it, and placing the `.so` and `.locale` files directly into the local user Flatpak directory (`~/.var/app/com.obsproject.Studio/config/obs-studio/plugins`). This circumvents standard Flatpak sandboxing without needing to build a proper Flatpak extension.
+* **Why**: Standard Flatpak sandboxing makes it difficult to install third-party plugins that aren't officially packaged as Flatpak extensions. This workaround circumvents the sandbox to install the Multi-RTMP plugin.
 * **Last Revisited**: 2026-03-18
+* **Related Files**:
+  * `modules/home-manager/programs/obs.nix`: Contains a custom script (`mkPlugin`) that manually downloads the `obs-multi-rtmp` `.deb` package, extracts it via `dpkg-deb`, and writes the `.so` and `.locale` files directly into the local user Flatpak plugin directory (`~/.var/app/com.obsproject.Studio/config/obs-studio/plugins`).
 
 ## Discord (Nixcord / Equibop)
 * **What**: Screen share and codec workarounds.
-* **Why**: Explicitly enables `webScreenShareFixes` and disables VP8, VP9, and AV1 codecs. This forces Discord to fall back to H.264, which is necessary to fix hardware encoding crashes or black screens when attempting to screen share on Wayland.
+* **Why**: Hardware encoding for VP8/VP9/AV1 frequently crashes or results in black screens when attempting to screen share under Wayland on Linux. Forcing a fallback to H.264 is necessary for stability.
 * **Last Revisited**: 2026-03-17
+* **Related Files**:
+  * `home/users/purps/default.nix`: Explicitly enables `webScreenShareFixes` and manually disables the VP8, VP9, and AV1 codecs in the `nixcord` configuration to force H.264 fallback.
+  * `modules/home-manager/programs/discord.nix`: Contains the base nixcord/equibop setup and Niri window rules that prevent the background updater from taking over the screen.
 
 ## DankMaterialShell
 * **What**: Disabled calendar integration workaround.
-* **Why**: Explicitly sets `enableCalendarEvents = false` due to a build failure with the `khal` package on the Nixpkgs unstable channel.
+* **Why**: The `khal` package (a dependency for the calendar integration) is currently experiencing build failures on the Nixpkgs unstable channel, preventing the entire shell from building if enabled.
 * **Last Revisited**: 2026-03-05
+* **Related Files**:
+  * `modules/home-manager/programs/dankmaterialshell.nix`: Explicitly sets `enableCalendarEvents = false` and leaves a comment explaining the `khal` build failure.
 
 ## Steam
 * **What**: Window manager (Niri) notification toast workarounds.
-* **Why**: Uses custom Niri window rules to prevent Steam notification toasts (`notificationtoasts_\d+_desktop`) from hijacking active tiling slots. It forces them to float at the bottom right of the screen, removes focus rings, and blocks them from showing up on screencasts.
+* **Why**: Under Niri, Steam's popup notification toasts are treated as standard windows, causing them to hijack active tiling slots and disrupt the workspace layout.
 * **Last Revisited**: 2026-03-05
+* **Related Files**:
+  * `modules/home-manager/programs/steam.nix`: Uses custom Niri `window-rule` configurations targeting the `notificationtoasts_\d+_desktop` title to force them to float at the bottom right of the screen, remove their focus rings, and block them from showing up on screencasts.
