@@ -49,54 +49,58 @@ in {
 
       inherit (cfg) profiles;
 
-      policies = {
-        Preferences = {
-          "browser.startup.page" = 3;
-          "browser.sessionStore.resume_from_crash" = true;
-        } // lib.optionalAttrs (cfg.homepage != null) {
-          "browser.startup.homepage" = cfg.homepage;
+      policies =
+        {
+          Preferences =
+            {
+              "browser.startup.page" = 3;
+              "browser.sessionStore.resume_from_crash" = true;
+            }
+            // lib.optionalAttrs (cfg.homepage != null) {
+              "browser.startup.homepage" = cfg.homepage;
+            };
+
+          AutofillAddressEnabled = false;
+          AutofillCreditCardEnabled = false;
+          DisableAppUpdate = true;
+          DisableFeedbackCommands = true;
+          DisableFirefoxStudies = true;
+          DisplayBookmarksToolbar = false;
+          DisablePocket = true;
+          DisableTelemetry = true;
+          DontCheckDefaultBrowser = true;
+          NoDefaultBookmarks = true;
+          OfferToSaveLogins = false;
+          PasswordManagerEnabled = false;
+
+          EnableTrackingProtection = {
+            Value = true;
+            Locked = true;
+            Cryptomining = true;
+            Fingerprinting = true;
+          };
+
+          FirefoxHome = {
+            Search = true;
+            Pocket = false;
+            Snippets = false;
+            TopSites = false;
+            Highlights = false;
+            SponsoredPocket = false;
+            SponsoredTopSites = false;
+          };
+
+          SearchSuggestEnabled = true;
+          DefaultSearchEngine = "Google";
+
+          ExtensionSettings = cfg.extensionSettings;
+        }
+        // lib.optionalAttrs (cfg.homepage != null) {
+          Homepage = {
+            URL = cfg.homepage;
+            Locked = false;
+          };
         };
-
-        AutofillAddressEnabled = false;
-        AutofillCreditCardEnabled = false;
-        DisableAppUpdate = true;
-        DisableFeedbackCommands = true;
-        DisableFirefoxStudies = true;
-        DisplayBookmarksToolbar = false;
-        DisablePocket = true;
-        DisableTelemetry = true;
-        DontCheckDefaultBrowser = true;
-        NoDefaultBookmarks = true;
-        OfferToSaveLogins = false;
-        PasswordManagerEnabled = false;
-
-        EnableTrackingProtection = {
-          Value = true;
-          Locked = true;
-          Cryptomining = true;
-          Fingerprinting = true;
-        };
-
-        FirefoxHome = {
-          Search = true;
-          Pocket = false;
-          Snippets = false;
-          TopSites = false;
-          Highlights = false;
-          SponsoredPocket = false;
-          SponsoredTopSites = false;
-        };
-
-        SearchSuggestEnabled = true;
-        DefaultSearchEngine = "Google";
-
-        ExtensionSettings = cfg.extensionSettings;
-      } // lib.optionalAttrs (cfg.homepage != null) {
-        Homepage = {
-          URL = cfg.homepage;
-          Locked = false;
-        };
-      };
     };
   };
 }
