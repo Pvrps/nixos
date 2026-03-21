@@ -88,22 +88,22 @@
       micsave.enable = true;
     };
 
-    git = {
+    programs.git = {
       userName = "purps";
       userEmail = "github@purps.ca";
     };
-    fish = {
+    programs.fish = {
       aliases = {
         cp = "cp -i";
         mv = "mv -i";
         mkdir = "mkdir -p";
       };
     };
-    easyeffects = {
+    programs.easyeffects = {
       preset = "blue_yeti";
       presetSource = ../../../modules/home-manager/programs/easyeffects/blue_yeti.json;
     };
-    niri = {
+    programs.niri = {
       xwaylandDisplay = ":11";
       outputs = [
         ''          output "DP-1" {
@@ -121,17 +121,18 @@
                     }''
       ];
     };
-    ssh = {
+    programs.ssh = {
       githubKeyPath = "/run/secrets/github-ssh-key";
     };
-    opencode = {
+    programs.opencode = {
       context7 = {
         enable = true;
+
         apiKeyPath = "/run/secrets/context7-api-key";
       };
       superpowers.enable = true;
     };
-    yazi = {
+    programs.yazi = {
       sftp = {
         windwaker = {
           host = "10.0.10.16";
@@ -140,20 +141,21 @@
         };
       };
     };
-    flatpak = {
+    programs.flatpak = {
       packages = [
         "com.github.tchx84.Flatseal"
         "com.usebottles.bottles"
       ];
     };
-    obs = {
+    programs.obs = {
       plugins.multiRtmp = {
         enable = true;
+
         version = "0.7.3.2";
         hash = "sha256-ZPRYm2pUoTyJt9YTNOtBdItKTOxaE8y4DzJdYIt0Hus=";
       };
     };
-    discord = {
+    programs.discord = {
       plugins = {
         ClearURLs.enable = true;
         dearrow.enable = true;
@@ -162,6 +164,7 @@
         OnePingPerDM.enable = true;
         PinDMs = {
           enable = true;
+
           canCollapseDmSection = true;
           pinOrder = 1;
         };
@@ -182,6 +185,7 @@
         mentionAvatars.enable = true;
         messageLogger = {
           enable = true;
+
           collapseDeleted = true;
           ignoreBots = true;
           ignoreSelf = true;
@@ -192,6 +196,7 @@
         platformIndicators.enable = true;
         relationshipNotifier = {
           enable = true;
+
           notices = true;
         };
         reverseImageSearch.enable = true;
@@ -202,6 +207,7 @@
         showHiddenThings.enable = true;
         silentMessageToggle = {
           enable = true;
+
           autoDisable = false;
         };
         silentTyping.enable = false;
@@ -215,12 +221,14 @@
         youtubeAdblock.enable = true;
         streamingCodecDisabler = {
           enable = true;
+
           disableVP8Codec = true;
           disableVP9Codec = true;
           disableAv1Codec = true;
         };
         fakeNitro = {
           enable = true;
+
           enableStreamQualityBypass = true;
           enableEmojiBypass = true;
           enableStickerBypass = true;
@@ -228,7 +236,7 @@
         webScreenShareFixes.enable = true;
       };
     };
-    zen = {
+    programs.zen = {
       profiles.Personal = {
         id = 0;
         name = "Personal";

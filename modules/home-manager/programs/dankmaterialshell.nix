@@ -57,12 +57,12 @@ in {
       };
     };
 
-    custom.niri.keybinds = [
+    custom.programs.niri.keybinds = [
       ''Mod+D { spawn "dms" "ipc" "call" "spotlight" "toggle"; }''
       ''Mod+C { spawn "dms" "ipc" "call" "control-center" "toggle"; }''
     ];
 
-    custom.niri.layerRules = [
+    custom.programs.niri.layerRules = [
       ''        layer-rule {
                   match namespace=r#"^dms-notifications"#
                   block-out-from "screen-capture"

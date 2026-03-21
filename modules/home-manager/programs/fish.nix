@@ -5,12 +5,19 @@
 }: let
   cfg = config.custom.programs.fish;
 in {
-  options.custom.programs.fish.enable = lib.mkEnableOption "Fish shell";
+  options.custom = {
+    programs.fish.enable = lib.mkEnableOption "Fish shell";
+    programs.fish.aliases = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = {};
+      description = "Custom aliases for fish shell";
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     programs.fish = {
       enable = true;
-      shellAliases = config.custom.fish.aliases;
+      shellAliases = cfg.aliases;
       interactiveShellInit = ''
         set fish_greeting
       '';

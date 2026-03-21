@@ -11,7 +11,16 @@ in {
     inputs.nixcord.homeModules.nixcord
   ];
 
-  options.custom.programs.discord.enable = lib.mkEnableOption "Discord via nixcord/equibop";
+  options.custom = {
+    programs.discord = {
+      enable = lib.mkEnableOption "Discord via nixcord/equibop";
+      plugins = lib.mkOption {
+        type = lib.types.attrsOf lib.types.anything;
+        default = {};
+        description = "Nixcord plugins configuration";
+      };
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     programs.nixcord = {
@@ -23,15 +32,15 @@ in {
         frameless = true;
         themeLinks = [
         ];
-        plugins = config.custom.discord.plugins // {webRichPresence.enable = true;};
+        plugins = cfg.plugins // {webRichPresence.enable = true;};
       };
     };
 
-    custom.niri.startupCommands = [
+    custom.programs.niri.startupCommands = [
       ''"bash" "-c" "nm-online -q --timeout=30 || true; equibop --start-minimized > /dev/null 2>&1"''
     ];
 
-    custom.niri.windowRules = [
+    custom.programs.niri.windowRules = [
       ''        window-rule {
                   match app-id="equibop" title="Discord Updater"
                   match app-id="equibop" title="Checking for updates..."

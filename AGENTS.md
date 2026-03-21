@@ -51,10 +51,10 @@ in {
 ```
 
 - Import it in `home/users/<user>/default.nix` and set `.enable = true;` there
-- Declare any new `custom.*` options in `modules/home-manager/custom.nix`
+- Declare any new `custom.*` options directly in the module they configure
 - Hardware IDs and user-specific values → `custom.*` option + value in `home/users/<user>/default.nix`
-- Compositor keybinds → append to `custom.niri.keybinds`; window/layer rules → `custom.niri.windowRules` / `custom.niri.layerRules`
-- Default terminal → `custom.niri.defaultTerminal = lib.mkDefault "<cmd>";` (not in `keybinds`)
+- Compositor keybinds → append to `custom.programs.niri.keybinds`; window/layer rules → `custom.programs.niri.windowRules` / `custom.programs.niri.layerRules`
+- Default terminal → `custom.programs.niri.defaultTerminal = lib.mkDefault "<cmd>";` (not in `keybinds`)
 
 Mutual exclusion between conflicting modules (e.g. `dankmaterialshell`/`noctalia`):
 ```nix
@@ -64,7 +64,7 @@ assertions = [{
 }];
 ```
 
-Single-selection class (e.g. terminal emulator): both modules set `custom.niri.defaultTerminal = lib.mkDefault "<cmd>";` — Nix raises a merge conflict at eval time, no assertion needed.
+Single-selection class (e.g. terminal emulator): both modules set `custom.programs.niri.defaultTerminal = lib.mkDefault "<cmd>";` — Nix raises a merge conflict at eval time, no assertion needed.
 
 Dependency on another module:
 ```nix
@@ -77,11 +77,11 @@ assertions = [{
 Checklist:
 - [ ] `mkEnableOption` + `mkIf cfg.enable` skeleton
 - [ ] No hardcoded user values or hardware identifiers
-- [ ] Compositor keybinds/rules via `custom.niri.*`
+- [ ] Compositor keybinds/rules via `custom.programs.niri.*`
 - [ ] Mutual exclusion asserted if conflicting
 - [ ] Dependencies asserted
 - [ ] Imported and enabled in `home/users/<user>/default.nix`
-- [ ] New `custom.*` options declared in `modules/home-manager/custom.nix`
+- [ ] New `custom.*` options declared directly in the module they configure
 
 ## Error reference
 

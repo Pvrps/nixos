@@ -57,6 +57,6 @@ in {
     # Use mkDefault so that if another terminal module is enabled and also sets
     # defaultTerminal, Nix's module system raises a conflict error — the same
     # mutual-exclusion mechanism used by dankmaterialshell/noctalia.
-    custom.niri.defaultTerminal = lib.mkDefault "foot";
+    custom.programs.niri.defaultTerminal = lib.mkDefault "foot";
   };
 }

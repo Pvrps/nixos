@@ -11,10 +11,24 @@ in {
     inputs.zen-browser.homeModules.twilight
   ];
 
-  options.custom.programs.zen.enable = lib.mkEnableOption "Zen browser";
+  options.custom = {
+    programs.zen = {
+      enable = lib.mkEnableOption "Zen browser";
+      profiles = lib.mkOption {
+        type = lib.types.attrsOf lib.types.anything;
+        default = {};
+        description = "Zen browser profiles configuration";
+      };
+      extensionSettings = lib.mkOption {
+        type = lib.types.attrsOf lib.types.anything;
+        default = {};
+        description = "Zen browser extension settings";
+      };
+    };
+  };
 
   config = lib.mkIf cfg.enable {
-    stylix.targets.zen-browser.profileNames = builtins.attrNames config.custom.zen.profiles;
+    stylix.targets.zen-browser.profileNames = builtins.attrNames cfg.profiles;
 
     xdg.mimeApps.defaultApplications = {
       "text/html" = "zen.desktop";
@@ -28,7 +42,7 @@ in {
       enable = true;
       languagePacks = ["en-US"];
 
-      inherit (config.custom.zen) profiles;
+      inherit (cfg) profiles;
 
       policies = {
         Preferences = {
@@ -69,7 +83,7 @@ in {
         SearchSuggestEnabled = true;
         DefaultSearchEngine = "Google";
 
-        ExtensionSettings = config.custom.zen.extensionSettings;
+        ExtensionSettings = cfg.extensionSettings;
       };
     };
   };

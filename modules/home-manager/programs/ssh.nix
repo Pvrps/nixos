@@ -5,7 +5,16 @@
 }: let
   cfg = config.custom.programs.ssh;
 in {
-  options.custom.programs.ssh.enable = lib.mkEnableOption "SSH client configuration";
+  options.custom = {
+    programs.ssh = {
+      enable = lib.mkEnableOption "SSH client configuration";
+      githubKeyPath = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Path to the SSH key for github.com";
+      };
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     programs.ssh = {
@@ -30,11 +39,11 @@ in {
             controlPersist = "no";
           };
         }
-        (lib.mkIf (config.custom.ssh.githubKeyPath != null) {
+        (lib.mkIf (cfg.githubKeyPath != null) {
           "github.com" = {
             hostname = "github.com";
             user = "git";
-            identityFile = config.custom.ssh.githubKeyPath;
+            identityFile = cfg.githubKeyPath;
           };
         })
       ];

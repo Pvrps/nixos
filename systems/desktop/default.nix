@@ -4,7 +4,6 @@ _: {
     ./disko.nix
     ./persist.nix
 
-    ../../modules/nixos/custom.nix
     ../../modules/nixos/core.nix
     ../../modules/nixos/users.nix
     ../../modules/nixos/nvidia.nix

@@ -6,9 +6,23 @@
   ...
 }: let
   cfg = config.custom.programs.opencode;
-  inherit (config.custom.opencode) context7 superpowers;
+  inherit (cfg) context7 superpowers;
 in {
-  options.custom.programs.opencode.enable = lib.mkEnableOption "OpenCode AI coding assistant";
+  options.custom = {
+    programs.opencode = {
+      enable = lib.mkEnableOption "OpenCode AI coding assistant";
+      context7 = {
+        enable = lib.mkEnableOption "Context7 MCP Server";
+        apiKeyPath = lib.mkOption {
+          type = lib.types.str;
+          description = "Path to the Context7 API key secret";
+        };
+      };
+      superpowers = {
+        enable = lib.mkEnableOption "Superpowers skills and plugin for OpenCode";
+      };
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     home = {

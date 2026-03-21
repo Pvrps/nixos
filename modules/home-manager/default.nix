@@ -1,7 +1,5 @@
 {
   imports = [
-    ./custom.nix
-
     ./programs/bolt.nix
     ./programs/clapper.nix
     ./programs/dankmaterialshell.nix

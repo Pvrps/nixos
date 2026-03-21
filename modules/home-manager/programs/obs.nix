@@ -5,7 +5,6 @@
   ...
 }: let
   cfg = config.custom.programs.obs;
-  inherit (config.custom) obs;
 
   mkPlugin = {
     name,
@@ -21,16 +20,34 @@
   };
 
   pluginFiles =
-    lib.optionalAttrs obs.plugins.multiRtmp.enable
+    lib.optionalAttrs cfg.plugins.multiRtmp.enable
     (mkPlugin {
       name = "obs-multi-rtmp";
       src = pkgs.fetchurl {
-        url = "https://github.com/sorayuki/obs-multi-rtmp/releases/download/${obs.plugins.multiRtmp.version}/obs-multi-rtmp-0.7.3.0-x86_64-linux-gnu.deb";
-        inherit (obs.plugins.multiRtmp) hash;
+        url = "https://github.com/sorayuki/obs-multi-rtmp/releases/download/${cfg.plugins.multiRtmp.version}/obs-multi-rtmp-0.7.3.0-x86_64-linux-gnu.deb";
+        inherit (cfg.plugins.multiRtmp) hash;
       };
     });
 in {
-  options.custom.programs.obs.enable = lib.mkEnableOption "OBS Studio via Flatpak with plugin management";
+  options.custom = {
+    programs.obs = {
+      enable = lib.mkEnableOption "OBS Studio via Flatpak with plugin management";
+      plugins = {
+        multiRtmp = {
+          enable = lib.mkEnableOption "obs-multi-rtmp multistream plugin";
+          version = lib.mkOption {
+            type = lib.types.str;
+            default = "0.7.3.2";
+            description = "GitHub release tag for obs-multi-rtmp";
+          };
+          hash = lib.mkOption {
+            type = lib.types.str;
+            description = "SHA256 hash of the .deb release asset";
+          };
+        };
+      };
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     assertions = [
@@ -40,7 +57,7 @@ in {
       }
     ];
 
-    custom.flatpak.packages = lib.mkAfter ["com.obsproject.Studio"];
+    custom.programs.flatpak.packages = lib.mkAfter ["com.obsproject.Studio"];
 
     home.file = pluginFiles;
   };

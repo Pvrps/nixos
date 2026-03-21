@@ -4,9 +4,38 @@
   ...
 }: let
   cfg = config.custom.programs.yazi;
-  yaziCfg = config.custom.yazi;
 in {
-  options.custom.programs.yazi.enable = lib.mkEnableOption "Yazi terminal file manager";
+  options.custom = {
+    programs.yazi = {
+      enable = lib.mkEnableOption "Yazi terminal file manager";
+      sftp = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.submodule {
+          options = {
+            host = lib.mkOption {
+              type = lib.types.str;
+              description = "SFTP Host";
+            };
+            user = lib.mkOption {
+              type = lib.types.str;
+              description = "SFTP User";
+            };
+            port = lib.mkOption {
+              type = lib.types.int;
+              default = 22;
+              description = "SFTP Port";
+            };
+            passwordSecret = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Path to file containing the password";
+            };
+          };
+        });
+        default = {};
+        description = "SFTP server configurations for Yazi VFS";
+      };
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     programs.yazi = {
@@ -16,7 +45,7 @@ in {
       enableFishIntegration = true;
     };
 
-    home.activation.setupYaziVfs = lib.mkIf (yaziCfg.sftp != {}) (lib.hm.dag.entryAfter ["writeBoundary"] ''
+    home.activation.setupYaziVfs = lib.mkIf (cfg.sftp != {}) (lib.hm.dag.entryAfter ["writeBoundary"] ''
       YAZI_CONFIG_DIR="''${XDG_CONFIG_HOME:-$HOME/.config}/yazi"
       mkdir -p "$YAZI_CONFIG_DIR"
       VFS_TOML="$YAZI_CONFIG_DIR/vfs.toml"
@@ -38,7 +67,7 @@ in {
           ''}
           echo "" >> "$VFS_TOML"
         '')
-        yaziCfg.sftp)}
+        cfg.sftp)}
     '');
   };
 }

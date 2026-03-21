@@ -5,7 +5,21 @@
 }: let
   cfg = config.custom.programs.git;
 in {
-  options.custom.programs.git.enable = lib.mkEnableOption "Git version control";
+  options.custom = {
+    programs.git = {
+      enable = lib.mkEnableOption "Git version control";
+      userName = lib.mkOption {
+        type = lib.types.str;
+        default = "Anonymous";
+        description = "Git user name";
+      };
+      userEmail = lib.mkOption {
+        type = lib.types.str;
+        default = "anonymous@localhost";
+        description = "Git user email";
+      };
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     programs.git = {
@@ -15,8 +29,8 @@ in {
       ];
       settings = {
         user = {
-          name = config.custom.git.userName;
-          email = config.custom.git.userEmail;
+          name = cfg.userName;
+          email = cfg.userEmail;
         };
         core = {
           whitespace = "fix,-indent-with-non-tab,trailing-space,cr-at-eol";

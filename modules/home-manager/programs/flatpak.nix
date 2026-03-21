@@ -11,7 +11,16 @@ in {
     inputs.nix-flatpak.homeManagerModules.nix-flatpak
   ];
 
-  options.custom.programs.flatpak.enable = lib.mkEnableOption "Flatpak via nix-flatpak";
+  options.custom = {
+    programs.flatpak = {
+      enable = lib.mkEnableOption "Flatpak via nix-flatpak";
+      packages = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "List of Flatpak packages to install";
+      };
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     services.flatpak = {
@@ -31,7 +40,7 @@ in {
       update.auto.enable = false;
       uninstallUnmanaged = false;
 
-      inherit (config.custom.flatpak) packages;
+      inherit (cfg) packages;
     };
   };
 }

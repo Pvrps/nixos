@@ -15,7 +15,7 @@ in {
       }
     ];
 
-    custom.flatpak.packages = ["com.adamcake.Bolt"];
+    custom.programs.flatpak.packages = ["com.adamcake.Bolt"];
 
     # Java AWT/Swing fixes for Wayland compositors:
     #
@@ -47,7 +47,7 @@ in {
       JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2 -Dsun.java2d.opengl=false -Dsun.java2d.xrender=false
     '';
 
-    custom.niri.windowRules = [
+    custom.programs.niri.windowRules = [
       # Keep the small launcher window floating so it doesn't hijack a tile slot.
       ''        window-rule {
                   match app-id=r#"^com\.adamcake\.Bolt$"#
