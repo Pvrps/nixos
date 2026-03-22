@@ -298,12 +298,6 @@
   };
 
   xdg.dataFile = {
-    "Steam/steamui/skins/space-theme".source = pkgs.fetchFromGitHub {
-      owner = "SpaceTheme";
-      repo = "Steam";
-      rev = "51aa406d8aea29f0e106a194b1e9dddc84458691";
-      sha256 = "0qisvmqkr0syjb05xfclngnhmigbj9jja5m34swkd5r4jd6j6f02";
-    };
 
     "millennium/plugins/extendium".source = pkgs.fetchzip {
       url = "https://github.com/BossSloth/Extendium/releases/download/v1.1.1/Extendium-plugin-1.1.1.zip";
