@@ -20,6 +20,7 @@
     sessionVariables = {
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";
       LIBVA_DRIVER_NAME = "nvidia";
+      NVD_BACKEND = "direct";
       PROTON_ENABLE_NVAPI = "1";
     };
   };

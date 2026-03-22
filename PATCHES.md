@@ -25,12 +25,13 @@ This document tracks programs in the NixOS configuration that require custom pat
   * `modules/home-manager/programs/obs.nix`: Contains a custom script (`mkPlugin`) that manually downloads the `obs-multi-rtmp` `.deb` package, extracts it via `dpkg-deb`, and writes the `.so` and `.locale` files directly into the local user Flatpak plugin directory (`~/.var/app/com.obsproject.Studio/config/obs-studio/plugins`).
 
 ## Discord (Nixcord / Equibop)
-* **What**: Screen share and codec workarounds.
-* **Why**: Hardware encoding for VP8/VP9/AV1 frequently crashes or results in black screens when attempting to screen share under Wayland on Linux. Forcing a fallback to H.264 is necessary for stability.
-* **Last Revisited**: 2026-03-21
+* **What**: Screen share hardware encoding fixes on Wayland + NVIDIA.
+* **Why**: Native Wayland PipeWire screensharing on Electron requires specific VAAPI flags and `NVD_BACKEND=direct`. Previously, hardware encoding crashed, requiring a fallback to software H.264 which caused extreme lag and pixelation. This patch correctly initializes the NVIDIA VAAPI pipeline and passes the required flags to the Equibop executable wrapper so hardware VP8/VP9 encoding succeeds.
+* **Last Revisited**: 2026-03-22
 * **Related Files**:
-  * `home/users/purps/default.nix`: Explicitly enables `webScreenShareFixes` and manually disables the VP8, VP9, and AV1 codecs in the `nixcord` configuration to force H.264 fallback.
-  * `modules/home-manager/programs/discord.nix`: Contains the base nixcord/equibop setup and Niri window rules that prevent the background updater from taking over the screen.
+  * `modules/nixos/nvidia.nix`: Exports `NVD_BACKEND=direct` so `nvidia-vaapi-driver` initializes properly on Wayland.
+  * `modules/home-manager/programs/discord.nix`: Wraps the `equibop` package to pass `LD_LIBRARY_PATH` for `libva` and the necessary Electron flags (`--enable-features=VaapiVideoEncoder,VaapiVideoDecoder...`).
+  * `home/users/purps/default.nix`: Disables the previous `StreamingCodecDisabler` (H.264 software fallback) and `FakeNitro.enableStreamQualityBypass` (which choked encoders with uncompressed 1440p+ requests), while keeping `webScreenShareFixes` enabled to remove the 2500 kbps Chromium cap.
 
 ## Steam
 * **What**: Window manager (Niri) notification toast workarounds.

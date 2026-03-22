@@ -57,16 +57,22 @@ in {
       };
     };
 
-    custom.programs.niri.keybinds = [
-      ''Mod+D { spawn "dms" "ipc" "call" "spotlight" "toggle"; }''
-      ''Mod+C { spawn "dms" "ipc" "call" "control-center" "toggle"; }''
-    ];
+    custom.programs.niri = {
+      keybinds = [
+        ''Mod+D { spawn "dms" "ipc" "call" "spotlight" "toggle"; }''
+        ''Mod+C { spawn "dms" "ipc" "call" "control-center" "toggle"; }''
+      ];
 
-    custom.programs.niri.layerRules = [
-      ''        layer-rule {
-                  match namespace=r#"^dms-notifications"#
-                  block-out-from "screen-capture"
-              }''
-    ];
+      startupCommands = [
+        ''"bash" "-c" "dms run --session"''
+      ];
+
+      layerRules = [
+        ''          layer-rule {
+                      match namespace=r#"^dms-notifications"#
+                      block-out-from "screen-capture"
+                  }''
+      ];
+    };
   };
 }

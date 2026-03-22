@@ -6,6 +6,25 @@
   ...
 }: let
   cfg = config.custom.programs.discord;
+  fixed-equibop = (pkgs.equibop.override {inherit (pkgs) electron;})
+    .overrideAttrs (old: {
+    postFixup = let
+      libPath = with pkgs;
+        lib.makeLibraryPath [
+          libva
+          stdenv.cc.cc.lib
+        ];
+    in
+      (old.postFixup or "")
+      + ''
+        wrapProgram $out/bin/equibop \
+          --prefix LD_LIBRARY_PATH : "${libPath}" \
+          --add-flags "--enable-features=VaapiVideoEncoder,VaapiVideoDecoder,VaapiIgnoreDriverChecks,CanvasOopRasterization" \
+          --add-flags "--disable-features=UseChromeOSDirectVideoDecoder" \
+          --add-flags "--ozone-platform=wayland" \
+          --add-flags "--disable-gpu-memory-buffer-video-frames"
+      '';
+  });
 in {
   imports = [
     inputs.nixcord.homeModules.nixcord
@@ -26,6 +45,7 @@ in {
     programs.nixcord = {
       enable = true;
       equibop.enable = true;
+      equibop.package = fixed-equibop;
 
       config = {
         useQuickCss = true;

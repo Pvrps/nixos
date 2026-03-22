@@ -14,6 +14,7 @@
 
   config = {
     hardware.bluetooth.enable = true;
+    hardware.bluetooth.settings.main.experimental = true;
 
     # Geist must be a system-level font so Flatpak exposes it via /run/host/fonts.
     # Home-manager fonts live in the Nix store and aren't reachable inside the sandbox.
@@ -72,6 +73,7 @@
 
     environment.systemPackages = with pkgs; [
       seahorse
+      pkgs.gnome-bluetooth
     ];
   };
 }

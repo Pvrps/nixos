@@ -214,16 +214,16 @@
         whoReacted.enable = true;
         youtubeAdblock.enable = true;
         streamingCodecDisabler = {
-          enable = true;
+          enable = false;
 
-          disableVP8Codec = true;
-          disableVP9Codec = true;
-          disableAv1Codec = true;
+          disableVP8Codec = false;
+          disableVP9Codec = false;
+          disableAv1Codec = false;
         };
         fakeNitro = {
           enable = true;
 
-          enableStreamQualityBypass = true;
+          enableStreamQualityBypass = false;
           enableEmojiBypass = true;
           enableStickerBypass = true;
         };
