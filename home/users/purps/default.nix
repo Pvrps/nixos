@@ -298,7 +298,7 @@
   };
 
   xdg.dataFile = {
-    "millennium/skins/space-theme".source = pkgs.fetchFromGitHub {
+    "Steam/steamui/skins/space-theme".source = pkgs.fetchFromGitHub {
       owner = "SpaceTheme";
       repo = "Steam";
       rev = "51aa406d8aea29f0e106a194b1e9dddc84458691";
