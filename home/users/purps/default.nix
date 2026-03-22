@@ -47,6 +47,7 @@
 
     sessionVariables = {
       NIXOS_OZONE_WL = "1";
+      XDG_DATA_DIRS = "$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share";
     };
   };
 
@@ -81,6 +82,7 @@
       easyeffects.enable = true;
       gnomeKeyring.enable = true;
       spotify.enable = true;
+      pinta.enable = true;
     };
 
     scripts = {
@@ -298,7 +300,6 @@
   };
 
   xdg.dataFile = {
-
     "millennium/plugins/extendium".source = pkgs.fetchzip {
       url = "https://github.com/BossSloth/Extendium/releases/download/v1.1.1/Extendium-plugin-1.1.1.zip";
       sha256 = "0dg7q27ppzri6vqk24s1v6d6q8d0iicw3igdqc55pc8g050v1pfx";

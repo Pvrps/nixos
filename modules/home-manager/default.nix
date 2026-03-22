@@ -26,7 +26,7 @@
     ./programs/steam.nix
     ./programs/yazi.nix
     ./programs/zen.nix
-
+    ./programs/pinta.nix
     ./scripts/capture.nix
     ./scripts/gitingest.nix
     ./scripts/micsave.nix
