@@ -74,6 +74,7 @@
     environment.systemPackages = with pkgs; [
       seahorse
       pkgs.gnome-bluetooth
+      pkgs.blueman
     ];
   };
 }

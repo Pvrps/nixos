@@ -88,6 +88,7 @@ in {
     custom.programs.niri = {
       startupCommands = [
         ''"bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell; else dms run --session; fi"''
+        ''"blueman-applet"''
       ];
 
       keybinds = [
