@@ -54,7 +54,6 @@
     programs = {
       helix.enable = true;
       noctalia.enable = true;
-      dankmaterialshell.enable = false;
       niri.enable = true;
       yazi.enable = true;
       fish.enable = true;
@@ -82,7 +81,6 @@
       easyeffects.enable = true;
       gnomeKeyring.enable = true;
       spotify.enable = true;
-      #firebot.enable = true;
     };
 
     scripts = {

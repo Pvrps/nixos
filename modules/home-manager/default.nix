@@ -2,11 +2,9 @@
   imports = [
     ./programs/bolt.nix
     ./programs/clapper.nix
-    ./programs/dankmaterialshell.nix
     ./programs/discord.nix
     ./programs/arrpc.nix
     ./programs/easyeffects
-    ./programs/firebot.nix
     ./programs/fish.nix
     ./programs/flatpak.nix
     ./programs/foot.nix

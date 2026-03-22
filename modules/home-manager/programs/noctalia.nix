@@ -20,10 +20,6 @@ in {
         assertion = config.custom.system.wayland.enable;
         message = "noctalia module requires a Wayland compositor to be enabled (e.g. custom.programs.niri.enable = true).";
       }
-      {
-        assertion = !config.custom.programs.dankmaterialshell.enable;
-        message = "noctalia and dankmaterialshell cannot both be enabled — they share Mod+D and Mod+C keybinds.";
-      }
     ];
 
     programs.noctalia-shell = {
