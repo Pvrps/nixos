@@ -210,7 +210,7 @@
         typingIndicator.enable = true;
         typingTweaks.enable = false;
         unlockedAvatarZoom.enable = true;
-        volumeBooster.enable = true;
+        #volumeBooster.enable = true;
         whoReacted.enable = true;
         youtubeAdblock.enable = true;
         streamingCodecDisabler = {
