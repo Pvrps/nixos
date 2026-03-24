@@ -15,9 +15,18 @@
   boot = {
     initrd.availableKernelModules = ["nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "nvidia_drm" "nvidia_modeset" "nvidia" "nvidia_uvm"];
     initrd.kernelModules = [];
-    kernelModules = ["kvm-amd"];
-    extraModulePackages = [];
+    kernelModules = [
+      "kvm-amd"
+      "v4l2loopback"
+    ];
+    extraModulePackages = with config.boot.kernelPackages; [
+      v4l2loopback
+    ];
+    extraModprobeConfig = ''
+      options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1
+    '';
   };
+  security.polkit.enable = true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

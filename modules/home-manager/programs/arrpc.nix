@@ -22,10 +22,10 @@
   fetch-arrpc-db = pkgs.writeShellScript "fetch-arrpc-db" ''
     ${pkgs.coreutils}/bin/mkdir -p ~/.config/arrpc
     # Fetch the live database from Discord's API
-    ${pkgs.curl}/bin/curl -sL "https://discordapp.com/api/v8/applications/detectable" -o ~/.config/arrpc/detectable.json.tmp
+    ${pkgs.curl}/bin/curl -sL "https://discord.com/api/v9/applications/detectable" -o ~/.config/arrpc/detectable.json.tmp
 
-    # Only replace if the download was successful (valid JSON)
-    if ${pkgs.jq}/bin/jq -e . ~/.config/arrpc/detectable.json.tmp >/dev/null 2>&1; then
+    # Only replace if the download was successful (valid JSON array)
+    if ${pkgs.jq}/bin/jq -e 'type == "array"' ~/.config/arrpc/detectable.json.tmp >/dev/null 2>&1; then
       ${pkgs.coreutils}/bin/mv ~/.config/arrpc/detectable.json.tmp ~/.config/arrpc/detectable.json
     else
       ${pkgs.coreutils}/bin/rm -f ~/.config/arrpc/detectable.json.tmp
