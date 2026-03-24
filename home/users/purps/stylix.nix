@@ -2,8 +2,6 @@
   stylix = {
     enable = true;
 
-    #base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
-
     base16Scheme = {
       base00 = "14171d"; # inkBg0     (Background)
       base01 = "1f1f26"; # inkBg1     (Lighter BG / Status)
@@ -37,6 +35,13 @@
     opacity = {
       terminal = 0.9;
       popups = 0.9;
+    };
+
+    iconTheme = {
+      enable = true;
+      package = pkgs.papirus-icon-theme;
+      dark = "Papirus-Dark";
+      light = "Papirus-Light";
     };
 
     cursor = {
