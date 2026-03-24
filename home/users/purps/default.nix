@@ -1,6 +1,7 @@
 {
   pkgs,
   inputs,
+  lib,
   ...
 }: {
   imports = [
@@ -142,11 +143,12 @@
       ];
     };
     programs.obs = {
-      plugins.multiRtmp = {
-        enable = true;
-
-        version = "0.7.3.2";
-        hash = "sha256-ZPRYm2pUoTyJt9YTNOtBdItKTOxaE8y4DzJdYIt0Hus=";
+      plugins = {
+        aitumStreamSuite = {
+          enable = true;
+          version = "1.1.0";
+          hash = "sha256-ICh2KnXqdiwbFJFVkOtBytuknryECxj3uOsiTr2BI1k=";
+        };
       };
     };
     programs.discord = {

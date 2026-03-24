@@ -16,16 +16,17 @@
     base = ".var/app/com.obsproject.Studio/config/obs-studio/plugins/${name}";
   in {
     "${base}/bin/64bit/${name}.so".source = "${extracted}/usr/lib/x86_64-linux-gnu/obs-plugins/${name}.so";
-    "${base}/data/locale".source = "${extracted}/usr/share/obs/obs-plugins/${name}/locale";
+    # Map the entire data directory instead of just locale, as modern plugins have UI assets
+    "${base}/data".source = "${extracted}/usr/share/obs/obs-plugins/${name}";
   };
 
-  pluginFiles =
-    lib.optionalAttrs cfg.plugins.multiRtmp.enable
+  aitumStreamSuiteFiles =
+    lib.optionalAttrs cfg.plugins.aitumStreamSuite.enable
     (mkPlugin {
-      name = "obs-multi-rtmp";
+      name = "aitum-stream-suite";
       src = pkgs.fetchurl {
-        url = "https://github.com/sorayuki/obs-multi-rtmp/releases/download/${cfg.plugins.multiRtmp.version}/obs-multi-rtmp-0.7.3.0-x86_64-linux-gnu.deb";
-        inherit (cfg.plugins.multiRtmp) hash;
+        url = "https://github.com/Aitum/obs-aitum-stream-suite/releases/download/${cfg.plugins.aitumStreamSuite.version}/aitum-stream-suite-linux-gnu.deb";
+        inherit (cfg.plugins.aitumStreamSuite) hash;
       };
     });
 in {
@@ -33,12 +34,12 @@ in {
     programs.obs = {
       enable = lib.mkEnableOption "OBS Studio via Flatpak with plugin management";
       plugins = {
-        multiRtmp = {
-          enable = lib.mkEnableOption "obs-multi-rtmp multistream plugin";
+        aitumStreamSuite = {
+          enable = lib.mkEnableOption "Aitum Stream Suite plugin";
           version = lib.mkOption {
             type = lib.types.str;
-            default = "0.7.3.2";
-            description = "GitHub release tag for obs-multi-rtmp";
+            default = "1.1.0";
+            description = "GitHub release tag for aitum-stream-suite";
           };
           hash = lib.mkOption {
             type = lib.types.str;
@@ -59,6 +60,8 @@ in {
 
     custom.programs.flatpak.packages = lib.mkAfter ["com.obsproject.Studio"];
 
-    home.file = pluginFiles;
+    home.file = lib.mkMerge [
+      aitumStreamSuiteFiles
+    ];
   };
 }
