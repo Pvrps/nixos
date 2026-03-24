@@ -6,25 +6,27 @@
   ...
 }: let
   cfg = config.custom.programs.discord;
-  fixed-equibop = (pkgs.equibop.override {inherit (pkgs) electron;})
-    .overrideAttrs (old: {
-    postFixup = let
-      libPath = with pkgs;
-        lib.makeLibraryPath [
-          libva
-          stdenv.cc.cc.lib
-        ];
-    in
-      (old.postFixup or "")
-      + ''
-        wrapProgram $out/bin/equibop \
-          --prefix LD_LIBRARY_PATH : "${libPath}" \
-          --add-flags "--enable-features=VaapiVideoEncoder,VaapiVideoDecoder,VaapiIgnoreDriverChecks,CanvasOopRasterization" \
-          --add-flags "--disable-features=UseChromeOSDirectVideoDecoder" \
-          --add-flags "--ozone-platform=wayland" \
-          --add-flags "--disable-gpu-memory-buffer-video-frames"
-      '';
-  });
+  # fixed-equibop = (pkgs.equibop.override {inherit (pkgs) electron;})
+  #   .overrideAttrs (old: {
+  #   postFixup = let
+  #     libPath = with pkgs;
+  #       lib.makeLibraryPath [
+  #         libva
+  #         stdenv.cc.cc.lib
+  #       ];
+  #   in
+  #     (old.postFixup or "")
+  #     + ''
+  #       wrapProgram $out/bin/equibop \
+  #         --prefix LD_LIBRARY_PATH : "${libPath}" \
+  #         --set LIBVA_DRIVER_NAME "nvidia" \
+  #         --set NVD_BACKEND "direct" \
+  #         --add-flags "--enable-features=VaapiVideoEncoder,VaapiVideoDecoder,VaapiIgnoreDriverChecks,VaapiOnNvidiaGPUs,CanvasOopRasterization" \
+  #         --add-flags "--disable-features=UseChromeOSDirectVideoDecoder" \
+  #         --add-flags "--ozone-platform=wayland" \
+  #         --add-flags "--disable-gpu-memory-buffer-video-frames"
+  #     '';
+  # });
 in {
   imports = [
     inputs.nixcord.homeModules.nixcord
@@ -44,8 +46,17 @@ in {
   config = lib.mkIf cfg.enable {
     programs.nixcord = {
       enable = true;
-      equibop.enable = true;
-      equibop.package = fixed-equibop;
+      #equibop.enable = true;
+      #equibop.package = fixed-equibop;
+
+      discord.enable = false;
+      vesktop = {
+        enable = true;
+        useSystemVencord = false;
+        settings = {
+          arRPC = false;
+        };
+      };
 
       config = {
         useQuickCss = true;
@@ -57,13 +68,13 @@ in {
     };
 
     custom.programs.niri.startupCommands = [
-      ''"bash" "-c" "nm-online -q --timeout=30 || true; equibop --start-minimized > /dev/null 2>&1"''
+      ''"bash" "-c" "nm-online -q --timeout=30 || true; vesktop --start-minimized > /dev/null 2>&1"''
     ];
 
     custom.programs.niri.windowRules = [
       ''        window-rule {
-                  match app-id="equibop" title="Discord Updater"
-                  match app-id="equibop" title="Checking for updates..."
+                  match app-id="vesktop" title="Discord Updater"
+                  match app-id="vesktop" title="Checking for updates..."
                   open-floating true
                   open-maximized false
               }''

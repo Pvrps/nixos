@@ -154,7 +154,7 @@
         ClearURLs.enable = true;
         dearrow.enable = true;
         imageZoom.enable = true;
-        normalizeMessageLinks.enable = true;
+        #normalizeMessageLinks.enable = true;
         OnePingPerDM.enable = true;
         PinDMs = {
           enable = true;
@@ -163,7 +163,7 @@
           pinOrder = 1;
         };
         shikiCodeblocks.enable = true;
-        musicControls.enable = true;
+        #musicControls.enable = true;
         betterGifPicker.enable = true;
         biggerStreamPreview.enable = true;
         callTimer.enable = true;
