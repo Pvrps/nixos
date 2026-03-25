@@ -57,7 +57,7 @@
             "dry": -80.01,
             "hpf-frequency": 10.0,
             "hpf-mode": "Off",
-            "hysteresis": true,
+            "hysteresis": false,
             "hysteresis-threshold": -35.0,
             "hysteresis-zone": -6.0,
             "input-gain": 0.0,
