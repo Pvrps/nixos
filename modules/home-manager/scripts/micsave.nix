@@ -12,7 +12,7 @@
     GIT="${pkgs.git}/bin/git"
 
     CONFIG_DIR="/persist/etc/nixos"
-    PRESET_FILE="home/programs/easyeffects/blue_yeti.json"
+    PRESET_FILE="modules/home-manager/programs/easyeffects/blue_yeti.json"
 
     if ! $GIT -C "$CONFIG_DIR" diff --quiet -- "$PRESET_FILE" 2>/dev/null; then
       echo "Changes detected in EasyEffects preset:"
