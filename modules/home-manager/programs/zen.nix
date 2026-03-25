@@ -47,60 +47,67 @@ in {
       enable = true;
       languagePacks = ["en-US"];
 
-      inherit (cfg) profiles;
-
-      policies =
-        {
-          Preferences =
-            {
-              "browser.startup.page" = 3;
-              "browser.sessionStore.resume_from_crash" = true;
-            }
+      profiles = lib.mapAttrs (name: profile:
+        profile
+        // {
+          settings =
+            (profile.settings or {})
             // lib.optionalAttrs (cfg.homepage != null) {
+              "zen.urlbar.replace-newtab" = false;
+              "browser.startup.page" = 1;
               "browser.startup.homepage" = cfg.homepage;
+              "browser.newtab.url" = cfg.homepage;
             };
+        })
+      cfg.profiles;
 
-          AutofillAddressEnabled = false;
-          AutofillCreditCardEnabled = false;
-          DisableAppUpdate = true;
-          DisableFeedbackCommands = true;
-          DisableFirefoxStudies = true;
-          DisplayBookmarksToolbar = false;
-          DisablePocket = true;
-          DisableTelemetry = true;
-          DontCheckDefaultBrowser = true;
-          NoDefaultBookmarks = true;
-          OfferToSaveLogins = false;
-          PasswordManagerEnabled = false;
-
-          EnableTrackingProtection = {
-            Value = true;
-            Locked = true;
-            Cryptomining = true;
-            Fingerprinting = true;
-          };
-
-          FirefoxHome = {
-            Search = true;
-            Pocket = false;
-            Snippets = false;
-            TopSites = false;
-            Highlights = false;
-            SponsoredPocket = false;
-            SponsoredTopSites = false;
-          };
-
-          SearchSuggestEnabled = true;
-          DefaultSearchEngine = "Google";
-
-          ExtensionSettings = cfg.extensionSettings;
-        }
-        // lib.optionalAttrs (cfg.homepage != null) {
-          Homepage = {
-            URL = cfg.homepage;
-            Locked = false;
-          };
+      policies = {
+        Preferences = {
+          "browser.sessionStore.resume_from_crash" = true;
         };
+
+        AutofillAddressEnabled = false;
+        AutofillCreditCardEnabled = false;
+        DisableAppUpdate = true;
+        DisableFeedbackCommands = true;
+        DisableFirefoxStudies = true;
+        DisplayBookmarksToolbar = false;
+        DisablePocket = true;
+        DisableTelemetry = true;
+        DontCheckDefaultBrowser = true;
+        NoDefaultBookmarks = true;
+        OfferToSaveLogins = false;
+        PasswordManagerEnabled = false;
+
+        EnableTrackingProtection = {
+          Value = true;
+          Locked = true;
+          Cryptomining = true;
+          Fingerprinting = true;
+        };
+
+        FirefoxHome = {
+          Search = true;
+          Pocket = false;
+          Snippets = false;
+          TopSites = false;
+          Highlights = false;
+          SponsoredPocket = false;
+          SponsoredTopSites = false;
+        };
+
+        SearchSuggestEnabled = true;
+        DefaultSearchEngine = "Google";
+
+        ExtensionSettings =
+          cfg.extensionSettings
+          // lib.optionalAttrs (cfg.homepage != null) {
+            "newtaboverride@agenedia.com" = {
+              install_url = "https://addons.mozilla.org/firefox/downloads/latest/new-tab-override/latest.xpi";
+              installation_mode = "force_installed";
+            };
+          };
+      };
     };
   };
 }
