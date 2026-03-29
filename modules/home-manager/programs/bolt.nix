@@ -43,8 +43,7 @@ in {
     #   and is unaffected by either flag.
     xdg.dataFile."flatpak/overrides/com.adamcake.Bolt".text = ''
       [Environment]
-      _JAVA_AWT_WM_NONREPARENTING=1
-      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2 -Dsun.java2d.opengl=false -Dsun.java2d.xrender=false
+      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2
     '';
 
     custom.programs.niri.windowRules = [
