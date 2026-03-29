@@ -60,6 +60,11 @@ in {
 
     custom.programs.flatpak.packages = lib.mkAfter ["com.obsproject.Studio"];
 
+    # Fix audio crackling when opening OBS by increasing PulseAudio latency
+    home.activation.obsPulseLatency = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      run ${pkgs.flatpak}/bin/flatpak override --user --env=PULSE_LATENCY_MSEC=60 com.obsproject.Studio
+    '';
+
     home.file = lib.mkMerge [
       aitumStreamSuiteFiles
     ];
