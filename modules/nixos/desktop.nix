@@ -44,8 +44,8 @@
               "monitor.alsa.rules" = [
                 {
                   matches = [
-                    { "node.name" = "~alsa_input.*"; }
-                    { "node.name" = "~alsa_output.*"; }
+                    {"node.name" = "~alsa_input.*";}
+                    {"node.name" = "~alsa_output.*";}
                   ];
                   actions = {
                     update-props = {
