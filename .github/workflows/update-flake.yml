@@ -30,5 +30,11 @@ jobs:
       - name: Update flake.lock
         run: nix flake update --commit-lock-file
 
+      - name: Verify flake
+        run: nix flake check
+
+      - name: Dry Build System
+        run: nix build .#nixosConfigurations.desktop.config.system.build.toplevel --dry-run
+
       - name: Push changes
         run: git push
