@@ -131,8 +131,11 @@
     programs.opencode = {
       context7 = {
         enable = true;
-
         apiKeyPath = "/run/secrets/context7-api-key";
+      };
+      bravesearch = {
+        enable = true;
+        apiKeyPath = "/run/secrets/bravesearch-api-key";
       };
       superpowers.enable = true;
     };

@@ -6,7 +6,7 @@
   ...
 }: let
   cfg = config.custom.programs.opencode;
-  inherit (cfg) context7 superpowers;
+  inherit (cfg) context7 bravesearch superpowers;
 in {
   options.custom = {
     programs.opencode = {
@@ -16,6 +16,13 @@ in {
         apiKeyPath = lib.mkOption {
           type = lib.types.str;
           description = "Path to the Context7 API key secret";
+        };
+      };
+      bravesearch = {
+        enable = lib.mkEnableOption "Brave Search MCP Server";
+        apiKeyPath = lib.mkOption {
+          type = lib.types.str;
+          description = "Path to the Brave Search API key secret";
         };
       };
       superpowers = {
@@ -30,23 +37,35 @@ in {
         [
           opencode
         ]
-        ++ lib.optionals context7.enable [pkgs.nodejs];
+        ++ lib.optionals (context7.enable || bravesearch.enable) [pkgs.nodejs];
 
       file = {
-        ".config/opencode/opencode.json" = lib.mkIf context7.enable {
+        ".config/opencode/opencode.json" = lib.mkIf (context7.enable || bravesearch.enable) {
           text = builtins.toJSON {
             "$schema" = "https://opencode.ai/config.json";
-            mcp = {
-              context7 = {
-                type = "local";
-                command = [
-                  "${pkgs.bash}/bin/bash"
-                  "-c"
-                  "npx -y @upstash/context7-mcp --api-key $(cat ${context7.apiKeyPath} | tr -d '\n')"
-                ];
-                enabled = true;
-              };
-            };
+            mcp =
+              (lib.optionalAttrs context7.enable {
+                context7 = {
+                  type = "local";
+                  command = [
+                    "${pkgs.bash}/bin/bash"
+                    "-c"
+                    "npx -y @upstash/context7-mcp --api-key $(cat ${context7.apiKeyPath} | tr -d '\n')"
+                  ];
+                  enabled = true;
+                };
+              })
+              // (lib.optionalAttrs bravesearch.enable {
+                bravesearch = {
+                  type = "local";
+                  command = [
+                    "${pkgs.bash}/bin/bash"
+                    "-c"
+                    "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') npx -y @modelcontextprotocol/server-brave-search"
+                  ];
+                  enabled = true;
+                };
+              });
           };
         };
 
