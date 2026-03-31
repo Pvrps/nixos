@@ -137,28 +137,46 @@ fi
 if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
 	log_info "Generating initial secrets for host '$HOST'..."
 
-	log_info "Discovering users from NixOS configuration for host '$HOST'..."
-	USERS_STR=$(nix --experimental-features "nix-command flakes" eval --json ".#nixosConfigurations.$HOST.config.users.users" | nix-shell -p jq --run 'jq -r "to_entries | map(select(.value.isNormalUser)) | map(.key) | join(\" \")"')
+# =========================================================================
+# 1. DISCOVER USERS & CREATE PERSISTENT DIRECTORIES (Runs Every Time)
+# =========================================================================
+log_info "Discovering users from NixOS configuration for host '$HOST'..."
+# We extract both the username and their UID (defaulting to 1000 if not set) as "user:uid"
+USERS_STR=$(nix --experimental-features "nix-command flakes" eval --json ".#nixosConfigurations.$HOST.config.users.users" | nix-shell -p jq --run 'jq -r "to_entries | map(select(.value.isNormalUser)) | map(\"\(.key):\(.value.uid // 1000)\") | join(\" \")"')
 
-	if [ -z "$USERS_STR" ]; then
-		log_error "Could not automatically determine users for host '$HOST'. Check your configuration."
-		exit 1
-	fi
+if [ -z "$USERS_STR" ]; then
+	log_error "Could not automatically determine users for host '$HOST'. Check your configuration."
+	exit 1
+fi
 
-	log_info "Found users for setup: $(echo "$USERS_STR" | xargs)"
-	read -ra USERS <<<"$USERS_STR"
+read -ra USERS <<<"$USERS_STR"
+
+for USER_ENTRY in "${USERS[@]}"; do
+	# Parse the string splitting by the colon (e.g. "purps:1000")
+	INSTALL_USER="${USER_ENTRY%%:*}"
+	USER_UID="${USER_ENTRY##*:}"
+
+	if [ -z "$INSTALL_USER" ] || [ "$INSTALL_USER" == "root" ]; then continue; fi
+
+	log_info "Pre-creating persistent home directory for $INSTALL_USER (UID: $USER_UID)..."
+	mkdir -p "/mnt/persist/home/$INSTALL_USER"
+	
+	# Set correct ownership right away so Impermanence doesn't cause Permission Denied errors
+	# 100 is the default GID for the 'users' group in NixOS
+	chown "$USER_UID:100" "/mnt/persist/home/$INSTALL_USER"
+done
+
+# =========================================================================
+# 2. GENERATE SECRETS (Only runs if secrets.yaml is missing or empty)
+# =========================================================================
+if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
+	log_info "Generating initial secrets for host '$HOST'..."
 
 	TMP_SECRETS=$(mktemp)
 
-	for INSTALL_USER in "${USERS[@]}"; do
-		INSTALL_USER=$(echo "$INSTALL_USER" | xargs) # Trim whitespace
+	for USER_ENTRY in "${USERS[@]}"; do
+		INSTALL_USER="${USER_ENTRY%%:*}"
 		if [ -z "$INSTALL_USER" ] || [ "$INSTALL_USER" == "root" ]; then continue; fi
-
-		# Pre-create home directory for user
-		log_info "Pre-creating home directory for $INSTALL_USER at /mnt/persist/home/$INSTALL_USER"
-		mkdir -p "/mnt/persist/home/$INSTALL_USER"
-		# Note: we let systemd-sysusers and NixOS handle correct UID/GID chown on boot,
-		# but we can do a generic chown here if we know the user is the first. We'll skip it to be safe.
 
 		echo -n "Enter password for user $INSTALL_USER: "
 		read -s USER_PASSWORD
