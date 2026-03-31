@@ -19,6 +19,7 @@
       fd
       nerd-fonts.jetbrains-mono
       noto-fonts
+      just
     ];
   };
 
@@ -28,6 +29,7 @@
       yazi.enable = true;
       fish.enable = true;
       git.enable = true;
+      ssh.enable = true;
       starship.enable = true;
       lazygit.enable = true;
     };
@@ -35,6 +37,9 @@
     programs.git = {
       userName = "purps";
       userEmail = "github@purps.ca";
+    };
+    programs.ssh = {
+      githubKeyPath = "/run/secrets/github-ssh-key";
     };
     programs.fish = {
       aliases = {

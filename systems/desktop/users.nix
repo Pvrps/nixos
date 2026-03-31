@@ -10,6 +10,7 @@
     users = {
       purps = {
         isNormalUser = true;
+        uid = 1000;
         extraGroups = ["wheel" "networkmanager" "video" "audio" "input"];
         shell = pkgs.fish;
         hashedPasswordFile = config.sops.secrets."purps-password".path;

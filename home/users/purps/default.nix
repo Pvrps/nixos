@@ -93,9 +93,6 @@
                     }''
       ];
     };
-    programs.ssh = {
-      githubKeyPath = "/run/secrets/github-ssh-key";
-    };
     programs.opencode = {
       context7 = {
         enable = true;

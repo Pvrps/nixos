@@ -10,11 +10,13 @@
     users = {
       mike = {
         isNormalUser = true;
+        uid = 1001;
         extraGroups = ["networkmanager" "video" "audio" "input"];
         hashedPasswordFile = config.sops.secrets."mike-password".path;
       };
       purps = {
         isNormalUser = true;
+        uid = 1000;
         extraGroups = ["wheel" "networkmanager" "video" "audio" "input"];
         shell = pkgs.fish;
         hashedPasswordFile = config.sops.secrets."purps-password".path;
@@ -31,6 +33,11 @@
       };
       "mike-password" = {
         neededForUsers = true;
+      };
+      "github-ssh-key" = {
+        owner = "purps";
+        group = "users";
+        mode = "0600";
       };
     };
   };

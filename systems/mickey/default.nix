@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   imports = [
     ./hardware.nix
     ./disko.nix
@@ -17,11 +21,17 @@
       enable = true;
     };
 
+    displayManager.defaultSession = "lxqt-wayland";
     displayManager.sddm = {
       enable = true;
       wayland.enable = true;
+      settings = {
+        Users = {
+          HideUsers = "purps";
+        };
+      };
     };
-    desktopManager.plasma6.enable = true;
+    xserver.desktopManager.lxqt.enable = true;
 
     pipewire = {
       enable = true;
@@ -30,9 +40,11 @@
       pulse.enable = true;
       jack.enable = true;
     };
-
-    teamviewer.enable = true;
   };
+
+  services.displayManager.sessionPackages = [pkgs.lxqt.lxqt-wayland-session];
+
+  programs.labwc.enable = true;
 
   virtualisation.waydroid.enable = true;
 
