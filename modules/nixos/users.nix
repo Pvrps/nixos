@@ -34,6 +34,11 @@
         group = "users";
         mode = "0600";
       };
+      "bravesearch-api-key" = {
+        owner = "purps";
+        group = "users";
+        mode = "0600";
+      };
       "sftp-windwaker-password" = {
         owner = "purps";
         group = "users";
