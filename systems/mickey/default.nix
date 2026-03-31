@@ -20,7 +20,6 @@
       enable = true;
     };
 
-    displayManager.defaultSession = "lxqt-wayland";
     displayManager.sddm = {
       enable = true;
       wayland.enable = true;
@@ -30,7 +29,9 @@
         };
       };
     };
-    xserver.desktopManager.lxqt.enable = true;
+
+    desktopManager.plasma6.enable = true;
+    displayManager.defaultSession = "plasma";
 
     pipewire = {
       enable = true;
@@ -40,10 +41,6 @@
       jack.enable = true;
     };
   };
-
-  services.displayManager.sessionPackages = [pkgs.lxqt.lxqt-wayland-session];
-
-  programs.labwc.enable = true;
 
   sops.defaultSopsFile = ./secrets.yaml;
 }
