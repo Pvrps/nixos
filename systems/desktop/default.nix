@@ -15,6 +15,8 @@
   networking.hostName = "desktop";
   networking.firewall.allowedTCPPorts = [5173];
 
+  services.teamviewer.enable = true;
+
   custom.services.sshfs = {
     enable = true;
     mounts = {

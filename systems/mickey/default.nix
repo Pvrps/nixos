@@ -10,7 +10,6 @@
     ./users.nix
 
     ../../modules/nixos/core.nix
-    ../../modules/nixos/services/waydroid-init.nix
   ];
 
   networking.hostName = "mickey";
@@ -45,8 +44,6 @@
   services.displayManager.sessionPackages = [pkgs.lxqt.lxqt-wayland-session];
 
   programs.labwc.enable = true;
-
-  virtualisation.waydroid.enable = true;
 
   sops.defaultSopsFile = ./secrets.yaml;
 }
