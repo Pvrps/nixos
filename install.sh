@@ -7,27 +7,27 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 log_info() {
-	echo -e "${GREEN}[INFO]${NC} $1"
+  echo -e "${GREEN}[INFO]${NC} $1"
 }
 
 log_error() {
-	echo -e "${RED}[ERROR]${NC} $1" >&2
+  echo -e "${RED}[ERROR]${NC} $1" >&2
 }
 
 log_warn() {
-	echo -e "${YELLOW}[WARN]${NC} $1"
+  echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 if [ "$EUID" -ne 0 ]; then
-	log_error "Please run as root (use sudo)"
-	exit 1
+  log_error "Please run as root (use sudo)"
+  exit 1
 fi
 
 if [ -z "${1:-}" ]; then
-	log_error "Usage: $0 <hostname>"
-	log_info "Available hosts:"
-	ls -1 systems/ | grep -v '^\.'
-	exit 1
+  log_error "Usage: $0 <hostname>"
+  log_info "Available hosts:"
+  ls -1 systems/ | grep -v '^\.'
+  exit 1
 fi
 
 HOST="$1"
@@ -35,17 +35,17 @@ HOST_DIR="systems/$HOST"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ ! -d "$SCRIPT_DIR/$HOST_DIR" ]; then
-	log_error "Host configuration directory '$HOST_DIR' not found."
-	exit 1
+  log_error "Host configuration directory '$HOST_DIR' not found."
+  exit 1
 fi
 
 cd "$SCRIPT_DIR"
 
 log_info "Checking internet connectivity..."
 if ! ping -c 1 -W 3 8.8.8.8 >/dev/null 2>&1; then
-	log_error "No internet connectivity detected. Please connect to the internet first."
-	log_info "For WiFi, run: nmcli device wifi connect \"SSID\" password \"password\""
-	exit 1
+  log_error "No internet connectivity detected. Please connect to the internet first."
+  log_info "For WiFi, run: nmcli device wifi connect \"SSID\" password \"password\""
+  exit 1
 fi
 log_info "Internet connectivity: OK"
 
@@ -53,26 +53,26 @@ log_info "Running disko to partition and format the disk for host '$HOST'..."
 log_warn "This will WIPE THE DISK specified in $HOST_DIR/disko.nix!"
 read -r -p "Are you sure you want to continue? (yes/no): " confirm
 if [ "$confirm" != "yes" ]; then
-	log_error "Installation aborted by user."
-	exit 1
+  log_error "Installation aborted by user."
+  exit 1
 fi
 
 log_info "Starting disk partitioning with disko..."
 if ! nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko ./$HOST_DIR/disko.nix; then
-	log_error "Disko failed. Please check your disko.nix configuration."
-	exit 1
+  log_error "Disko failed. Please check your disko.nix configuration."
+  exit 1
 fi
 log_info "Disk partitioning completed successfully."
 
 if [ -f "$SCRIPT_DIR/$HOST_DIR/hardware.nix" ] && grep -q "fileSystems" "$SCRIPT_DIR/$HOST_DIR/hardware.nix"; then
-	log_info "hardware.nix already exists and seems populated; skipping generation."
+  log_info "hardware.nix already exists and seems populated; skipping generation."
 else
-	log_info "Generating hardware configuration..."
-	if ! nixos-generate-config --no-filesystems --show-hardware-config >"$SCRIPT_DIR/$HOST_DIR/hardware.nix"; then
-		log_error "Failed to generate hardware configuration."
-		exit 1
-	fi
-	log_info "Hardware configuration saved to $HOST_DIR/hardware.nix"
+  log_info "Generating hardware configuration..."
+  if ! nixos-generate-config --no-filesystems --show-hardware-config >"$SCRIPT_DIR/$HOST_DIR/hardware.nix"; then
+    log_error "Failed to generate hardware configuration."
+    exit 1
+  fi
+  log_info "Hardware configuration saved to $HOST_DIR/hardware.nix"
 fi
 
 AGE_DIR="/mnt/persist/system/sops/age"
@@ -83,25 +83,25 @@ mkdir -p "$AGE_DIR"
 
 read -r -p "Bring over own SOPS age key file using magic-wormhole? (y/N): " bring_key
 if [[ "$bring_key" =~ ^[Yy]$ ]]; then
-	log_info "Setting up magic-wormhole to receive key..."
-	log_info "On your other machine, run: wormhole send ~/.config/sops/age/keys.txt"
-	if ! nix-shell -p magic-wormhole --run "wormhole receive -o \"$TMP_KEY_FILE\""; then
-		log_error "Failed to receive key via magic-wormhole."
-		exit 1
-	fi
+  log_info "Setting up magic-wormhole to receive key..."
+  log_info "On your other machine, run: wormhole send ~/.config/sops/age/keys.txt"
+  if ! nix-shell -p magic-wormhole --run "wormhole receive -o \"$TMP_KEY_FILE\""; then
+    log_error "Failed to receive key via magic-wormhole."
+    exit 1
+  fi
 fi
 
 if [ -f "$TMP_KEY_FILE" ]; then
-	log_info "Using existing age key at $TMP_KEY_FILE"
-	cp "$TMP_KEY_FILE" "$AGE_KEY_FILE"
-	rm -f "$TMP_KEY_FILE"
+  log_info "Using existing age key at $TMP_KEY_FILE"
+  cp "$TMP_KEY_FILE" "$AGE_KEY_FILE"
+  rm -f "$TMP_KEY_FILE"
 else
-	log_info "Creating age key for sops-nix..."
-	if ! nix-shell -p age --run "age-keygen -o $AGE_KEY_FILE"; then
-		log_error "Failed to generate age key."
-		exit 1
-	fi
-	log_info "Age key created at $AGE_KEY_FILE"
+  log_info "Creating age key for sops-nix..."
+  if ! nix-shell -p age --run "age-keygen -o $AGE_KEY_FILE"; then
+    log_error "Failed to generate age key."
+    exit 1
+  fi
+  log_info "Age key created at $AGE_KEY_FILE"
 fi
 
 chown -R 0:0 "/mnt/persist/system"
@@ -112,8 +112,8 @@ SECRETS_FILE="$SCRIPT_DIR/$HOST_DIR/secrets.yaml"
 PUBLIC_KEY=$(grep "# public key:" "$AGE_KEY_FILE" | sed 's/.*public key: //')
 
 if [ -z "$PUBLIC_KEY" ]; then
-	log_error "Failed to extract public key from age key file."
-	exit 1
+  log_error "Failed to extract public key from age key file."
+  exit 1
 fi
 
 log_info "Public key: $PUBLIC_KEY"
@@ -121,21 +121,17 @@ log_info "Public key: $PUBLIC_KEY"
 SOPS_YAML="$SCRIPT_DIR/.sops.yaml"
 
 if ! grep -q "$HOST_DIR/secrets\.yaml" "$SOPS_YAML"; then
-	log_info "Adding new host rule to .sops.yaml..."
-	cat >>"$SOPS_YAML" <<EOF
+  log_info "Adding new host rule to .sops.yaml..."
+  cat >>"$SOPS_YAML" <<EOF
   - path_regex: $HOST_DIR/secrets\.yaml\$
     key_groups:
       - age:
           - $PUBLIC_KEY
 EOF
-	log_info ".sops.yaml updated successfully."
+  log_info ".sops.yaml updated successfully."
 else
-	log_info ".sops.yaml already contains a rule for this host."
+  log_info ".sops.yaml already contains a rule for this host."
 fi
-
-# Always prompt to create or update secrets if file doesn't exist or is empty/dummy
-if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
-	log_info "Generating initial secrets for host '$HOST'..."
 
 # =========================================================================
 # 1. DISCOVER USERS & CREATE PERSISTENT DIRECTORIES (Runs Every Time)
@@ -145,78 +141,78 @@ log_info "Discovering users from NixOS configuration for host '$HOST'..."
 USERS_STR=$(nix --experimental-features "nix-command flakes" eval --json ".#nixosConfigurations.$HOST.config.users.users" | nix-shell -p jq --run 'jq -r "to_entries | map(select(.value.isNormalUser)) | map(\"\(.key):\(.value.uid // 1000)\") | join(\" \")"')
 
 if [ -z "$USERS_STR" ]; then
-	log_error "Could not automatically determine users for host '$HOST'. Check your configuration."
-	exit 1
+  log_error "Could not automatically determine users for host '$HOST'. Check your configuration."
+  exit 1
 fi
 
 read -ra USERS <<<"$USERS_STR"
 
 for USER_ENTRY in "${USERS[@]}"; do
-	# Parse the string splitting by the colon (e.g. "purps:1000")
-	INSTALL_USER="${USER_ENTRY%%:*}"
-	USER_UID="${USER_ENTRY##*:}"
+  # Parse the string splitting by the colon (e.g. "purps:1000")
+  INSTALL_USER="${USER_ENTRY%%:*}"
+  USER_UID="${USER_ENTRY##*:}"
 
-	if [ -z "$INSTALL_USER" ] || [ "$INSTALL_USER" == "root" ]; then continue; fi
+  if [ -z "$INSTALL_USER" ] || [ "$INSTALL_USER" == "root" ]; then continue; fi
 
-	log_info "Pre-creating persistent home directory for $INSTALL_USER (UID: $USER_UID)..."
-	mkdir -p "/mnt/persist/home/$INSTALL_USER"
-	
-	# Set correct ownership right away so Impermanence doesn't cause Permission Denied errors
-	# 100 is the default GID for the 'users' group in NixOS
-	chown "$USER_UID:100" "/mnt/persist/home/$INSTALL_USER"
+  log_info "Pre-creating persistent home directory for $INSTALL_USER (UID: $USER_UID)..."
+  mkdir -p "/mnt/persist/home/$INSTALL_USER"
+
+  # Set correct ownership right away so Impermanence doesn't cause Permission Denied errors
+  # 100 is the default GID for the 'users' group in NixOS
+  chown "$USER_UID:100" "/mnt/persist/home/$INSTALL_USER"
 done
 
 # =========================================================================
 # 2. GENERATE SECRETS (Only runs if secrets.yaml is missing or empty)
 # =========================================================================
 if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
-	log_info "Generating initial secrets for host '$HOST'..."
+  log_info "Generating initial secrets for host '$HOST'..."
 
-	TMP_SECRETS=$(mktemp)
+  TMP_SECRETS=$(mktemp)
 
-	for USER_ENTRY in "${USERS[@]}"; do
-		INSTALL_USER="${USER_ENTRY%%:*}"
-		if [ -z "$INSTALL_USER" ] || [ "$INSTALL_USER" == "root" ]; then continue; fi
+  for USER_ENTRY in "${USERS[@]}"; do
+    INSTALL_USER="${USER_ENTRY%%:*}"
+    if [ -z "$INSTALL_USER" ] || [ "$INSTALL_USER" == "root" ]; then continue; fi
 
-		echo -n "Enter password for user $INSTALL_USER: "
-		read -s USER_PASSWORD
-		echo
-		echo -n "Confirm password for $INSTALL_USER: "
-		read -s USER_PASSWORD_CONFIRM
-		echo
+    echo -n "Enter password for user $INSTALL_USER: "
+    read -s USER_PASSWORD
+    echo
+    echo -n "Confirm password for $INSTALL_USER: "
+    read -s USER_PASSWORD_CONFIRM
+    echo
 
-		if [ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]; then
-			log_error "Passwords do not match for $INSTALL_USER. Aborting."
-			rm -f "$TMP_SECRETS"
-			exit 1
-		fi
+    if [ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]; then
+      log_error "Passwords do not match for $INSTALL_USER. Aborting."
+      rm -f "$TMP_SECRETS"
+      exit 1
+    fi
 
-		if [ -z "$USER_PASSWORD" ]; then
-			log_error "Password cannot be empty for $INSTALL_USER. Aborting."
-			rm -f "$TMP_SECRETS"
-			exit 1
-		fi
+    if [ -z "$USER_PASSWORD" ]; then
+      log_error "Password cannot be empty for $INSTALL_USER. Aborting."
+      rm -f "$TMP_SECRETS"
+      exit 1
+    fi
 
-		PASSWORD_HASH=$(echo -n "$USER_PASSWORD" | nix-shell -p mkpasswd --run "mkpasswd -m sha-512 --stdin" | tr -d '\n')
-		printf "%s-password: |\n  %s\n" "$INSTALL_USER" "$PASSWORD_HASH" >>"$TMP_SECRETS"
-	done
+    PASSWORD_HASH=$(echo -n "$USER_PASSWORD" | nix-shell -p mkpasswd --run "mkpasswd -m sha-512 --stdin" | tr -d '\n')
+    printf "%s-password: |\n  %s\n" "$INSTALL_USER" "$PASSWORD_HASH" >>"$TMP_SECRETS"
+  done
 
-	if [ -s "$TMP_SECRETS" ]; then
-		log_info "Encrypting secrets.yaml..."
-		cat "$TMP_SECRETS" >"$SECRETS_FILE"
-		if ! nix-shell -p sops --run "SOPS_AGE_KEY_FILE=$AGE_KEY_FILE sops -e -i $SECRETS_FILE"; then
-			log_error "Failed to encrypt secrets.yaml."
-			rm -f "$TMP_SECRETS"
-			exit 1
-		fi
-		log_info "Passwords created and encrypted successfully."
-	else
-		log_warn "No users provided. secrets.yaml will remain unchanged."
-	fi
-	rm -f "$TMP_SECRETS"
+  if [ -s "$TMP_SECRETS" ]; then
+    log_info "Encrypting secrets.yaml..."
+    cat "$TMP_SECRETS" >"$SECRETS_FILE"
+    if ! nix-shell -p sops --run "SOPS_AGE_KEY_FILE=$AGE_KEY_FILE sops -e -i $SECRETS_FILE"; then
+      log_error "Failed to encrypt secrets.yaml."
+      rm -f "$TMP_SECRETS"
+      exit 1
+    fi
+    log_info "Passwords created and encrypted successfully."
+  else
+    log_warn "No users provided. secrets.yaml will remain unchanged."
+  fi
+  rm -f "$TMP_SECRETS"
 else
-	log_info "secrets.yaml already exists and is encrypted; skipping user password generation."
-	log_info "If you need to edit secrets, use: sops $SECRETS_FILE"
+  log_info "secrets.yaml already exists and is encrypted; skipping user password generation."
+  log_info "If you need to edit secrets, use: sops $SECRETS_FILE"
 fi
 
 log_info "Copying configuration to /mnt/persist/etc/nixos/..."
@@ -238,8 +234,8 @@ log_info "Running nixos-install from persistent location..."
 log_warn "This may take a while..."
 
 if ! nixos-install --flake "$PERSISTENT_CONFIG#$HOST" --no-root-passwd; then
-	log_error "nixos-install failed. Please check the error messages above."
-	exit 1
+  log_error "nixos-install failed. Please check the error messages above."
+  exit 1
 fi
 
 cat <<EOF
