@@ -6,6 +6,7 @@
     ./users.nix
 
     ../../modules/nixos/core.nix
+    ../../modules/nixos/services/waydroid-init.nix
   ];
 
   networking.hostName = "mickey";
