@@ -8,10 +8,10 @@
   users = {
     mutableUsers = false;
     users = {
-      michel = {
+      mike = {
         isNormalUser = true;
         extraGroups = ["networkmanager" "video" "audio" "input"];
-        hashedPasswordFile = config.sops.secrets."michel-password".path;
+        hashedPasswordFile = config.sops.secrets."mike-password".path;
       };
       purps = {
         isNormalUser = true;
@@ -29,7 +29,7 @@
       "purps-password" = {
         neededForUsers = true;
       };
-      "michel-password" = {
+      "mike-password" = {
         neededForUsers = true;
       };
     };

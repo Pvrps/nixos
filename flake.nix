@@ -128,7 +128,7 @@
                 useUserPackages = true;
                 backupFileExtension = "backup";
                 extraSpecialArgs = {inherit inputs;};
-                users.michel = import ./home/users/michel;
+                users.mike = import ./home/users/mike;
                 users.purps = import ./home/users/purps/core.nix;
               };
             }
