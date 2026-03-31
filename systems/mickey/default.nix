@@ -14,9 +14,13 @@
   services = {
     xserver = {
       enable = true;
-      displayManager.lightdm.enable = true;
-      desktopManager.mate.enable = true;
     };
+
+    displayManager.sddm = {
+      enable = true;
+      wayland.enable = true;
+    };
+    desktopManager.plasma6.enable = true;
 
     pipewire = {
       enable = true;
@@ -28,6 +32,8 @@
 
     teamviewer.enable = true;
   };
+
+  virtualisation.waydroid.enable = true;
 
   sops.defaultSopsFile = ./secrets.yaml;
 }
