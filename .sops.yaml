@@ -7,3 +7,7 @@ creation_rules:
     key_groups:
       - age:
         - age1aesmd0esqfkv9ms8g8ur0knjqvvymzhdj3q3zzq4yqewp8ykjgqswkm7gq
+  - path_regex: systems/mickey/secrets\.yaml$
+    key_groups:
+      - age:
+          - age1aesmd0esqfkv9ms8g8ur0knjqvvymzhdj3q3zzq4yqewp8ykjgqswkm7gq
