@@ -81,6 +81,16 @@ TMP_KEY_FILE="$SCRIPT_DIR/keys.txt"
 
 mkdir -p "$AGE_DIR"
 
+read -r -p "Bring over own SOPS age key file using magic-wormhole? (y/N): " bring_key
+if [[ "$bring_key" =~ ^[Yy]$ ]]; then
+	log_info "Setting up magic-wormhole to receive key..."
+	log_info "On your other machine, run: wormhole send ~/.config/sops/age/keys.txt"
+	if ! nix-shell -p magic-wormhole --run "wormhole receive -o \"$TMP_KEY_FILE\""; then
+		log_error "Failed to receive key via magic-wormhole."
+		exit 1
+	fi
+fi
+
 if [ -f "$TMP_KEY_FILE" ]; then
 	log_info "Using existing age key at $TMP_KEY_FILE"
 	cp "$TMP_KEY_FILE" "$AGE_KEY_FILE"
