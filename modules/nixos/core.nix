@@ -24,7 +24,6 @@
     ];
   };
 
-  networking.hostName = "desktop";
   networking.networkmanager.enable = true;
 
   time.timeZone = "America/New_York";

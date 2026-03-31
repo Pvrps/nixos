@@ -5,11 +5,7 @@
   ...
 }: {
   imports = [
-    inputs.stylix.homeModules.stylix
-
-    ./stylix.nix
-
-    ../../../modules/home-manager
+    ./core.nix
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -35,17 +31,6 @@
   };
 
   home = {
-    username = "purps";
-    homeDirectory = "/home/purps";
-    stateVersion = "26.05";
-
-    packages = with pkgs; [
-      ripgrep
-      fd
-      nerd-fonts.jetbrains-mono
-      noto-fonts
-    ];
-
     sessionVariables = {
       NIXOS_OZONE_WL = "1";
       XDG_DATA_DIRS = "$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share";
@@ -54,14 +39,9 @@
 
   custom = {
     programs = {
-      helix.enable = true;
       noctalia.enable = true;
       niri.enable = true;
-      yazi.enable = true;
-      fish.enable = true;
       foot.enable = true;
-      git.enable = true;
-      starship.enable = true;
       ssh.enable = true;
       zen = {
         enable = true;
@@ -71,7 +51,6 @@
       discord.enable = true;
       arrpc.enable = true;
       opencode.enable = true;
-      lazygit.enable = true;
       clapper.enable = true;
       imv.enable = true;
       rustdesk.enable = true;
@@ -92,17 +71,6 @@
       micsave.enable = true;
     };
 
-    programs.git = {
-      userName = "purps";
-      userEmail = "github@purps.ca";
-    };
-    programs.fish = {
-      aliases = {
-        cp = "cp -i";
-        mv = "mv -i";
-        mkdir = "mkdir -p";
-      };
-    };
     programs.easyeffects = {
       preset = "blue_yeti";
       presetSource = ../../../modules/home-manager/programs/easyeffects/blue_yeti.json;

@@ -112,6 +112,28 @@
             }
           ];
         };
+
+        nixosConfigurations.mickey = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+
+          specialArgs = {inherit inputs;};
+          modules = [
+            ./systems/mickey
+            disko.nixosModules.disko
+            sops-nix.nixosModules.sops
+            home-manager.nixosModules.home-manager
+            nix-flatpak.nixosModules.nix-flatpak
+            {
+              home-manager = {
+                useUserPackages = true;
+                backupFileExtension = "backup";
+                extraSpecialArgs = {inherit inputs;};
+                users.michel = import ./home/users/michel;
+                users.purps = import ./home/users/purps/core.nix;
+              };
+            }
+          ];
+        };
       };
 
       perSystem = {pkgs, ...}: {

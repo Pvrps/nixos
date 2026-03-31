@@ -3,15 +3,16 @@
     ./hardware.nix
     ./disko.nix
     ./persist.nix
+    ./desktop.nix
+    ./users.nix
 
     ../../modules/nixos/core.nix
-    ../../modules/nixos/users.nix
     ../../modules/nixos/nvidia.nix
     ../../modules/nixos/gaming.nix
-    ../../modules/nixos/desktop.nix
     ../../modules/nixos/services/sshfs.nix
   ];
 
+  networking.hostName = "desktop";
   networking.firewall.allowedTCPPorts = [5173];
 
   custom.services.sshfs = {
