@@ -33,6 +33,7 @@
           ".mozilla/firefox"
           ".local/share/kwalletd"
           ".local/share/kactivitymanagerd"
+          ".local/share/krdpserver"
         ];
       };
 
