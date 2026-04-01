@@ -36,7 +36,7 @@
         Name=Connected Care
         Comment=Open Connected Care
         Exec=firefox https://connectedcare.mychamp.ca/Phm-PhmHome.HomePage.WR.mthr?hcis=CHMPGBL.LIVE&application=PHM
-        Icon=help-browser
+        Icon=kdesrc-build
         Terminal=false
         Type=Application
       '';
@@ -49,7 +49,7 @@
         Name=Medical Visits
         Comment=Open Medical Visits
         Exec=firefox https://epicapps.toh.ca/MyChart/Authentication/Login?postloginurl=Visits
-        Icon=help-browser
+        Icon=kdesrc-build
         Terminal=false
         Type=Application
       '';
@@ -88,7 +88,7 @@
         Name=Google
         Comment=Open Google Search
         Exec=firefox https://www.google.com
-        Icon=internet-web-browser
+        Icon=im-google
         Terminal=false
         Type=Application
       '';
@@ -101,7 +101,7 @@
         Name=Scotiabank
         Comment=Open Scotiabank
         Exec=firefox https://www.scotiaonline.scotiabank.com/
-        Icon=applications-internet
+        Icon=kmymoney
         Terminal=false
         Type=Application
       '';
@@ -114,7 +114,7 @@
         Name=Scatter Slots
         Comment=Open Scatter Slots
         Exec=firefox https://apps.facebook.com/scatterslots/?fb_source=appcenter
-        Icon=games-rpg
+        Icon=preferences-desktop-gaming
         Terminal=false
         Type=Application
       '';
