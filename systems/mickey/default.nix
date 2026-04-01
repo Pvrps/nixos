@@ -55,6 +55,11 @@
     krdp
   ];
 
+  # Force RDP server to start automatically with Plasma
+  systemd.user.services."app-org.kde.krdpserver" = {
+    wantedBy = [ "plasma-workspace.target" ];
+  };
+
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.kdePackages.xdg-desktop-portal-kde ];
