@@ -10,6 +10,7 @@
     ./users.nix
 
     ../../modules/nixos/core.nix
+    ../../modules/nixos/tailscale.nix
   ];
 
   networking.hostName = "mickey";

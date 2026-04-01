@@ -10,6 +10,7 @@
     ../../modules/nixos/nvidia.nix
     ../../modules/nixos/gaming.nix
     ../../modules/nixos/services/sshfs.nix
+    ../../modules/nixos/tailscale.nix
   ];
 
   networking.hostName = "desktop";
