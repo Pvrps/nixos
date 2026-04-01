@@ -130,39 +130,6 @@
       '';
       executable = true;
     };
-
-    file.".config/kded6rc" = {
-      text = ''
-        [Module-kscreen]
-        autoload=false
-      '';
-    };
-
-    file.".local/bin/force-1080p.sh" = {
-      text = ''
-        #!/bin/sh
-        # Wait a moment for Plasma to start
-        sleep 3
-        CONNECTED_DISP=$(${pkgs.xorg.xrandr}/bin/xrandr | ${pkgs.gnugrep}/bin/grep " connected" | ${pkgs.coreutils}/bin/head -n 1 | ${pkgs.gawk}/bin/awk '{ print $1 }')
-        if [ -n "$CONNECTED_DISP" ]; then
-          ${pkgs.xorg.xrandr}/bin/xrandr --output "$CONNECTED_DISP" --mode 1920x1080 || true
-        fi
-      '';
-      executable = true;
-    };
-
-    file.".config/autostart/force-1080p.desktop" = {
-      text = ''
-        [Desktop Entry]
-        Name=Force 1080p Resolution
-        Comment=Force 1080p to prevent 4K scale issues
-        Exec=/home/mike/.local/bin/force-1080p.sh
-        Terminal=false
-        Type=Application
-        X-KDE-autostart-phase=1
-      '';
-      executable = true;
-    };
   };
 
 
