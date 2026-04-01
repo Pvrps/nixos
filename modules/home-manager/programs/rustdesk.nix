@@ -12,5 +12,21 @@ in {
     home.packages = [
       pkgs.rustdesk-flutter
     ];
+
+    systemd.user.services.rustdesk = {
+      Unit = {
+        Description = "RustDesk Tray/Server Service";
+        After = [ "graphical-session.target" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Service = {
+        ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --server";
+        Restart = "on-failure";
+        RestartSec = 3;
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
+    };
   };
 }
