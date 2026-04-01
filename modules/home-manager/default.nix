@@ -5,6 +5,7 @@
     ./programs/discord.nix
     ./programs/arrpc.nix
     ./programs/easyeffects
+    ./programs/firefox.nix
     ./programs/fish.nix
     ./programs/flatpak.nix
     ./programs/foot.nix

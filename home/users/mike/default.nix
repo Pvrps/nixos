@@ -122,15 +122,22 @@
     };
   };
 
-  programs.firefox = {
-    enable = true;
-    policies = {
-      ExtensionSettings = {
+  custom.programs = {
+    firefox = {
+      enable = true;
+      homepage = "https://www.google.com";
+      profiles.mike = {
+        id = 0;
+        name = "mike";
+        isDefault = true;
+      };
+      extensionSettings = {
         "uBlock0@raymondhill.net" = {
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
           installation_mode = "force_installed";
         };
       };
     };
+    rustdesk.enable = true;
   };
 }

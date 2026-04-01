@@ -20,6 +20,7 @@ in {
         "$schema" = "https://starship.rs/config-schema.json";
 
         format = pkgs.lib.concatStrings [
+          "$hostname"
           "$os"
           "$shell"
           "$username"
@@ -28,6 +29,12 @@ in {
           "$line_break"
           "$character"
         ];
+
+        hostname = {
+          ssh_only = false;
+          format = "[$hostname]($style) ";
+          style = "fg:240";
+        };
 
         character = {
           success_symbol = "[❯](bold green)";
@@ -45,24 +52,24 @@ in {
           disabled = false;
           format = "$symbol ";
           symbols = {
-            Unknown = "[unknown](bold dimmed black)";
-            Debian = "[debian](bold fg:#A80030)";
-            Ubuntu = "[ubuntu](bold fg:#E95420)";
-            Windows = "[windows](bold fg:#00A4EF)";
-            NixOS = "[nix](bold fg:#8AE9ff)";
-            Kali = "[kali](bold fg:#25867B)";
+            Unknown = "[unknown](dimmed black)";
+            Debian = "[debian](fg:#A80030)";
+            Ubuntu = "[ubuntu](fg:#E95420)";
+            Windows = "[windows](fg:#00A4EF)";
+            NixOS = "[nix](fg:#8AE9ff)";
+            Kali = "[kali](fg:#25867B)";
           };
         };
 
         shell = {
           disabled = false;
           format = "[$indicator]($style) ";
-          style = "bold dimmed black";
-          unknown_indicator = "[unknown](bold dimmed black)";
-          bash_indicator = "[bsh](bold fg:#F9F1A5)";
-          pwsh_indicator = "[psh](bold fg:#F9F1A5)";
-          nu_indicator = "[nu](bold fg:#F9F1A5)";
-          fish_indicator = "[fsh](bold fg:#F9F1A5)";
+          style = "dimmed black";
+          unknown_indicator = "[unknown](dimmed black)";
+          bash_indicator = "[bsh](fg:#F9F1A5)";
+          pwsh_indicator = "[psh](fg:#F9F1A5)";
+          nu_indicator = "[nu](fg:#F9F1A5)";
+          fish_indicator = "[fsh](fg:#F9F1A5)";
         };
 
         username = {
@@ -75,7 +82,7 @@ in {
         directory = {
           disabled = false;
           format = "[$path]($style)[$read_only]($read_only_style) ";
-          style = "bold dimmed white";
+          style = "dimmed white";
           truncation_length = 1;
           fish_style_pwd_dir_length = 1;
         };
