@@ -24,6 +24,8 @@
           "Downloads"
           "Documents"
           ".mozilla/firefox"
+          ".config"
+          ".local/share"
         ];
       };
 
