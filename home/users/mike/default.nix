@@ -150,6 +150,9 @@
         };
       };
     };
-    rustdesk.enable = true;
+    rustdesk = {
+      enable = true;
+      autoStart = true;
+    };
   };
 }
