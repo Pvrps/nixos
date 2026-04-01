@@ -13,6 +13,9 @@
       "/var/lib/bluetooth"
       "/var/lib/tailscale"
       "/etc/NetworkManager/system-connections"
+      "/etc/rustdesk"
+      "/root/.config/rustdesk"
+      "/root/.local/share/rustdesk"
     ];
 
     files = [
@@ -33,7 +36,6 @@
           ".mozilla/firefox"
           ".local/share/kwalletd"
           ".local/share/kactivitymanagerd"
-          ".local/share/krdpserver"
         ];
       };
 
