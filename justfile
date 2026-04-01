@@ -2,6 +2,10 @@
 secrets host=`hostname`:
     sudo SOPS_AGE_KEY_FILE=/persist/system/sops/age/keys.txt nix run nixpkgs#sops -- systems/{{host}}/secrets.yaml
 
+# Build and set the new configuration for the next boot
+boot host=`hostname`:
+    sudo nixos-rebuild boot --flake .#{{host}}
+
 # Build and switch to the new configuration
 switch host=`hostname`:
     sudo nixos-rebuild switch --flake .#{{host}}
