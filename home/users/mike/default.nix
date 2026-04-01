@@ -13,10 +13,6 @@
     homeDirectory = "/home/mike";
     stateVersion = "26.05";
 
-    xdg.configFile."plasma-org.kde.plasma.desktop-appletsrc" = {
-      source = ./desktop-layout.conf;
-      force = true;
-    };
 
     file."Desktop/Shutdown.desktop" = {
       text = ''
@@ -135,6 +131,7 @@
       executable = true;
     };
   };
+
 
   xdg.configFile."plasma-org.kde.plasma.desktop-appletsrc" = {
     source = ./desktop-layout.conf;
