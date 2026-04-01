@@ -30,5 +30,9 @@
     };
   };
 
+  environment.systemPackages = [
+    pkgs.remmina # RDP client
+  ];
+
   sops.defaultSopsFile = ./secrets.yaml;
 }
