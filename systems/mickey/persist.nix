@@ -6,6 +6,7 @@
     hideMounts = true;
 
     directories = [
+      "/etc/ssh"
       "/var/log"
       "/var/lib/nixos"
       "/var/lib/systemd/coredump"
