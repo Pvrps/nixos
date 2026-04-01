@@ -18,3 +18,8 @@ build host=`hostname`:
 validate:
     nix run nixpkgs#alejandra -- .
     nix run nixpkgs#statix -- check .
+
+# Delete old generations and perform garbage collection
+cleanup:
+    sudo nix-collect-garbage -d
+    nix-collect-garbage -d
