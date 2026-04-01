@@ -131,6 +131,11 @@
     };
   };
 
+  xdg.configFile."plasma-org.kde.plasma.desktop-appletsrc" = {
+    source = ./desktop-layout.conf;
+    force = true;
+  };
+
   custom.programs = {
     firefox = {
       enable = true;
