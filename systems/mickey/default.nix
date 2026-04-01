@@ -19,6 +19,13 @@
   services = {
     xserver = {
       enable = true;
+      displayManager.setupCommands = ''
+        # Force the login screen to 1080p so scaling is perfect and RustDesk doesn't choke on 4K
+        CONNECTED_DISP=$(${pkgs.xorg.xrandr}/bin/xrandr | ${pkgs.gnugrep}/bin/grep " connected" | ${pkgs.coreutils}/bin/head -n 1 | ${pkgs.gawk}/bin/awk '{ print $1 }')
+        if [ -n "$CONNECTED_DISP" ]; then
+          ${pkgs.xorg.xrandr}/bin/xrandr --output "$CONNECTED_DISP" --mode 1920x1080 || true
+        fi
+      '';
     };
 
     displayManager.sddm = {
