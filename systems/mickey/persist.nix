@@ -23,6 +23,7 @@
         directories = [
           "Downloads"
           "Documents"
+          "Desktop"
           ".mozilla/firefox"
           ".local/share/kwalletd"
           ".local/share/kactivitymanagerd"
