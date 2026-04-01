@@ -24,19 +24,10 @@
           "Downloads"
           "Documents"
           "Desktop"
+          ".config"
           ".mozilla/firefox"
           ".local/share/kwalletd"
           ".local/share/kactivitymanagerd"
-        ];
-        files = [
-          ".config/kdeglobals"
-          ".config/kwalletrc"
-          ".config/plasma-org.kde.plasma.desktop-appletsrc"
-          ".config/plasmashellrc"
-          ".config/kwinrc"
-          ".config/kactivitymanagerdrc"
-          ".config/kactivitymanagerd-pluginsrc"
-
         ];
       };
 
