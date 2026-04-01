@@ -11,6 +11,7 @@
       "/var/lib/systemd/coredump"
       "/var/lib/NetworkManager"
       "/var/lib/greetd"
+      "/var/lib/tailscale"
       "/etc/NetworkManager/system-connections"
     ];
 
