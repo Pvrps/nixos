@@ -40,6 +40,13 @@
       pulse.enable = true;
       jack.enable = true;
     };
+
+    openssh = {
+      enable = true;
+      settings = {
+        PermitRootLogin = "no";
+      };
+    };
   };
 
   sops.defaultSopsFile = ./secrets.yaml;
