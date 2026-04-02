@@ -1,3 +1,7 @@
+# List all available commands
+default:
+    @just --list
+
 # Update the system secrets file
 secrets host=`hostname`:
     sudo SOPS_AGE_KEY_FILE=/persist/system/sops/age/keys.txt nix run nixpkgs#sops -- systems/{{host}}/secrets.yaml
@@ -23,3 +27,7 @@ validate:
 cleanup:
     sudo nix-collect-garbage -d
     nix-collect-garbage -d
+
+# Get the sha256 SRI hash for a given URL (useful for pkgs.fetchurl)
+hash url:
+    @nix store prefetch-file --json "{{url}}" | nix run nixpkgs#jq -- -r .hash

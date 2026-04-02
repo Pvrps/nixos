@@ -10,9 +10,9 @@
       base04 = "75797f"; # gray4      (Dark FG)
 
       # Foreground: Switched to 'fg2' (brighter) for high contrast
-      base05 = "f2f1ef"; # fg2        (Main Text - Bright White)
-      base06 = "ffffff"; # pearlWhite (Lightest Text)
-      base07 = "c5c9c7"; # fg         (Alternate Text)
+      base05 = "c5c9c7"; # fg         (Default Text - easier on the eyes for bulk reading)
+      base06 = "f2f1ef"; # fg2        (Brighter Text / Highlights)
+      base07 = "ffffff"; # pearlWhite (Lightest Text / Maximum Contrast)
 
       # The Saturated Palette (Vibrant / Poppy)
       base08 = "C93134"; # redSaturated    (Variables / Errors)
