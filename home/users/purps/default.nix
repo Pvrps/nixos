@@ -71,6 +71,11 @@
           naumovs.color-highlight
           esbenp.prettier-vscode
           vscjava.vscode-java-pack
+          redhat.java
+          vscjava.vscode-java-debug
+          vscjava.vscode-java-test
+          vscjava.vscode-maven
+          vscjava.vscode-java-dependency
           vscjava.vscode-gradle
           oderwat.indent-rainbow
         ];
