@@ -70,7 +70,8 @@
           davidanson.vscode-markdownlint
           naumovs.color-highlight
           esbenp.prettier-vscode
-          redhat.java
+          vscjava.vscode-java-pack
+          vscjava.vscode-gradle
           oderwat.indent-rainbow
         ];
         userSettings = {
