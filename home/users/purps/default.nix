@@ -70,7 +70,6 @@
           davidanson.vscode-markdownlint
           naumovs.color-highlight
           esbenp.prettier-vscode
-          visualstudioexptteam.vscodeintellicode
           redhat.java
           oderwat.indent-rainbow
         ];
