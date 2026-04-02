@@ -25,6 +25,7 @@
     ./programs/ssh.nix
     ./programs/starship.nix
     ./programs/steam.nix
+    ./programs/vscode.nix
     ./programs/yazi.nix
     ./programs/zen.nix
     ./programs/pinta.nix

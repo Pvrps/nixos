@@ -63,6 +63,40 @@
       gnomeKeyring.enable = true;
       spotify.enable = true;
       pinta.enable = true;
+      vscode = {
+        enable = true;
+        extensions = with pkgs.vscode-extensions; [
+          jnoortheen.nix-ide
+          davidanson.vscode-markdownlint
+          naumovs.color-highlight
+          esbenp.prettier-vscode
+          visualstudioexptteam.vscodeintellicode
+          redhat.java
+          oderwat.indent-rainbow
+        ];
+        userSettings = {
+          "editor.formatOnSave" = true;
+          "editor.formatOnSaveMode" = "modificationsIfAvailable";
+          "java.cleanup.actions" = [
+            "qualifyStaticMembers"
+            "addOverride"
+            "addDeprecated"
+            "stringConcatToTextBlock"
+            "invertEquals"
+            "addFinalModifier"
+            "lambdaExpressionFromAnonymousClass"
+            "lambdaExpression"
+            "switchExpression"
+            "tryWithResource"
+            "renameFileToType"
+            "organizeImports"
+            "renameUnusedLocalVariables"
+            "useSwitchForInstanceofPattern"
+          ];
+          "redhat.telemetry.enabled" = false;
+          "window.restoreWindows" = "none";
+        };
+      };
     };
 
     scripts = {
