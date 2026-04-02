@@ -19,6 +19,10 @@ in {
       (writeShellScriptBin "java8" ''
         exec "${zulu8}/bin/java" "$@"
       '')
+      # Java 11 alias
+      (writeShellScriptBin "java11" ''
+        exec "${zulu11}/bin/java" "$@"
+      '')
       # Java 17 alias
       (writeShellScriptBin "java17" ''
         exec "${zulu17}/bin/java" "$@"

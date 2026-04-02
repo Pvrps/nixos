@@ -64,7 +64,7 @@
       spotify.enable = true;
       pinta.enable = true;
       vscode = {
-        enable = true;
+        enable = false;
         extensions = with pkgs.vscode-extensions; [
           jnoortheen.nix-ide
           davidanson.vscode-markdownlint
