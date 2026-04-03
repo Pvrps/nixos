@@ -12,7 +12,7 @@
       owner = "OpenAsar";
       repo = "arrpc";
       rev = "refs/pull/143/head";
-      hash = "sha256-LcwRkhggvHsMk29Gmjs68tAV675Zc8fqpgi4xglWfBI=";
+      hash = "sha256-05W372x8O6J+rOax4wrAhu4xia5YUx8HYjLk80l5hxQ=";
     };
 
     patches = [../patches/arrpc.patch];

@@ -46,7 +46,7 @@ in {
       shfmt # bash
       rustfmt # rust
       prettierd # js, ts, html, css, scss, json, markdown
-      nodePackages.sql-formatter # sql
+      sql-formatter # sql
       php # php-only
       python3
       dotnet-sdk # c-sharp / msbuild
