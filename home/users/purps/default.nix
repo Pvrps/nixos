@@ -98,8 +98,17 @@
             "renameUnusedLocalVariables"
             "useSwitchForInstanceofPattern"
           ];
+          "java.format.settings.url" = "/home/purps/.config/Code/User/eclipse-formatter.xml";
           "redhat.telemetry.enabled" = false;
           "window.restoreWindows" = "none";
+          "[java]" = {
+            "editor.defaultFormatter" = "redhat.java";
+            "editor.formatOnSave" = true;
+          };
+          "editor.codeActionsOnSave" = {
+            "source.generate.finalModifiers" = "explicit";
+            "source.organizeImports" = "explicit";
+          };
         };
       };
     };

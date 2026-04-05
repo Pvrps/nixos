@@ -27,6 +27,8 @@ in {
       extensions = cfg.extensions;
     };
 
+    home.file.".config/Code/User/eclipse-formatter.xml".source = ./eclipse-formatter.xml;
+
     home.activation.vscodeMutableSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
       VSCODE_SETTINGS_DIR="''${HOME}/.config/Code/User"
       VSCODE_SETTINGS_FILE="''${VSCODE_SETTINGS_DIR}/settings.json"
