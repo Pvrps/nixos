@@ -1,4 +1,8 @@
-{config, pkgs, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   imports = [
     ./hardware.nix
     ./disko.nix
@@ -29,10 +33,6 @@
       };
     };
   };
-
-  environment.systemPackages = [
-    pkgs.remmina # RDP client
-  ];
 
   sops.defaultSopsFile = ./secrets.yaml;
 }
