@@ -34,6 +34,7 @@
       echo "Changes detected in EasyEffects preset:"
       echo ""
       $GIT -C "$CONFIG_DIR" diff --no-index "$GIT_PRESET_PATH" "$LIVE_PRESET" | $DELTA \
+        --diff-so-fancy \
         --width=80 \
         2>/dev/null || true
       echo ""
