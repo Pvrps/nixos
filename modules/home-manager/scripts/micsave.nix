@@ -33,9 +33,9 @@
     if [ ! -f "$GIT_PRESET_PATH" ]; then
       GIT_SUM=""
     else
-      GIT_SUM=$(sha256sum "$GIT_PRESET_PATH" | awk '{print $1}')
+      GIT_SUM=$(sha256sum "$GIT_PRESET_PATH"); GIT_SUM=''${GIT_SUM%% *}
     fi
-    LIVE_SUM=$(sha256sum "$LIVE_PRESET" | awk '{print $1}')
+    LIVE_SUM=$(sha256sum "$LIVE_PRESET"); LIVE_SUM=''${LIVE_SUM%% *}
 
     if [[ "$LIVE_SUM" != "$GIT_SUM" ]]; then
       cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
