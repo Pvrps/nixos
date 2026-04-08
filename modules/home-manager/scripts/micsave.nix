@@ -13,8 +13,8 @@
     DELTA="${pkgs.delta}/bin/delta"
 
     CONFIG_DIR="/persist/etc/nixos"
-    PRESET_FILE="modules/home-manager/programs/easyeffects/blue_yeti.json"
-    LIVE_PRESET="$HOME/.local/share/easyeffects/input/blue_yeti.json"
+    PRESET_FILE="modules/home-manager/programs/easyeffects/${config.custom.programs.easyeffects.preset}.json"
+    LIVE_PRESET="$HOME/.local/share/easyeffects/input/${config.custom.programs.easyeffects.preset}.json"
 
     if [[ ! -f "$LIVE_PRESET" ]]; then
       echo "Live preset not found at $LIVE_PRESET. Is EasyEffects installed and has it been run at least once?"

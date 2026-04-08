@@ -55,8 +55,13 @@ in {
         else
           # Local edits detected: prompt user
           echo "Warning: EasyEffects preset has local changes."
-          printf "EasyEffects preset has local changes. Run micsave first? [y/N]: "
-          read -r -t 30 REPLY </dev/tty || REPLY="N"
+          if [ -e /dev/tty ]; then
+            printf "EasyEffects preset has local changes. Run micsave first? [y/N]: "
+            read -r -t 30 REPLY </dev/tty || REPLY="N"
+          else
+            echo "Warning: Non-interactive context detected. Skipping preset update. Run 'micsave' manually."
+            REPLY="N"
+          fi
           if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]; then
             echo "Please run 'micsave' in your terminal to commit your preset changes, then re-run: home-manager switch"
           else
