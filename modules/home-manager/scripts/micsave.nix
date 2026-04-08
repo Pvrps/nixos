@@ -24,8 +24,7 @@
     GIT_PRESET_PATH="$CONFIG_DIR/$PRESET_FILE"
 
     show_diff() {
-      $GIT -C "$CONFIG_DIR" diff "$PRESET_FILE" | $DELTA \
-        --diff-so-fancy \
+      $GIT -C "$CONFIG_DIR" diff --no-index "$GIT_PRESET_PATH" "$LIVE_PRESET" | $DELTA \
         --width=80 \
         2>/dev/null || return 0
     }
@@ -38,13 +37,14 @@
     LIVE_SUM=$(sha256sum "$LIVE_PRESET"); LIVE_SUM=''${LIVE_SUM%% *}
 
     if [[ "$LIVE_SUM" != "$GIT_SUM" ]]; then
-      cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
-      chmod 644 "$GIT_PRESET_PATH"
-
       echo "Changes detected in EasyEffects preset:"
       echo ""
       show_diff
       echo ""
+
+      cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
+      chmod 644 "$GIT_PRESET_PATH"
+
 
       read -p "Commit these changes? (y/n): " -n 1 -r
       echo
