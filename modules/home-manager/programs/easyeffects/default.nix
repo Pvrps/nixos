@@ -55,7 +55,7 @@ in {
         else
           # Local edits detected: prompt user
           echo "Warning: EasyEffects preset has local changes."
-          printf "Overwrite local changes with Nix store version? [y/N]: "
+          printf "EasyEffects preset has local changes. Run micsave first? [y/N]: "
           read -r -t 30 REPLY </dev/tty || REPLY="N"
           if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]; then
             echo "Please run 'micsave' in your terminal to commit your preset changes, then re-run: home-manager switch"
