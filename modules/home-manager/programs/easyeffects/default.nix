@@ -46,8 +46,8 @@ in {
         echo "EasyEffects preset installed: $PRESET_FILE"
       else
         # Live file exists: compare hashes to detect local edits
-        LIVE_HASH=$(sha256sum "$PRESET_FILE" | awk '{print $1}')
-        STORE_HASH=$(sha256sum "$PRESET_SOURCE" | awk '{print $1}')
+        LIVE_HASH=$(sha256sum "$PRESET_FILE"); LIVE_HASH=''${LIVE_HASH%% *}
+        STORE_HASH=$(sha256sum "$PRESET_SOURCE"); STORE_HASH=''${STORE_HASH%% *}
 
         if [ "$LIVE_HASH" = "$STORE_HASH" ]; then
           # No local edits: preset is already up to date, nothing to do
