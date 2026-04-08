@@ -6,7 +6,10 @@
   ...
 }: let
   cfg = config.custom.programs.opencode;
-  inherit (cfg) context7 bravesearch superpowers;
+  inherit (cfg) context7 bravesearch superpowers claudeAuth;
+
+  # Write the config file if any feature that needs it is enabled
+  needsConfigFile = context7.enable || bravesearch.enable || claudeAuth.enable;
 in {
   options.custom = {
     programs.opencode = {
@@ -28,6 +31,9 @@ in {
       superpowers = {
         enable = lib.mkEnableOption "Superpowers skills and plugin for OpenCode";
       };
+      claudeAuth = {
+        enable = lib.mkEnableOption "opencode-claude-auth plugin (use Claude Code credentials in OpenCode)";
+      };
     };
   };
 
@@ -40,33 +46,40 @@ in {
         ++ lib.optionals (context7.enable || bravesearch.enable) [pkgs.nodejs];
 
       file = {
-        ".config/opencode/opencode.json" = lib.mkIf (context7.enable || bravesearch.enable) {
-          text = builtins.toJSON {
-            "$schema" = "https://opencode.ai/config.json";
-            mcp =
-              (lib.optionalAttrs context7.enable {
-                context7 = {
-                  type = "local";
-                  command = [
-                    "${pkgs.bash}/bin/bash"
-                    "-c"
-                    "npx -y @upstash/context7-mcp --api-key $(cat ${context7.apiKeyPath} | tr -d '\n')"
-                  ];
-                  enabled = true;
-                };
-              })
-              // (lib.optionalAttrs bravesearch.enable {
-                bravesearch = {
-                  type = "local";
-                  command = [
-                    "${pkgs.bash}/bin/bash"
-                    "-c"
-                    "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') npx -y @modelcontextprotocol/server-brave-search"
-                  ];
-                  enabled = true;
-                };
-              });
-          };
+        ".config/opencode/opencode.json" = lib.mkIf needsConfigFile {
+          text = builtins.toJSON (
+            {
+              "$schema" = "https://opencode.ai/config.json";
+            }
+            // lib.optionalAttrs claudeAuth.enable {
+              plugin = ["opencode-claude-auth"];
+            }
+            // lib.optionalAttrs (context7.enable || bravesearch.enable) {
+              mcp =
+                (lib.optionalAttrs context7.enable {
+                  context7 = {
+                    type = "local";
+                    command = [
+                      "${pkgs.bash}/bin/bash"
+                      "-c"
+                      "npx -y @upstash/context7-mcp --api-key $(cat ${context7.apiKeyPath} | tr -d '\n')"
+                    ];
+                    enabled = true;
+                  };
+                })
+                // (lib.optionalAttrs bravesearch.enable {
+                  bravesearch = {
+                    type = "local";
+                    command = [
+                      "${pkgs.bash}/bin/bash"
+                      "-c"
+                      "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') npx -y @modelcontextprotocol/server-brave-search"
+                    ];
+                    enabled = true;
+                  };
+                });
+            }
+          );
         };
 
         ".config/opencode/plugins/superpowers.js" = lib.mkIf superpowers.enable {

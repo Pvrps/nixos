@@ -101,6 +101,7 @@
           "java.format.settings.url" = "/home/purps/.config/Code/User/eclipse-formatter.xml";
           "redhat.telemetry.enabled" = false;
           "window.restoreWindows" = "none";
+          "git.confirmSync" = false;
           "[java]" = {
             "editor.defaultFormatter" = "redhat.java";
             "editor.formatOnSave" = true;
@@ -151,6 +152,7 @@
         apiKeyPath = "/run/secrets/bravesearch-api-key";
       };
       superpowers.enable = true;
+      claudeAuth.enable = true;
     };
     programs.flatpak = {
       packages = [
