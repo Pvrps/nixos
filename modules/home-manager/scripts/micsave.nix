@@ -14,6 +14,14 @@
 
     CONFIG_DIR="/persist/etc/nixos"
     PRESET_FILE="modules/home-manager/programs/easyeffects/blue_yeti.json"
+    LIVE_PRESET="$HOME/.local/share/easyeffects/input/blue_yeti.json"
+
+    if [[ ! -f "$LIVE_PRESET" ]]; then
+      echo "Live preset not found at $LIVE_PRESET. Is EasyEffects installed and has it been run at least once?"
+      exit 1
+    fi
+
+    GIT_PRESET_PATH="$CONFIG_DIR/$PRESET_FILE"
 
     show_diff() {
       $GIT -C "$CONFIG_DIR" diff "$PRESET_FILE" | $DELTA \
@@ -22,7 +30,12 @@
         2>/dev/null || return 0
     }
 
-    if ! $GIT -C "$CONFIG_DIR" diff --quiet -- "$PRESET_FILE" 2>/dev/null; then
+    LIVE_SUM=$(sha256sum "$LIVE_PRESET" | awk '{print $1}')
+    GIT_SUM=$(sha256sum "$GIT_PRESET_PATH" | awk '{print $1}')
+
+    if [[ "$LIVE_SUM" != "$GIT_SUM" ]]; then
+      cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
+
       echo "Changes detected in EasyEffects preset:"
       echo ""
       show_diff | head -40
@@ -47,7 +60,6 @@
       fi
     else
       echo "No changes to EasyEffects preset."
-      echo "Make sure to Export the preset (three dots > Export) before running micsave."
       $NOTIFY "MicSave" "No changes detected"
     fi
   '';
