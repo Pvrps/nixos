@@ -39,6 +39,7 @@
 
     if [[ "$LIVE_SUM" != "$GIT_SUM" ]]; then
       cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
+      chmod 644 "$GIT_PRESET_PATH"
 
       echo "Changes detected in EasyEffects preset:"
       echo ""
