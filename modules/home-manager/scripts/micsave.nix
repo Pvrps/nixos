@@ -30,15 +30,19 @@
         2>/dev/null || return 0
     }
 
+    if [ ! -f "$GIT_PRESET_PATH" ]; then
+      GIT_SUM=""
+    else
+      GIT_SUM=$(sha256sum "$GIT_PRESET_PATH" | awk '{print $1}')
+    fi
     LIVE_SUM=$(sha256sum "$LIVE_PRESET" | awk '{print $1}')
-    GIT_SUM=$(sha256sum "$GIT_PRESET_PATH" | awk '{print $1}')
 
     if [[ "$LIVE_SUM" != "$GIT_SUM" ]]; then
       cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
 
       echo "Changes detected in EasyEffects preset:"
       echo ""
-      show_diff | head -40
+      show_diff
       echo ""
 
       read -p "Commit these changes? (y/n): " -n 1 -r
@@ -56,7 +60,8 @@
 
         $NOTIFY "MicSave" "Preset changes committed to git"
       else
-        echo "Skipped commit."
+        $GIT -C "$CONFIG_DIR" checkout -- "$PRESET_FILE"
+        echo "Skipped commit. (git repo file restored)"
       fi
     else
       echo "No changes to EasyEffects preset."
