@@ -35,18 +35,38 @@ in {
 
     home.activation.linkEasyEffectsPreset = lib.hm.dag.entryAfter ["writeBoundary"] ''
       PRESET_DIR="$HOME/.local/share/easyeffects/input"
-      PRESET_LINK="$PRESET_DIR/${cfg.preset}.json"
+      PRESET_FILE="$PRESET_DIR/${cfg.preset}.json"
       PRESET_SOURCE="${cfg.presetSource}"
 
       mkdir -p "$PRESET_DIR"
 
-      if [ -e "$PRESET_LINK" ] || [ -L "$PRESET_LINK" ]; then
-        rm -f "$PRESET_LINK"
+      if [ ! -e "$PRESET_FILE" ]; then
+        # First install: no live file yet, just copy from Nix store
+        cp "$PRESET_SOURCE" "$PRESET_FILE"
+        echo "EasyEffects preset installed: $PRESET_FILE"
+      else
+        # Live file exists: compare hashes to detect local edits
+        LIVE_HASH=$(sha256sum "$PRESET_FILE" | awk '{print $1}')
+        STORE_HASH=$(sha256sum "$PRESET_SOURCE" | awk '{print $1}')
+
+        if [ "$LIVE_HASH" = "$STORE_HASH" ]; then
+          # No local edits: silently refresh from Nix store
+          cp "$PRESET_SOURCE" "$PRESET_FILE"
+          echo "EasyEffects preset refreshed (no local changes detected)."
+        else
+          # Local edits detected: prompt user
+          echo "Warning: EasyEffects preset has local changes."
+          printf "Run micsave first? [y/N]: "
+          read -r REPLY </dev/tty
+          if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]; then
+            micsave
+            cp "$PRESET_SOURCE" "$PRESET_FILE"
+            echo "EasyEffects preset updated after micsave."
+          else
+            echo "Skipping preset update. Run micsave then rebuild to apply git changes."
+          fi
+        fi
       fi
-
-      ln -sf "$PRESET_SOURCE" "$PRESET_LINK"
-
-      echo "EasyEffects preset linked: $PRESET_LINK -> $PRESET_SOURCE"
     '';
   };
 }

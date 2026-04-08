@@ -10,14 +10,22 @@
 
     NOTIFY="${pkgs.libnotify}/bin/notify-send"
     GIT="${pkgs.git}/bin/git"
+    DELTA="${pkgs.delta}/bin/delta"
 
     CONFIG_DIR="/persist/etc/nixos"
     PRESET_FILE="modules/home-manager/programs/easyeffects/blue_yeti.json"
 
+    show_diff() {
+      $GIT -C "$CONFIG_DIR" diff "$PRESET_FILE" | $DELTA \
+        --diff-so-fancy \
+        --width=80 \
+        2>/dev/null || return 0
+    }
+
     if ! $GIT -C "$CONFIG_DIR" diff --quiet -- "$PRESET_FILE" 2>/dev/null; then
       echo "Changes detected in EasyEffects preset:"
       echo ""
-      $GIT -C "$CONFIG_DIR" diff -- "$PRESET_FILE" | head -20
+      show_diff | head -40
       echo ""
 
       read -p "Commit these changes? (y/n): " -n 1 -r
@@ -39,6 +47,7 @@
       fi
     else
       echo "No changes to EasyEffects preset."
+      echo "Make sure to Export the preset (three dots > Export) before running micsave."
       $NOTIFY "MicSave" "No changes detected"
     fi
   '';
@@ -53,6 +62,6 @@ in {
       }
     ];
 
-    home.packages = [micsave];
+    home.packages = [micsave pkgs.delta];
   };
 }
