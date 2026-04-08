@@ -135,7 +135,7 @@
             "phasel": false,
             "phaser": false,
             "sc-level": 1.0,
-            "side-balance": 0.0,
+            "side-balance": 1.0,
             "side-level": 0.0,
             "softclip": false,
             "stereo-base": 0.0,
