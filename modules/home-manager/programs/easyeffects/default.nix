@@ -50,18 +50,15 @@ in {
         STORE_HASH=$(sha256sum "$PRESET_SOURCE" | awk '{print $1}')
 
         if [ "$LIVE_HASH" = "$STORE_HASH" ]; then
-          # No local edits: silently refresh from Nix store
-          cp "$PRESET_SOURCE" "$PRESET_FILE"
-          echo "EasyEffects preset refreshed (no local changes detected)."
+          # No local edits: preset is already up to date, nothing to do
+          echo "EasyEffects preset up to date."
         else
           # Local edits detected: prompt user
           echo "Warning: EasyEffects preset has local changes."
-          printf "Run micsave first? [y/N]: "
-          read -r REPLY </dev/tty
+          printf "Overwrite local changes with Nix store version? [y/N]: "
+          read -r -t 30 REPLY </dev/tty || REPLY="N"
           if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]; then
-            micsave
-            cp "$PRESET_SOURCE" "$PRESET_FILE"
-            echo "EasyEffects preset updated after micsave."
+            echo "Please run 'micsave' in your terminal to commit your preset changes, then re-run: home-manager switch"
           else
             echo "Skipping preset update. Run micsave then rebuild to apply git changes."
           fi
