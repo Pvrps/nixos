@@ -22,22 +22,6 @@
     fi
 
     GIT_PRESET_PATH="$CONFIG_DIR/$PRESET_FILE"
-    DIRTY=0
-
-    cleanup() {
-      if [[ "$DIRTY" == "1" ]]; then
-        echo ""
-        echo "Interrupted — restoring git repo file."
-        $GIT -C "$CONFIG_DIR" checkout -- "$PRESET_FILE"
-      fi
-    }
-    trap cleanup EXIT INT TERM
-
-    show_diff() {
-      $GIT -C "$CONFIG_DIR" diff --no-index "$GIT_PRESET_PATH" "$LIVE_PRESET" | $DELTA \
-        --width=80 \
-        2>/dev/null || return 0
-    }
 
     if [ ! -f "$GIT_PRESET_PATH" ]; then
       GIT_SUM=""
@@ -49,21 +33,19 @@
     if [[ "$LIVE_SUM" != "$GIT_SUM" ]]; then
       echo "Changes detected in EasyEffects preset:"
       echo ""
-      show_diff
+      $GIT -C "$CONFIG_DIR" diff --no-index "$GIT_PRESET_PATH" "$LIVE_PRESET" | $DELTA \
+        --width=80 \
+        2>/dev/null || true
       echo ""
-
-      cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
-      chmod 644 "$GIT_PRESET_PATH"
-      DIRTY=1
 
       read -p "Commit these changes? (y/n): " -n 1 -r
       echo
 
       if [[ $REPLY =~ ^[Yy]$ ]]; then
+        cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
+        chmod 644 "$GIT_PRESET_PATH"
         $GIT -C "$CONFIG_DIR" add -- "$PRESET_FILE"
         $GIT -C "$CONFIG_DIR" commit -m "Update EasyEffects preset"
-        $GIT -C "$CONFIG_DIR" push
-        DIRTY=0
 
         echo ""
         echo "✓ Changes committed!"
@@ -72,9 +54,7 @@
 
         $NOTIFY "MicSave" "Preset changes committed to git"
       else
-        DIRTY=0
-        $GIT -C "$CONFIG_DIR" checkout -- "$PRESET_FILE"
-        echo "Skipped commit. (git repo file restored)"
+        echo "Skipped."
       fi
     else
       echo "No changes to EasyEffects preset."
