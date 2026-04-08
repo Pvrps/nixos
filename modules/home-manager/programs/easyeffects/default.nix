@@ -40,12 +40,17 @@ in {
 
       mkdir -p "$PRESET_DIR"
 
-      if [ ! -e "$PRESET_FILE" ]; then
+      if [ -L "$PRESET_FILE" ]; then
+        # It's a symlink from a previous generation — replace with a real copy unconditionally
+        rm -f "$PRESET_FILE"
+        cp "$PRESET_SOURCE" "$PRESET_FILE"
+        echo "EasyEffects preset migrated from symlink to writable copy: $PRESET_FILE"
+      elif [ ! -e "$PRESET_FILE" ]; then
         # First install: no live file yet, just copy from Nix store
         cp "$PRESET_SOURCE" "$PRESET_FILE"
         echo "EasyEffects preset installed: $PRESET_FILE"
       else
-        # Live file exists: compare hashes to detect local edits
+        # Live file exists as a real file: compare hashes to detect local edits
         LIVE_HASH=$(sha256sum "$PRESET_FILE"); LIVE_HASH=''${LIVE_HASH%% *}
         STORE_HASH=$(sha256sum "$PRESET_SOURCE"); STORE_HASH=''${STORE_HASH%% *}
 
