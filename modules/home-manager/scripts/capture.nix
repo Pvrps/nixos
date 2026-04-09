@@ -13,8 +13,7 @@
     if AREA=$(${pkgs.slurp}/bin/slurp); then
       ${pkgs.grim}/bin/grim -g "$AREA" - | tee "$FILE" | ${pkgs.wl-clipboard}/bin/wl-copy
       RESULT=$(${pkgs.libnotify}/bin/notify-send \
-        --wait \
-        --action="copy-path:Copy Path" \
+        --action="copy-path=Copy Path" \
         "Screenshot Saved" "$FILE")
       if [ "$RESULT" = "copy-path" ]; then
         printf '%s' "$FILE" | ${pkgs.wl-clipboard}/bin/wl-copy
