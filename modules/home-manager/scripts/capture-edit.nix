@@ -12,6 +12,7 @@
     WL_PASTE="${pkgs.wl-clipboard}/bin/wl-paste"
     WL_COPY="${pkgs.wl-clipboard}/bin/wl-copy"
     SATTY="${pkgs.satty}/bin/satty"
+    LOSSLESSCUT="${pkgs.losslesscut-bin}/bin/losslesscut --config-dir /tmp/losslesscut-tmp --settings-json '{\"autoSaveProjectFile\":false}' --"
 
     OUTPUT_DIR="$HOME/Pictures/Screenshots"
     mkdir -p "$OUTPUT_DIR"
@@ -26,7 +27,7 @@
       $SATTY --filename "$input" --output-filename "$OUTPUT_FILE"
     }
 
-    handle_save() {
+    handle_satty_save() {
       if [[ -f "$OUTPUT_FILE" ]]; then
         $WL_COPY --type image/png < "$OUTPUT_FILE"
         RESULT=$($NOTIFY \
@@ -41,7 +42,8 @@
     }
 
     process_video() {
-      $NOTIFY "TODO: Implement video editor" "Video editing not yet supported"
+      local input="$1"
+      $LOSSLESSCUT "$input"
     }
 
     IMAGE_EXT="png jpg jpeg gif webp"
@@ -49,7 +51,7 @@
 
     if $WL_PASTE --type image/png > /dev/null 2>&1; then
       $WL_PASTE --type image/png | run_satty_stdin
-      handle_save
+      handle_satty_save
       exit 0
     fi
 
@@ -61,13 +63,13 @@
         for e in ''$IMAGE_EXT; do
           if [[ "$ext" == "$e" ]]; then
             run_satty_file "$CLIPBOARD_TEXT"
-            handle_save
+            handle_satty_save
             exit 0
           fi
         done
         for e in ''$VIDEO_EXT; do
           if [[ "$ext" == "$e" ]]; then
-            process_video
+            process_video "$CLIPBOARD_TEXT"
             exit 0
           fi
         done
@@ -92,6 +94,7 @@ in {
       pkgs.satty
       pkgs.wl-clipboard
       pkgs.libnotify
+      pkgs.losslesscut-bin
     ];
 
     xdg.configFile."satty/config.toml" = {

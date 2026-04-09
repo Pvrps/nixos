@@ -24,8 +24,13 @@
         rm "$RECFILE"
 
         if [ -f "$FILE" ]; then
-           echo "file://$FILE" | ${pkgs.wl-clipboard}/bin/wl-copy -t text/uri-list
-           ${pkgs.libnotify}/bin/notify-send "Recording Saved" "$FILE"
+           ${pkgs.wl-clipboard}/bin/wl-copy "$FILE"
+           RESULT=$(${pkgs.libnotify}/bin/notify-send \
+             --action="copy-path=Copy Path" \
+             "Recording Saved" "$FILE")
+           if [[ "$RESULT" == "copy-path" ]]; then
+             printf '%s' "$FILE" | ${pkgs.wl-clipboard}/bin/wl-copy
+           fi
         fi
       fi
     else
