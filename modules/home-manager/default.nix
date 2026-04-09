@@ -29,7 +29,9 @@
     ./programs/yazi.nix
     ./programs/zen.nix
     ./programs/pinta.nix
-    ./scripts/capture.nix
+    ./scripts/capture-screenshot.nix
+    ./scripts/capture-recording.nix
+    ./scripts/capture-edit.nix
     ./scripts/gitingest.nix
     ./scripts/micsave.nix
   ];

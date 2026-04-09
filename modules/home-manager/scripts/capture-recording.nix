@@ -4,23 +4,7 @@
   config,
   ...
 }: let
-  cfg = config.custom.scripts.capture;
-  screenshot-tool = pkgs.writeShellScriptBin "screenshot-tool" ''
-    DIR="$HOME/Pictures/Screenshots"
-    mkdir -p "$DIR"
-    FILE="$DIR/$(date +'%Y-%m-%d_%H-%M-%S').png"
-
-    if AREA=$(${pkgs.slurp}/bin/slurp); then
-      ${pkgs.grim}/bin/grim -g "$AREA" - | tee "$FILE" | ${pkgs.wl-clipboard}/bin/wl-copy
-      RESULT=$(${pkgs.libnotify}/bin/notify-send \
-        --action="copy-path=Copy Path" \
-        "Screenshot Saved" "$FILE")
-      if [ "$RESULT" = "copy-path" ]; then
-        printf '%s' "$FILE" | ${pkgs.wl-clipboard}/bin/wl-copy
-      fi
-    fi
-  '';
-
+  cfg = config.custom.scripts.capture.recording;
   recording-tool = pkgs.writeShellScriptBin "recording-tool" ''
     PIDFILE="/tmp/recording-tool.pid"
     RECFILE="/tmp/recording-tool.file"
@@ -61,23 +45,27 @@
     fi
   '';
 in {
-  options.custom.scripts.capture.enable = lib.mkEnableOption "Screenshot and recording capture tools";
+  options.custom.scripts.capture.recording.enable = lib.mkEnableOption "Screen recording tool";
 
   config = lib.mkIf cfg.enable {
     assertions = [
       {
         assertion = config.custom.system.wayland.enable;
-        message = "capture script requires a Wayland compositor (uses grim, slurp, wl-clipboard).";
+        message = "capture-recording requires a Wayland compositor (uses wf-recorder, slurp).";
       }
     ];
 
     home.packages = [
-      screenshot-tool
       recording-tool
+      pkgs.wf-recorder
+      pkgs.slurp
+      pkgs.procps
+      pkgs.pulseaudio
+      pkgs.wl-clipboard
+      pkgs.libnotify
     ];
 
     custom.programs.niri.keybinds = [
-      ''Mod+Shift+S { spawn "screenshot-tool"; }''
       ''Mod+Shift+C { spawn "recording-tool"; }''
     ];
   };
