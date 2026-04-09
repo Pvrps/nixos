@@ -24,7 +24,7 @@ in {
     programs.vscode = {
       enable = true;
       package = pkgs.vscode.override {commandLineArgs = "--password-store=\"gnome-libsecret\"";};
-      extensions = cfg.extensions;
+      inherit (cfg) extensions;
       profiles.default.userSettings = cfg.userSettings;
     };
 

@@ -115,9 +115,11 @@
     };
 
     scripts = {
-      capture.screenshot.enable = true;
-      capture.recording.enable = true;
-      capture.edit.enable = true;
+      capture = {
+        screenshot.enable = true;
+        recording.enable = true;
+        edit.enable = true;
+      };
       gitingest.enable = true;
       micsave.enable = true;
     };
