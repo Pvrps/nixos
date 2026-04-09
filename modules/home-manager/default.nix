@@ -21,6 +21,7 @@
     ./programs/opencode.nix
     ./programs/prismlauncher.nix
     ./programs/rustdesk.nix
+    ./programs/activitywatch.nix
     ./programs/spotify.nix
     ./programs/ssh.nix
     ./programs/starship.nix

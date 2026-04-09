@@ -134,6 +134,10 @@
   };
 
   custom.programs = {
+    activitywatch = {
+      enable = true;
+      withInput = true;
+    };
     firefox = {
       enable = true;
       homepage = "https://www.google.com";
