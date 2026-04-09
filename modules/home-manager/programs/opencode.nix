@@ -52,7 +52,7 @@ in {
               "$schema" = "https://opencode.ai/config.json";
             }
             // lib.optionalAttrs claudeAuth.enable {
-              plugin = ["opencode-claude-auth"];
+              plugin = ["opencode-claude-auth@latest"];
             }
             // lib.optionalAttrs (context7.enable || bravesearch.enable) {
               mcp =
