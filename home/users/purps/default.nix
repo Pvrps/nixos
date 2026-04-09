@@ -39,6 +39,11 @@
 
   custom = {
     programs = {
+      activitywatch = {
+        enable = true;
+        withInput = true;
+        useAwatcher = true;
+      };
       noctalia.enable = true;
       niri.enable = true;
       foot.enable = true;
