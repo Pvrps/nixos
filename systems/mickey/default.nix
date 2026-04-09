@@ -59,9 +59,9 @@
 
   systemd.services.rustdesk = {
     description = "RustDesk Unattended Service";
-    requires = [ "network.target" ];
-    after = [ "systemd-user-sessions.service" "display-manager.service" ];
-    wantedBy = [ "multi-user.target" ];
+    requires = ["network.target"];
+    after = ["systemd-user-sessions.service" "display-manager.service"];
+    wantedBy = ["multi-user.target"];
     serviceConfig = {
       Type = "simple";
       ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --service";

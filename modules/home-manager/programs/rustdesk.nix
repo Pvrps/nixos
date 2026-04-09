@@ -19,8 +19,8 @@ in {
     systemd.user.services.rustdesk = lib.mkIf cfg.autoStart {
       Unit = {
         Description = "RustDesk Tray/Server Service";
-        After = [ "graphical-session.target" ];
-        PartOf = [ "graphical-session.target" ];
+        After = ["graphical-session.target"];
+        PartOf = ["graphical-session.target"];
       };
       Service = {
         ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --server";
@@ -28,7 +28,7 @@ in {
         RestartSec = 3;
       };
       Install = {
-        WantedBy = [ "graphical-session.target" ];
+        WantedBy = ["graphical-session.target"];
       };
     };
   };

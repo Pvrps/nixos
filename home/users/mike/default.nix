@@ -13,7 +13,6 @@
     homeDirectory = "/home/mike";
     stateVersion = "26.05";
 
-
     file."Desktop/Shutdown.desktop" = {
       text = ''
         [Desktop Entry]
@@ -131,8 +130,6 @@
       executable = true;
     };
   };
-
-
 
   custom.programs = {
     firefox = {
