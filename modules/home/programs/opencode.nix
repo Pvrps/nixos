@@ -6,7 +6,7 @@
   ...
 }: let
   cfg = config.custom.programs.opencode;
-  inherit (cfg) context7 bravesearch superpowers caveman claudeAuth;
+  inherit (cfg) context7 bravesearch superpowers claudeAuth;
 
   # Write the config file if any feature that needs it is enabled
   needsConfigFile = context7.enable || bravesearch.enable || claudeAuth.enable;
@@ -32,9 +32,6 @@ in {
       };
       superpowers = {
         enable = lib.mkEnableOption "Superpowers skills and plugin for OpenCode";
-      };
-      caveman = {
-        enable = lib.mkEnableOption "caveman token-compression skill for OpenCode";
       };
       claudeAuth = {
         enable = lib.mkEnableOption "opencode-claude-auth plugin (use Claude Code credentials in OpenCode)";
@@ -106,10 +103,6 @@ in {
           source = "${inputs.superpowers}/skills";
         };
 
-        ".config/opencode/skills/caveman" = lib.mkIf caveman.enable {
-          source = "${inputs.caveman}/caveman";
-        };
-
         ".config/opencode/AGENTS.md".text =
           ''
             ## Hard constraints
@@ -126,14 +119,7 @@ in {
 
             ## Superpowers
             - Superpowers skills are available via OpenCode's native `skill` tool
-            - Use `skill` tool to list available skills (e.g. brainstorming, test-driven-development, etc)
-            - Do NOT write design docs or plans to disk; keep plans in-context only
-            - Do NOT commit documentation or plans as part of the workflow
-          ''
-          + lib.optionalString caveman.enable ''
-
-            ## Caveman
-            - Always respond in caveman full mode
+            - Use `skill` tool to list available skills (e.g. brainstorming, test-driven-development, writing-plans)
           '';
       };
     };
