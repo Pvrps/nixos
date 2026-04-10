@@ -2,6 +2,13 @@
 default:
     @just --list
 
+# Uses upstream CppNix instead of Lix to update flake.lock.
+# Lix errors on `shallow` git inputs (used by millenium's sub-inputs), CppNix silently ignores them.
+# Lix will still handle all builds normally.
+# Required until Lix adds support for the `shallow` attribute on `github:` inputs.
+update:
+    nix run nixpkgs#nixVersions.latest -- flake update
+
 # Update the system secrets file
 secrets host=`hostname`:
     sudo SOPS_AGE_KEY_FILE=/persist/system/sops/age/keys.txt nix run nixpkgs#sops -- modules/hosts/{{host}}/_secrets.yaml
