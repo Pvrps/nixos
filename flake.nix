@@ -118,7 +118,7 @@
                   backupFileExtension = "backup";
                   extraSpecialArgs = {inherit inputs;};
                   sharedModules = [(import-tree ./modules/home)];
-                  users = users;
+                  inherit users;
                 };
               }
             ];

@@ -25,27 +25,24 @@
   custom.programs = {
     helix.enable = true;
     yazi.enable = true;
-    fish.enable = true;
-    git.enable = true;
-    ssh.enable = true;
+    fish = {
+      enable = true;
+      aliases = {
+        cp = "cp -i";
+        mv = "mv -i";
+        mkdir = "mkdir -p";
+      };
+    };
+    git = {
+      enable = true;
+      userName = "purps";
+      userEmail = "github@purps.ca";
+    };
+    ssh = {
+      enable = true;
+      githubKeyPath = "/run/secrets/github-ssh-key";
+    };
     starship.enable = true;
     lazygit.enable = true;
-  };
-
-  custom.programs.git = {
-    userName = "purps";
-    userEmail = "github@purps.ca";
-  };
-
-  custom.programs.ssh = {
-    githubKeyPath = "/run/secrets/github-ssh-key";
-  };
-
-  custom.programs.fish = {
-    aliases = {
-      cp = "cp -i";
-      mv = "mv -i";
-      mkdir = "mkdir -p";
-    };
   };
 }
