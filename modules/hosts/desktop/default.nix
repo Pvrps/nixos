@@ -4,17 +4,17 @@
   ...
 }: {
   imports = [
-    ./hardware.nix
-    ./disko.nix
-    ./persist.nix
+    ./_hardware.nix
+    ./_disko.nix
+    ./_persist.nix
     ./desktop.nix
     ./users.nix
 
-    ../../modules/nixos/core.nix
-    ../../modules/nixos/nvidia.nix
-    ../../modules/nixos/gaming.nix
-    ../../modules/nixos/services/sshfs.nix
-    ../../modules/nixos/tailscale.nix
+    ../../../modules/nixos/core.nix
+    ../../../modules/nixos/nvidia.nix
+    ../../../modules/nixos/gaming.nix
+    ../../../modules/nixos/services/sshfs.nix
+    ../../../modules/nixos/tailscale.nix
   ];
 
   networking.hostName = "desktop";
@@ -34,5 +34,5 @@
     };
   };
 
-  sops.defaultSopsFile = ./secrets.yaml;
+  sops.defaultSopsFile = ./_secrets.yaml;
 }
