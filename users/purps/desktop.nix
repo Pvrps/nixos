@@ -63,6 +63,7 @@
     pinta.enable = true;
     vscode = {
       enable = true;
+      javaFormatterConfig = ./files/eclipse-formatter.xml;
       extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide
         davidanson.vscode-markdownlint
@@ -124,7 +125,7 @@
 
   custom.programs.easyeffects = {
     preset = "blue_yeti";
-    presetSource = ../../modules/home/programs/easyeffects/blue_yeti.json;
+    presetSource = ./files/blue_yeti.json;
   };
 
   custom.programs.niri = {

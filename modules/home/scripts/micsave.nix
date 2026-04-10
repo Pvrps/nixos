@@ -13,15 +13,13 @@
     DELTA="${pkgs.delta}/bin/delta"
 
     CONFIG_DIR="/persist/etc/nixos"
-    PRESET_FILE="modules/home/programs/easyeffects/${config.custom.programs.easyeffects.preset}.json"
+    GIT_PRESET_PATH="${config.custom.programs.easyeffects.presetSource}"
     LIVE_PRESET="$HOME/.local/share/easyeffects/input/${config.custom.programs.easyeffects.preset}.json"
 
     if [[ ! -f "$LIVE_PRESET" ]]; then
       echo "Live preset not found at $LIVE_PRESET. Is EasyEffects installed and has it been run at least once?"
       exit 1
     fi
-
-    GIT_PRESET_PATH="$CONFIG_DIR/$PRESET_FILE"
 
     if [ ! -f "$GIT_PRESET_PATH" ]; then
       GIT_SUM=""
@@ -45,7 +43,7 @@
       if [[ $REPLY =~ ^[Yy]$ ]]; then
         cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
         chmod 644 "$GIT_PRESET_PATH"
-        $GIT -C "$CONFIG_DIR" add -- "$PRESET_FILE"
+        $GIT -C "$CONFIG_DIR" add -- "$GIT_PRESET_PATH"
         $GIT -C "$CONFIG_DIR" commit -m "Update EasyEffects preset"
 
         echo ""

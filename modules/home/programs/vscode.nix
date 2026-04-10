@@ -18,6 +18,11 @@ in {
       default = {};
       description = "VSCode user settings.";
     };
+    javaFormatterConfig = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      description = "Path to an eclipse-formatter.xml file for the Java extension";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -28,6 +33,8 @@ in {
       profiles.default.userSettings = cfg.userSettings;
     };
 
-    home.file.".config/Code/User/eclipse-formatter.xml".source = ./eclipse-formatter.xml;
+    home.file.".config/Code/User/eclipse-formatter.xml" = lib.mkIf (cfg.javaFormatterConfig != null) {
+      source = cfg.javaFormatterConfig;
+    };
   };
 }
