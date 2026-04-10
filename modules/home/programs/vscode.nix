@@ -29,8 +29,10 @@ in {
     programs.vscode = {
       enable = true;
       package = pkgs.vscode.override {commandLineArgs = "--password-store=\"gnome-libsecret\"";};
-      inherit (cfg) extensions;
-      profiles.default.userSettings = cfg.userSettings;
+      profiles.default = {
+        inherit (cfg) extensions;
+        userSettings = cfg.userSettings;
+      };
     };
 
     home.file.".config/Code/User/eclipse-formatter.xml" = lib.mkIf (cfg.javaFormatterConfig != null) {
