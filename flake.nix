@@ -77,11 +77,6 @@
     import-tree = {
       url = "github:vic/import-tree";
     };
-
-    lix-module = {
-      url = "https://git.lix.systems/lix-project/nixos-module/archive/main.tar.gz";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = {
@@ -93,7 +88,6 @@
     disko,
     nix-flatpak,
     import-tree,
-    lix-module,
     ...
   } @ inputs:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -113,7 +107,6 @@
               sops-nix.nixosModules.sops
               home-manager.nixosModules.home-manager
               nix-flatpak.nixosModules.nix-flatpak
-              inputs.lix-module.nixosModules.default
               {
                 home-manager = {
                   useUserPackages = true;
