@@ -46,7 +46,7 @@ in {
       JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2
     '';
 
-    custom.programs.niri.windowRules = [
+    custom.programs.niri.windowRules = lib.mkIf config.custom.programs.niri.enable [
       # Keep the small launcher window floating so it doesn't hijack a tile slot.
       ''        window-rule {
                   match app-id=r#"^com\.adamcake\.Bolt$"#

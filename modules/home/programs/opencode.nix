@@ -18,6 +18,7 @@ in {
         enable = lib.mkEnableOption "Context7 MCP Server";
         apiKeyPath = lib.mkOption {
           type = lib.types.str;
+          default = "";
           description = "Path to the Context7 API key secret";
         };
       };
@@ -25,6 +26,7 @@ in {
         enable = lib.mkEnableOption "Brave Search MCP Server";
         apiKeyPath = lib.mkOption {
           type = lib.types.str;
+          default = "";
           description = "Path to the Brave Search API key secret";
         };
       };
@@ -38,6 +40,17 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !context7.enable || context7.apiKeyPath != "";
+        message = "custom.programs.opencode.context7.enable requires apiKeyPath to be set";
+      }
+      {
+        assertion = !bravesearch.enable || bravesearch.apiKeyPath != "";
+        message = "custom.programs.opencode.bravesearch.enable requires apiKeyPath to be set";
+      }
+    ];
+
     home = {
       packages = with inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
         [

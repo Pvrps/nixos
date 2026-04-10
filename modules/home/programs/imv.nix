@@ -16,7 +16,7 @@ in {
     xdg.configFile."imv/config".text = ''
       [options]
       overlay = true
-      overlay_font = ${config.stylix.fonts.monospace.name}:12
+      overlay_font = ${config.stylix.fonts.monospace.name or "monospace"}:12
     '';
 
     xdg.mimeApps.defaultApplications = {

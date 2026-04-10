@@ -67,11 +67,11 @@ in {
       };
     };
 
-    custom.programs.niri.startupCommands = [
+    custom.programs.niri.startupCommands = lib.mkIf config.custom.programs.niri.enable [
       ''"bash" "-c" "nm-online -q --timeout=30 || true; vesktop --start-minimized > /dev/null 2>&1"''
     ];
 
-    custom.programs.niri.windowRules = [
+    custom.programs.niri.windowRules = lib.mkIf config.custom.programs.niri.enable [
       ''        window-rule {
                   match app-id="vesktop" title="Discord Updater"
                   match app-id="vesktop" title="Checking for updates..."
