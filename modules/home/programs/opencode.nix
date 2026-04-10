@@ -119,7 +119,9 @@ in {
 
             ## Superpowers
             - Superpowers skills are available via OpenCode's native `skill` tool
-            - Use `skill` tool to list available skills (e.g. brainstorming, test-driven-development, writing-plans)
+            - Use `skill` tool to list available skills (e.g. brainstorming, test-driven-development, etc)
+            - Do NOT write design docs or plans to disk; keep plans in-context only
+            - Do NOT commit documentation or plans as part of the workflow
           '';
       };
     };
