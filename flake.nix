@@ -126,13 +126,13 @@
       in {
         nixosConfigurations.desktop = mkHost {
           host = "desktop";
-          users.purps = import ./users/purps/desktop.nix;
+          users.purps = import ./modules/users/purps/desktop.nix;
         };
 
         nixosConfigurations.mickey = mkHost {
           host = "mickey";
           users.mike = import ./users/mike;
-          users.purps = import ./users/purps/general.nix;
+          users.purps = import ./modules/users/purps/general.nix;
         };
       };
 
@@ -143,6 +143,8 @@
             age
             ssh-to-age
             just
+            alejandra
+            statix
           ];
         };
       };

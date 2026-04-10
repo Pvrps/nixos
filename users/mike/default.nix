@@ -1,11 +1,7 @@
 {
   pkgs,
-  inputs,
   ...
 }: {
-  imports = [
-    inputs.stylix.homeModules.stylix
-  ];
 
   home = {
     username = "mike";

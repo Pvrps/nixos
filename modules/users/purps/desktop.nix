@@ -1,14 +1,10 @@
 {
   pkgs,
-  inputs,
-  lib,
   ...
 }: {
   imports = [
     ./general.nix
   ];
-
-  nixpkgs.config.allowUnfree = true;
 
   dconf.settings = {
     "org/gtk/settings/file-chooser" = {

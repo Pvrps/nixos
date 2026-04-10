@@ -108,7 +108,7 @@ chown -R 0:0 "/mnt/persist/system"
 chmod 700 "$AGE_DIR"
 chmod 600 "$AGE_KEY_FILE"
 
-SECRETS_FILE="$SCRIPT_DIR/$HOST_DIR/secrets.yaml"
+SECRETS_FILE="$SCRIPT_DIR/$HOST_DIR/_secrets.yaml"
 PUBLIC_KEY=$(grep "# public key:" "$AGE_KEY_FILE" | sed 's/.*public key: //')
 
 if [ -z "$PUBLIC_KEY" ]; then

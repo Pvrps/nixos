@@ -81,9 +81,6 @@ in {
         description = "Extra layer-rule blocks to include in the niri config";
       };
     };
-    system.wayland = {
-      enable = lib.mkEnableOption "Wayland compositor active";
-    };
   };
 
   config = lib.mkIf cfg.enable {

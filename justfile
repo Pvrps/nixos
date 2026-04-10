@@ -27,8 +27,8 @@ build host=`hostname`:
 
 # Format and lint the code
 validate:
-    nix run nixpkgs#alejandra -- .
-    nix run nixpkgs#statix -- check .
+    alejandra .
+    statix check .
 
 # Delete old generations and perform garbage collection
 cleanup:
