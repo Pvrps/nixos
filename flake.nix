@@ -62,6 +62,11 @@
       flake = false;
     };
 
+    caveman = {
+      url = "github:JuliusBrussee/caveman";
+      flake = false;
+    };
+
     impermanence.url = "github:nix-community/impermanence";
 
     spicetify-nix = {

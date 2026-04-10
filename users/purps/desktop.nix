@@ -131,19 +131,19 @@
   custom.programs.niri = {
     xwaylandDisplay = ":11";
     outputs = [
-      ''          output "DP-1" {
-                      mode "2560x1440@144"
-                      position x=0 y=0
-                      scale 1.5
-                      variable-refresh-rate on-demand=true
-                      focus-at-startup
-                  }''
-      ''          output "DP-3" {
-                      mode "2560x1440@144"
-                      position x=1707 y=0
-                      scale 1.5
-                      variable-refresh-rate on-demand=true
-                  }''
+      ''        output "DP-1" {
+                    mode "2560x1440@144"
+                    position x=0 y=0
+                    scale 1.5
+                    variable-refresh-rate on-demand=true
+                    focus-at-startup
+                }''
+      ''        output "DP-3" {
+                    mode "2560x1440@144"
+                    position x=1707 y=0
+                    scale 1.5
+                    variable-refresh-rate on-demand=true
+                }''
     ];
   };
 
@@ -157,6 +157,7 @@
       apiKeyPath = "/run/secrets/bravesearch-api-key";
     };
     superpowers.enable = true;
+    caveman.enable = true;
     claudeAuth.enable = true;
   };
 

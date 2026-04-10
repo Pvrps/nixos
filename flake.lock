@@ -161,6 +161,22 @@
         "type": "github"
       }
     },
+    "caveman": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775762734,
+        "narHash": "sha256-EAlKoqJuTMib+gcLscMtpS8Zzq/D/LmIRoG3g/XKThc=",
+        "owner": "JuliusBrussee",
+        "repo": "caveman",
+        "rev": "92f892f2b99744a4501f35bce9a2e384878e4877",
+        "type": "github"
+      },
+      "original": {
+        "owner": "JuliusBrussee",
+        "repo": "caveman",
+        "type": "github"
+      }
+    },
     "curl-src": {
       "flake": false,
       "locked": {
@@ -833,6 +849,7 @@
     },
     "root": {
       "inputs": {
+        "caveman": "caveman",
         "disko": "disko",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
