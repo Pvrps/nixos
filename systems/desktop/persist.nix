@@ -22,6 +22,7 @@
 
   fileSystems."/home" = {
     device = "/persist/home";
+    fsType = "none";
     options = ["bind"];
     neededForBoot = true;
   };
