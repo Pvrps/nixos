@@ -73,6 +73,11 @@
       url = "github:SteamClientHomebrew/Millennium?dir=packages/nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    import-tree = {
+      url = "github:vic/import-tree";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -82,57 +87,48 @@
     home-manager,
     sops-nix,
     disko,
-    impermanence,
-    stylix,
     nix-flatpak,
-    llm-agents,
+    import-tree,
     ...
   } @ inputs:
     flake-parts.lib.mkFlake {inherit inputs;} {
       systems = ["x86_64-linux"];
 
-      flake = {
-        nixosConfigurations.desktop = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-
-          specialArgs = {inherit inputs;};
-          modules = [
-            ./systems/desktop
-            disko.nixosModules.disko
-            sops-nix.nixosModules.sops
-            home-manager.nixosModules.home-manager
-            nix-flatpak.nixosModules.nix-flatpak
-            {
-              home-manager = {
-                useUserPackages = true;
-                backupFileExtension = "backup";
-                extraSpecialArgs = {inherit inputs;};
-                users.purps = import ./home/users/purps;
-              };
-            }
-          ];
+      flake = let
+        mkHost = {
+          host,
+          users,
+        }:
+          nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = {inherit inputs;};
+            modules = [
+              ./modules/hosts/${host}
+              disko.nixosModules.disko
+              sops-nix.nixosModules.sops
+              home-manager.nixosModules.home-manager
+              nix-flatpak.nixosModules.nix-flatpak
+              {
+                home-manager = {
+                  useUserPackages = true;
+                  backupFileExtension = "backup";
+                  extraSpecialArgs = {inherit inputs;};
+                  sharedModules = [(import-tree ./modules/home)];
+                  users = users;
+                };
+              }
+            ];
+          };
+      in {
+        nixosConfigurations.desktop = mkHost {
+          host = "desktop";
+          users.purps = import ./users/purps/desktop.nix;
         };
 
-        nixosConfigurations.mickey = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-
-          specialArgs = {inherit inputs;};
-          modules = [
-            ./systems/mickey
-            disko.nixosModules.disko
-            sops-nix.nixosModules.sops
-            home-manager.nixosModules.home-manager
-            nix-flatpak.nixosModules.nix-flatpak
-            {
-              home-manager = {
-                useUserPackages = true;
-                backupFileExtension = "backup";
-                extraSpecialArgs = {inherit inputs;};
-                users.mike = import ./home/users/mike;
-                users.purps = import ./home/users/purps/core.nix;
-              };
-            }
-          ];
+        nixosConfigurations.mickey = mkHost {
+          host = "mickey";
+          users.mike = import ./users/mike;
+          users.purps = import ./users/purps/general.nix;
         };
       };
 

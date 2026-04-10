@@ -5,7 +5,6 @@
 }: {
   imports = [
     inputs.stylix.homeModules.stylix
-    ../../../modules/home-manager
   ];
 
   home = {

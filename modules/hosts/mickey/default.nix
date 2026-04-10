@@ -4,13 +4,13 @@
   ...
 }: {
   imports = [
-    ./hardware.nix
-    ./disko.nix
-    ./persist.nix
+    ./_hardware.nix
+    ./_disko.nix
+    ./_persist.nix
     ./users.nix
 
-    ../../modules/nixos/core.nix
-    ../../modules/nixos/tailscale.nix
+    ../../../modules/nixos/core.nix
+    ../../../modules/nixos/tailscale.nix
   ];
 
   networking.hostName = "mickey";
@@ -77,5 +77,5 @@
     };
   };
 
-  sops.defaultSopsFile = ./secrets.yaml;
+  sops.defaultSopsFile = ./_secrets.yaml;
 }

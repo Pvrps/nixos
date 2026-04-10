@@ -4,7 +4,7 @@ default:
 
 # Update the system secrets file
 secrets host=`hostname`:
-    sudo SOPS_AGE_KEY_FILE=/persist/system/sops/age/keys.txt nix run nixpkgs#sops -- systems/{{host}}/secrets.yaml
+    sudo SOPS_AGE_KEY_FILE=/persist/system/sops/age/keys.txt nix run nixpkgs#sops -- modules/hosts/{{host}}/_secrets.yaml
 
 # Build and set the new configuration for the next boot
 boot host=`hostname`:
