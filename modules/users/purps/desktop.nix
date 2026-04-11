@@ -1,4 +1,4 @@
-{
+/ca{
   pkgs,
   ...
 }: {
@@ -203,7 +203,6 @@
           apiKeyPath = "/run/secrets/bravesearch-api-key";
         };
         superpowers.enable = true;
-        caveman.enable = true;
         claudeAuth.enable = true;
       };
       clapper.enable = true;
