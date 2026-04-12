@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   imports = [
     ./general.nix
   ];
@@ -83,7 +80,15 @@
             "4ab93b88-151c-451b-a1b7-a1e0e28fa7f8"
             "e122b5d9-d385-4bf8-9971-e137809097d0"
             "c8d9e6e6-e702-4e15-8972-3596e57cf398"
+            "bd92a9a0-1c00-4187-a66e-94c389fa5a59"
           ];
+          settings = {
+            "mod.autoexpand.expanded_width" = "250px";
+            "mod.autoexpand.animation_duration" = "100ms";
+            "mod.autoexpand.animation_delay" = "100ms";
+            "mod.autoexpand.collapse_delay" = "100ms";
+            "mod.autoexpand.hide_workspace_indicator" = true;
+          };
         };
         extensionSettings = {
           "*" = {installation_mode = "blocked";};
