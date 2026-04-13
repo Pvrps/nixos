@@ -21,8 +21,6 @@
   networking.hostName = "desktop";
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [5173];
 
-  boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
-
   custom = {
     #secureboot.enable = true;
     services.sshfs = {
