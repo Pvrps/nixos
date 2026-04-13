@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  osConfig,
+  ...
+}: {
   imports = [
     ./stylix.nix
   ];
@@ -36,7 +40,7 @@
     };
     ssh = {
       enable = true;
-      githubKeyPath = "/run/secrets/github-ssh-key";
+      githubKeyPath = osConfig.sops.secrets."github-ssh-key".path;
     };
     starship.enable = true;
     lazygit.enable = true;

@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  osConfig,
+  ...
+}: {
   imports = [
     ./general.nix
   ];
@@ -201,11 +205,11 @@
         enable = true;
         context7 = {
           enable = true;
-          apiKeyPath = "/run/secrets/context7-api-key";
+          apiKeyPath = osConfig.sops.secrets."context7-api-key".path;
         };
         bravesearch = {
           enable = true;
-          apiKeyPath = "/run/secrets/bravesearch-api-key";
+          apiKeyPath = osConfig.sops.secrets."bravesearch-api-key".path;
         };
         superpowers.enable = true;
         claudeAuth.enable = true;
