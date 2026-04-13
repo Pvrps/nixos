@@ -22,6 +22,29 @@
       "rd.udev.log_level=3"
       "udev.log_priority=3"
     ];
+    blacklistedKernelModules = [
+      "dccp"
+      "sctp"
+      "rds"
+      "tipc"
+      "ax25"
+      "netrom"
+      "x25"
+      "rose"
+      "decnet"
+      "econet"
+      "af_802154"
+      "ipx"
+      "appletalk"
+      "firewire-core"
+      "firewire-ohci"
+    ];
+    kernel.sysctl = {
+      "kernel.yama.ptrace_scope" = 1;
+      "kernel.kptr_restrict" = 1;
+      "kernel.unprivileged_bpf_disabled" = 1;
+      "net.core.bpf_jit_harden" = 2;
+    };
   };
 
   networking.networkmanager.enable = true;

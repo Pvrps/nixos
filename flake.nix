@@ -133,7 +133,7 @@
                   extraSpecialArgs = {inherit inputs;};
                   sharedModules = [
                     (import-tree ./modules/home)
-                    inputs.nix-index-database.hmModules.nix-index
+                    inputs.nix-index-database.homeModules.nix-index
                   ];
                   inherit users;
                 };
