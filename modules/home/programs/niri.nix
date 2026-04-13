@@ -155,10 +155,14 @@ in {
           Mod+Shift+Right { move-column-right-or-to-monitor-right; }
           Mod+Shift+Up    { move-column-to-workspace-up; }
           Mod+Shift+Down  { move-column-to-workspace-down; }
-
-          Mod+F { maximize-column; }
-          Mod+Shift+F { fullscreen-window; }
-      }
+            Mod+Ctrl+Shift+Left  { set-column-width "-5%"; }
+            Mod+Ctrl+Shift+Right { set-column-width "+5%"; }
+            Mod+Ctrl+Shift+Up    { set-window-height "-5%"; }
+            Mod+Ctrl+Shift+Down  { set-window-height "+5%"; }
+            Mod+Shift+Z { switch-focus-between-floating-and-tiling; }
+            Mod+F { maximize-column; }
+            Mod+Shift+F { fullscreen-window; }
+        }
 
       gestures {
           hot-corners {
