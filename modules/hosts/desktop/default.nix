@@ -22,7 +22,7 @@
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [5173];
 
   custom = {
-    secureboot.enable = true;
+    #secureboot.enable = true;
     services.sshfs = {
       enable = true;
       mounts = {
