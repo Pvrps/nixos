@@ -83,6 +83,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
     };
+
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -95,6 +100,7 @@
     nix-flatpak,
     import-tree,
     lanzaboote,
+    nix-index-database,
     ...
   } @ inputs:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -120,7 +126,10 @@
                   useUserPackages = true;
                   backupFileExtension = "backup";
                   extraSpecialArgs = {inherit inputs;};
-                  sharedModules = [(import-tree ./modules/home)];
+                  sharedModules = [
+                    (import-tree ./modules/home)
+                    inputs.nix-index-database.hmModules.nix-indent
+                  ];
                   inherit users;
                 };
               }
