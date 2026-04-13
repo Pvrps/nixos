@@ -11,6 +11,7 @@
 
     ../../../modules/nixos/core.nix
     ../../../modules/nixos/tailscale.nix
+    ../../../modules/nixos/services/rustdesk.nix
   ];
 
   networking.hostName = "mickey";
@@ -59,25 +60,7 @@
     };
   };
 
-  systemd.services.rustdesk = {
-    description = "RustDesk Unattended Service";
-    requires = ["network.target"];
-    after = ["systemd-user-sessions.service" "display-manager.service"];
-    wantedBy = ["multi-user.target"];
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --service";
-      ExecStop = "${pkgs.procps}/bin/pkill -f 'rustdesk --'";
-      KillMode = "mixed";
-      TimeoutStopSec = 30;
-      User = "root";
-      LimitNOFILE = 100000;
-      Environment = [
-        "PULSE_LATENCY_MSEC=60"
-        "PIPEWIRE_LATENCY=1024/48000"
-      ];
-    };
-  };
+  services.rustdesk-relay.enable = true;
 
   sops.defaultSopsFile = ./_secrets.yaml;
 }

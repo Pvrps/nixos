@@ -18,7 +18,7 @@
   ];
 
   networking.hostName = "desktop";
-  networking.firewall.allowedTCPPorts = [5173];
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [5173];
 
   custom.services.sshfs = {
     enable = true;
