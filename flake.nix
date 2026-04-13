@@ -133,7 +133,7 @@
                   extraSpecialArgs = {inherit inputs;};
                   sharedModules = [
                     (import-tree ./modules/home)
-                    inputs.nix-index-database.hmModules.nix-indent
+                    inputs.nix-index-database.hmModules.nix-index
                   ];
                   inherit users;
                 };
@@ -171,11 +171,11 @@
             alejandra.enable = true;
             shfmt = {
               enable = true;
-              index_size = 2;
+              indent_size = 2;
             };
             prettier = {
               enable = true;
-              include = ["*.md" "*.yaml" "*.yml" "*.json"];
+              includes = ["*.md" "*.yaml" "*.yml" "*.json"];
             };
           };
         };

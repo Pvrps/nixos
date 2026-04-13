@@ -19,6 +19,8 @@
 
   boot.kernelPackages = pkgs.linuxPackages_hardened;
 
+  custom.secureboot.enable = true;
+
   # Enable Services
   services = {
     xserver = {

@@ -21,14 +21,17 @@
   networking.hostName = "desktop";
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [5173];
 
-  custom.services.sshfs = {
-    enable = true;
-    mounts = {
-      windwaker = {
-        host = "10.0.10.16";
-        user = "root";
-        identityFile = config.sops.secrets."sftp-windwaker-key".path;
-        mountPoint = "/mnt/windwaker";
+  custom = {
+    secureboot.enable = true;
+    services.sshfs = {
+      enable = true;
+      mounts = {
+        windwaker = {
+          host = "10.0.10.16";
+          user = "root";
+          identityFile = config.sops.secrets."sftp-windwaker-key".path;
+          mountPoint = "/mnt/windwaker";
+        };
       };
     };
   };
