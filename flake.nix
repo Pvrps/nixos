@@ -126,7 +126,7 @@
 
         nixosConfigurations.mickey = mkHost {
           host = "mickey";
-          users.mike = import ./users/mike;
+          users.mike = import ./modules/users/mike;
           users.purps = import ./modules/users/purps/general.nix;
         };
       };
