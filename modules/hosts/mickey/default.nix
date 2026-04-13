@@ -15,6 +15,8 @@
 
   networking.hostName = "mickey";
 
+  boot.kernelPackages = pkgs.linuxPackages_hardened;
+
   # Enable Services
   services = {
     xserver = {
