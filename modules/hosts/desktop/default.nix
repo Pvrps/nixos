@@ -15,6 +15,7 @@
     ../../../modules/nixos/gaming.nix
     ../../../modules/nixos/services/sshfs.nix
     ../../../modules/nixos/tailscale.nix
+    ../../../modules/nixos/secureboot.nix
   ];
 
   networking.hostName = "desktop";

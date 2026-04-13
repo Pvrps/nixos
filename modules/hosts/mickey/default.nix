@@ -12,6 +12,7 @@
     ../../../modules/nixos/core.nix
     ../../../modules/nixos/tailscale.nix
     ../../../modules/nixos/services/rustdesk.nix
+    ../../../modules/nixos/secureboot.nix
   ];
 
   networking.hostName = "mickey";

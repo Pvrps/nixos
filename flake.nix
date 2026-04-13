@@ -77,6 +77,12 @@
     import-tree = {
       url = "github:vic/import-tree";
     };
+
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v0.4.1";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+    };
   };
 
   outputs = {
@@ -88,6 +94,7 @@
     disko,
     nix-flatpak,
     import-tree,
+    lanzaboote,
     ...
   } @ inputs:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -107,6 +114,7 @@
               sops-nix.nixosModules.sops
               home-manager.nixosModules.home-manager
               nix-flatpak.nixosModules.nix-flatpak
+              lanzaboote.nixosModules.lanzaboote
               {
                 home-manager = {
                   useUserPackages = true;
