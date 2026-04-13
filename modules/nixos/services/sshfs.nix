@@ -27,10 +27,10 @@ in {
             default = 22;
             description = "SSH Port to connect to.";
           };
-          passwordSecret = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
+          identityFile = lib.mkOption {
+            type = lib.types.nullOr lib.types.path;
             default = null;
-            description = "Absolute path to the secret file containing the password.";
+            description = "Path to SSH private key file";
           };
           mountPoint = lib.mkOption {
             type = lib.types.str;
@@ -58,15 +58,12 @@ in {
     programs.fuse.userAllowOther = true;
 
     systemd.services = lib.mapAttrs' (name: mountCfg: let
-      hasPassword = mountCfg.passwordSecret != null;
-      options = lib.concatStringsSep "," (mountCfg.extraOptions ++ lib.optional hasPassword "password_stdin");
+      hasIdentity = mountCfg.identityFile != null;
+      options = lib.concatStringsSep "," (mountCfg.extraOptions ++ lib.optional hasIdentity "IdentityFile=${mountCfg.identityFile}");
 
       sshfsCmd = "${pkgs.sshfs}/bin/sshfs ${mountCfg.user}@${mountCfg.host}:/ ${mountCfg.mountPoint} -p ${toString mountCfg.port} -f -o ${options}";
 
-      execStartCmd =
-        if hasPassword
-        then "${pkgs.bash}/bin/bash -c \"cat ${mountCfg.passwordSecret} | ${sshfsCmd}\""
-        else sshfsCmd;
+      execStartCmd = sshfsCmd;
     in
       lib.nameValuePair "sshfs-${name}" {
         description = "Mount ${name} via SSHFS";

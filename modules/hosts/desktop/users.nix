@@ -25,6 +25,13 @@
       "purps-password" = {
         neededForUsers = true;
       };
+
+      "sftp-windwaker-key" = {
+        owner = "purps";
+        group = "users";
+        mode = "0600";
+      };
+
       "github-ssh-key" = {
         owner = "purps";
         group = "users";
@@ -35,17 +42,13 @@
         group = "users";
         mode = "0600";
       };
+
       "context7-api-key" = {
         owner = "purps";
         group = "users";
         mode = "0600";
       };
       "bravesearch-api-key" = {
-        owner = "purps";
-        group = "users";
-        mode = "0600";
-      };
-      "sftp-windwaker-password" = {
         owner = "purps";
         group = "users";
         mode = "0600";

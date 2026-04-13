@@ -28,7 +28,7 @@
       windwaker = {
         host = "10.0.10.16";
         user = "root";
-        passwordSecret = config.sops.secrets."sftp-windwaker-password".path;
+        identityFile = config.sops.secrets."sftp-windwaker-key".path;
         mountPoint = "/mnt/windwaker";
       };
     };
