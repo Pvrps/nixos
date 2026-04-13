@@ -30,6 +30,12 @@ validate:
     alejandra .
     statix check .
 
+format:
+    nix fmt
+
+format-check:
+    nix fmt -- --fail-on-change
+
 # Delete old generations and perform garbage collection
 cleanup:
     sudo nix-collect-garbage -d

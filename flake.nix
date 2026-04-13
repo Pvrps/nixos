@@ -88,6 +88,11 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -158,6 +163,21 @@
             alejandra
             statix
           ];
+        };
+
+        formatter = inputs.treefmt-nix.lib.mkWrapper pkgs {
+          projectRootFile = "flake.nix";
+          programs = {
+            alejandra.enable = true;
+            shfmt = {
+              enable = true;
+              index_size = 2;
+            };
+            prettier = {
+              enable = true;
+              include = ["*.md" "*.yaml" "*.yml" "*.json"];
+            };
+          };
         };
       };
     };
