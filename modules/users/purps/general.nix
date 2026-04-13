@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   imports = [
     ./stylix.nix
   ];
@@ -12,11 +9,12 @@
     stateVersion = "26.05";
 
     packages = with pkgs; [
-      ripgrep
-      fd
       nerd-fonts.jetbrains-mono
       noto-fonts
+      ripgrep
+      fd
       just
+      fastfetch
     ];
   };
 
