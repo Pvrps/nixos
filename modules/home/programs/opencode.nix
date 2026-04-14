@@ -9,7 +9,7 @@
   inherit (cfg) context7 bravesearch superpowers claudeAuth;
 
   # Write the config file if any feature that needs it is enabled
-  needsConfigFile = context7.enable || bravesearch.enable || claudeAuth.enable;
+  needsConfigFile = context7.enable || bravesearch.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
 in {
   options.custom = {
     programs.opencode = {
@@ -35,6 +35,9 @@ in {
       };
       claudeAuth = {
         enable = lib.mkEnableOption "opencode-claude-auth plugin (use Claude Code credentials in OpenCode)";
+      };
+      mcp-nixos = {
+        enable = lib.mkEnableOption "MCP-NixOS server for NixOS packages, options, and resources";
       };
     };
   };
@@ -80,17 +83,28 @@ in {
                     enabled = true;
                   };
                 })
-                // (lib.optionalAttrs bravesearch.enable {
-                  bravesearch = {
-                    type = "local";
-                    command = [
-                      "${pkgs.bash}/bin/bash"
-                      "-c"
-                      "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') npx -y @modelcontextprotocol/server-brave-search"
-                    ];
-                    enabled = true;
-                  };
-                });
+              // (lib.optionalAttrs bravesearch.enable {
+                bravesearch = {
+                  type = "local";
+                  command = [
+                    "${pkgs.bash}/bin/bash"
+                    "-c"
+                    "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') npx -y @modelcontextprotocol/server-brave-search"
+                  ];
+                  enabled = true;
+                };
+              })
+              // (lib.optionalAttrs cfg.mcp-nixos.enable {
+                nixos = {
+                  type = "local";
+                  command = [
+                    "${pkgs.bash}/bin/bash"
+                    "-c"
+                    "nix run github:utensils/mcp-nixos"
+                  ];
+                  enabled = true;
+                };
+              });
             }
           );
         };

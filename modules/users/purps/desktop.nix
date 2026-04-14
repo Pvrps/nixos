@@ -213,6 +213,7 @@
         };
         superpowers.enable = true;
         claudeAuth.enable = true;
+        mcp-nixos.enable = true;
       };
       clapper.enable = true;
       imv.enable = true;
