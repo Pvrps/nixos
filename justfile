@@ -33,3 +33,7 @@ cleanup:
 # Get the sha256 SRI hash for a given URL (useful for pkgs.fetchurl)
 hash url:
     @nix store prefetch-file --json "{{url}}" | nix run nixpkgs#jq -- -r .hash
+
+# Format Nix/Shell/YAML/JSON/Markdown files
+format:
+    nix fmt

@@ -83,28 +83,28 @@ in {
                     enabled = true;
                   };
                 })
-              // (lib.optionalAttrs bravesearch.enable {
-                bravesearch = {
-                  type = "local";
-                  command = [
-                    "${pkgs.bash}/bin/bash"
-                    "-c"
-                    "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') npx -y @modelcontextprotocol/server-brave-search"
-                  ];
-                  enabled = true;
-                };
-              })
-              // (lib.optionalAttrs cfg.mcp-nixos.enable {
-                nixos = {
-                  type = "local";
-                  command = [
-                    "${pkgs.bash}/bin/bash"
-                    "-c"
-                    "nix run github:utensils/mcp-nixos"
-                  ];
-                  enabled = true;
-                };
-              });
+                // (lib.optionalAttrs bravesearch.enable {
+                  bravesearch = {
+                    type = "local";
+                    command = [
+                      "${pkgs.bash}/bin/bash"
+                      "-c"
+                      "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') npx -y @modelcontextprotocol/server-brave-search"
+                    ];
+                    enabled = true;
+                  };
+                })
+                // (lib.optionalAttrs cfg.mcp-nixos.enable {
+                  nixos = {
+                    type = "local";
+                    command = [
+                      "${pkgs.bash}/bin/bash"
+                      "-c"
+                      "nix run github:utensils/mcp-nixos"
+                    ];
+                    enabled = true;
+                  };
+                });
             }
           );
         };

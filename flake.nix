@@ -159,22 +159,13 @@
       };
 
       perSystem = {pkgs, ...}: {
-        devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            sops
-            age
-            ssh-to-age
-            just
-            alejandra
-            statix
-            inputs.nh.packages.${pkgs.system}.nh
-          ];
-        };
+        devShells.default = pkgs.mkShell {};
 
         formatter = inputs.treefmt-nix.lib.mkWrapper pkgs {
           projectRootFile = "flake.nix";
           programs = {
             alejandra.enable = true;
+            statix.enable = true;
             shfmt = {
               enable = true;
               indent_size = 2;
