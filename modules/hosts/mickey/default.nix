@@ -15,6 +15,10 @@
     ../../../modules/nixos/secureboot.nix
   ];
 
+  programs.nh = {
+    enable = true;
+  };
+
   networking.hostName = "mickey";
 
   boot.kernelPackages = pkgs.linuxPackages_hardened;

@@ -18,6 +18,10 @@
     ../../../modules/nixos/secureboot.nix
   ];
 
+  programs.nh = {
+    enable = true;
+  };
+
   networking.hostName = "desktop";
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [5173];
 

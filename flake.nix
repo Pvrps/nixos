@@ -84,6 +84,11 @@
       inputs.flake-parts.follows = "flake-parts";
     };
 
+    nh = {
+      url = "github:nix-community/nh";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -162,6 +167,7 @@
             just
             alejandra
             statix
+            inputs.nh.packages.${pkgs.system}.nh
           ];
         };
 

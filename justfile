@@ -15,31 +15,20 @@ secrets host=`hostname`:
 
 # Build and set the new configuration for the next boot
 boot host=`hostname`:
-    sudo nixos-rebuild boot --flake .#{{host}}
+    nh os boot . -H {{host}}
 
 # Build and switch to the new configuration
 switch host=`hostname`:
-    sudo nixos-rebuild switch --flake .#{{host}}
+    nh os switch . -H {{host}}
 
 # Dry build the configuration without switching
 build host=`hostname`:
-    nixos-rebuild dry-build --flake .#{{host}}
-
-# Format and lint the code
-validate:
-    alejandra .
-    statix check .
-
-format:
-    nix fmt
-
-format-check:
-    nix fmt -- --fail-on-change
+    nh os dry-build . -H {{host}}
 
 # Delete old generations and perform garbage collection
 cleanup:
-    sudo nix-collect-garbage -d
-    nix-collect-garbage -d
+    nh clean all -k 3
+    nh clean all -k 3
 
 # Get the sha256 SRI hash for a given URL (useful for pkgs.fetchurl)
 hash url:
