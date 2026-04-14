@@ -21,7 +21,7 @@
 
   networking.hostName = "mickey";
 
-  boot.kernelPackages = pkgs.linuxPackages_hardened;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   #custom.secureboot.enable = true;
 
