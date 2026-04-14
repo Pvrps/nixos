@@ -26,6 +26,7 @@ in {
           "$username"
           "$git_branch"
           "$directory"
+          "$nix_shell"
           "$line_break"
           "$character"
         ];
@@ -59,6 +60,15 @@ in {
             NixOS = "[nix](fg:#8AE9ff)";
             Kali = "[kali](fg:#25867B)";
           };
+        };
+
+        nix_shell = {
+          disabled = false;
+          format = "[$symbol $name]($style) ";
+          symbol = "❄";
+          style = "fg:#8AE9ff bold";
+          impure_msg = "[impure](fg:#CF3030 bold)";
+          pure_msg = "pure";
         };
 
         shell = {

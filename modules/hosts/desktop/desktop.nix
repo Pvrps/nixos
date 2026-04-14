@@ -112,6 +112,7 @@
       seahorse
       pkgs.gnome-bluetooth
       pkgs.blueman
+      pkgs.nix-your-shell
     ];
   };
 }

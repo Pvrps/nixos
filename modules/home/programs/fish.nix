@@ -20,6 +20,10 @@ in {
       shellAliases = cfg.aliases;
       interactiveShellInit = ''
         set fish_greeting
+        
+        if command -q nix-your-shell
+          nix-your-shell fish | source
+        end
       '';
 
       functions = {
