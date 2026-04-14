@@ -23,7 +23,7 @@ switch host=`hostname`:
 
 # Dry build the configuration without switching
 build host=`hostname`:
-    nh os dry-build . -H {{host}}
+    nh os build . -H {{host}}
 
 # Delete old generations and perform garbage collection
 cleanup:
