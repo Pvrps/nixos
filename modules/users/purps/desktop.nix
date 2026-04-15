@@ -45,19 +45,7 @@
       micsave.enable = true;
     };
     programs = {
-      noctalia = {
-        enable = true;
-        barDensity = "comfortable";
-        launcherShowCategories = false;
-        launcherShowAboveFullscreen = true;
-        notificationsMonitor = "DP-1";
-        discreteGpuMonitoring = true;
-        hideBrightnessFromBar = true;
-        lockscreenMonitors = ["DP-1"];
-        lockscreenAnimations = true;
-        lockscreenBlur = 0.75;
-        lockscreenTint = 0.75;
-      };
+      noctalia.enable = true;
       niri = {
         enable = true;
         xwaylandDisplay = ":11";
