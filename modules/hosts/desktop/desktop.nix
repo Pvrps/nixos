@@ -22,6 +22,7 @@
 
     programs = {
       niri.enable = true;
+      gpu-screen-recorder.enable = true;
     };
 
     security = {
