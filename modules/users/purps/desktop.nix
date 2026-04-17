@@ -217,7 +217,11 @@
       };
       clapper.enable = true;
       imv.enable = true;
-      rustdesk.enable = true;
+      rustdesk = {
+        enable = true;
+        server = osConfig.sops.secrets."rustdesk-server".path;
+        keyFile = osConfig.sops.secrets."rustdesk-key".path;
+      };
       java.enable = true;
       bolt.enable = true;
       prismlauncher.enable = true;

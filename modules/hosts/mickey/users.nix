@@ -34,8 +34,20 @@
       "mike-password" = {
         neededForUsers = true;
       };
+
       "github-ssh-key" = {
         owner = "purps";
+        group = "users";
+        mode = "0600";
+      };
+
+      "rustdesk-server" = {
+        owner = "purps";
+        group = "users";
+        mode = "0600";
+      };
+      "rustdesk-key" = {
+        owner = "mike";
         group = "users";
         mode = "0600";
       };

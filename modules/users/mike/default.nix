@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  osConfig,
+  ...
+}: {
   home = {
     username = "mike";
     homeDirectory = "/home/mike";
@@ -147,6 +151,8 @@
     rustdesk = {
       enable = true;
       autoStart = true;
+      server = osConfig.sops.secrets."rustdesk-server".path;
+      keyFile = osConfig.sops.secrets."rustdesk-key".path;
     };
   };
 }

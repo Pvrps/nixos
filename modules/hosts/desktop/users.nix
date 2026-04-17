@@ -53,6 +53,17 @@
         group = "users";
         mode = "0600";
       };
+
+      "rustdesk-server" = {
+        owner = "purps";
+        group = "users";
+        mode = "0600";
+      };
+      "rustdesk-key" = {
+        owner = "purps";
+        group = "users";
+        mode = "0600";
+      };
     };
   };
 }
