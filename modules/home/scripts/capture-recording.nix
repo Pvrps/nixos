@@ -42,11 +42,13 @@
         REGION=$(echo "$AREA" | ${pkgs.gawk}/bin/awk '{split($1,a,","); split($2,b,"x"); printf "%sx%s+%s+%s", b[1], b[2], a[1], a[2]}')
         echo "$FILE" > "$RECFILE"
 
-        AUDIO_SOURCE=$(${pkgs.pulseaudio}/bin/pactl get-default-sink).monitor
+        AUDIO_SINK=$(${pkgs.pulseaudio}/bin/pactl get-default-sink).monitor
+        AUDIO_MIC=$(${pkgs.pulseaudio}/bin/pactl get-default-source)
 
         ${pkgs.gpu-screen-recorder}/bin/gpu-screen-recorder \
           -w region -region "$REGION" \
-          -a "$AUDIO_SOURCE" \
+          -a "$AUDIO_SINK" \
+          -a "$AUDIO_MIC" \
           -c mp4 -o "$FILE" > /dev/null 2>&1 &
         PID=$!
         echo $PID > "$PIDFILE"
@@ -97,11 +99,13 @@
 
       echo "$FILE" > "$RECFILE"
 
-      AUDIO_SOURCE=$(${pkgs.pulseaudio}/bin/pactl get-default-sink).monitor
+      AUDIO_SINK=$(${pkgs.pulseaudio}/bin/pactl get-default-sink).monitor
+      AUDIO_MIC=$(${pkgs.pulseaudio}/bin/pactl get-default-source)
 
       ${pkgs.gpu-screen-recorder}/bin/gpu-screen-recorder \
         -w "$OUTPUT" \
-        -a "$AUDIO_SOURCE" \
+        -a "$AUDIO_SINK" \
+        -a "$AUDIO_MIC" \
         -c mp4 -o "$FILE" > /dev/null 2>&1 &
       PID=$!
       echo $PID > "$PIDFILE"
