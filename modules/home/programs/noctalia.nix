@@ -12,7 +12,13 @@ in {
     inputs.noctalia.homeModules.default
   ];
 
-  options.custom.programs.noctalia.enable = lib.mkEnableOption "Noctalia shell";
+  options.custom.programs.noctalia = {
+    enable = lib.mkEnableOption "Noctalia shell";
+    primaryMonitor = lib.mkOption {
+      type = lib.types.str;
+      description = "Wayland output name used for lock screen and notifications. Required when noctalia is enabled.";
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     assertions = [
@@ -41,15 +47,45 @@ in {
           screenRadiusRatio = 0;
           scaleRatio = 0.75;
           enableShadows = true;
+          lockScreenMonitors = [ cfg.primaryMonitor ];
         };
         ui = {
           boxBorderEnabled = true;
         };
+        systemMonitor = {
+          enableDgpuMonitoring = true;
+        };
         notifications = {
           location = "top_right";
+          monitors = [ cfg.primaryMonitor ];
         };
         appLauncher = {
           sortByMostUsed = true;
+          overviewLayer = true;
+        };
+        bar = {
+          widgets = {
+            left = [
+              { id = "Launcher"; }
+              { id = "Clock"; }
+              {
+                id = "SystemMonitor";
+                showGpuTemp = true;
+              }
+              { id = "ActiveWindow"; }
+              { id = "MediaMini"; }
+            ];
+            center = [
+              { id = "Workspace"; }
+            ];
+            right = [
+              { id = "Tray"; }
+              { id = "NotificationHistory"; }
+              { id = "Battery"; }
+              { id = "Volume"; }
+              { id = "ControlCenter"; }
+            ];
+          };
         };
       };
     };
@@ -90,6 +126,7 @@ in {
       keybinds = [
         ''Mod+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }''
         ''Mod+C { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }''
+        ''Mod+Shift+L { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }''
       ];
 
       layerRules = [

@@ -45,7 +45,10 @@
       micsave.enable = true;
     };
     programs = {
-      noctalia.enable = true;
+      noctalia = {
+        enable = true;
+        primaryMonitor = "DP-1";
+      };
       niri = {
         enable = true;
         xwaylandDisplay = ":11";
