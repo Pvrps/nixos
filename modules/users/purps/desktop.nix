@@ -43,6 +43,7 @@
       };
       gitingest.enable = true;
       micsave.enable = true;
+      ports-summary.enable = true;
     };
     programs = {
       noctalia = {
