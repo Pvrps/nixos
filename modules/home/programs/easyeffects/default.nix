@@ -15,8 +15,8 @@ in {
         description = "EasyEffects preset name";
       };
       presetSource = lib.mkOption {
-        type = lib.types.path;
-        description = "Path to the EasyEffects preset JSON file";
+        type = lib.types.str;
+        description = "Absolute string path to the EasyEffects preset JSON file";
       };
     };
   };

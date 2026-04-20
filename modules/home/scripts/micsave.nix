@@ -14,7 +14,7 @@
     JQ="${pkgs.jq}/bin/jq"
 
     CONFIG_DIR="/persist/etc/nixos"
-    GIT_PRESET_PATH="${config.custom.programs.easyeffects.presetSource}"
+    GIT_PRESET_PATH="${cfg.presetGitPath}"
     LIVE_PRESET="$HOME/.local/share/easyeffects/input/${config.custom.programs.easyeffects.preset}.json"
 
     if [[ ! -f "$LIVE_PRESET" ]]; then
@@ -74,7 +74,13 @@
     fi
   '';
 in {
-  options.custom.scripts.micsave.enable = lib.mkEnableOption "MicSave EasyEffects preset commit tool";
+  options.custom.scripts.micsave = {
+    enable = lib.mkEnableOption "MicSave EasyEffects preset commit tool";
+    presetGitPath = lib.mkOption {
+      type = lib.types.str;
+      description = "Absolute string path to the preset file in the git repo. Must be a string, not a Nix path, to remain writable.";
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     assertions = [

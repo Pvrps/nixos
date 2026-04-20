@@ -42,7 +42,10 @@
         edit.enable = true;
       };
       gitingest.enable = true;
-      micsave.enable = true;
+      micsave = {
+        enable = true;
+        presetGitPath = "/persist/etc/nixos/modules/users/purps/files/blue_yeti.json";
+      };
       ports-summary.enable = true;
     };
     programs = {
@@ -249,7 +252,7 @@
       easyeffects = {
         enable = true;
         preset = "blue_yeti";
-        presetSource = ./files/blue_yeti.json;
+        presetSource = "/persist/etc/nixos/modules/users/purps/files/blue_yeti.json";
       };
       gnomeKeyring.enable = true;
       spotify.enable = true;
