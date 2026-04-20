@@ -39,7 +39,7 @@
       "wet": 0.0
     },
     "deepfilternet#0": {
-      "attenuation-limit": 80.0,
+      "attenuation-limit": 100.0,
       "bypass": false,
       "input-gain": 0.0,
       "max-df-processing-threshold": 20.0,
