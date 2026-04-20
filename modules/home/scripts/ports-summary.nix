@@ -15,10 +15,10 @@
     TR="${pkgs.coreutils}/bin/tr"
 
     # ANSI colors
-    BOLD='\033[1m'
-    DIM='\033[2m'
-    CYAN='\033[0;36m'
-    RESET='\033[0m'
+    BOLD=$'\033[1m'
+    DIM=$'\033[2m'
+    CYAN=$'\033[0;36m'
+    RESET=$'\033[0m'
 
     declare -A cmd_app
     declare -A exe_path
@@ -57,7 +57,7 @@
           fi
           ;;
       esac
-    done < <($LSOF -i -P -n -F pctn 2>/dev/null)
+    done < <($LSOF -i -P -n -F ptn 2>/dev/null)
 
     for lkey in "''${listeners[@]}"; do
       pid="''${lkey%%:*}"
