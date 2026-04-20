@@ -78,7 +78,6 @@
 
       while IFS= read -r conn_line; do
         [[ -z "$conn_line" ]] && continue
-        conn_proto="''${conn_line%% *}"
         conn_rest="''${conn_line#* }"
         local_c="''${conn_rest% -> *}"
         remote_c="''${conn_rest##* -> }"
