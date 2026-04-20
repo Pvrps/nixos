@@ -1,3 +1,20 @@
+--- a/src/bridge.js
++++ b/src/bridge.js
+@@ -13,11 +13,10 @@ let lastMsg = {};
+ let port = 1337;
+ if (process.env.ARRPC_BRIDGE_PORT) {
+   port = parseInt(process.env.ARRPC_BRIDGE_PORT);
+-  if (isNaN(port)) {
+-    throw new Error('invalid port');
+-  }
++  if (isNaN(port)) throw new Error('invalid port');
+ }
+-const wss = new WebSocketServer({ port });
++const host = process.env.ARRPC_BRIDGE_HOST ?? '127.0.0.1';
++const wss = new WebSocketServer({ port, host });
+ 
+ wss.on('connection', socket => {
+   log('web connected');
 --- a/src/process/index.js
 +++ b/src/process/index.js
 @@ -5,7 +5,12 @@
