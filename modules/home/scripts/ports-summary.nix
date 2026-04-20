@@ -12,6 +12,7 @@
     LSOF="${pkgs.lsof}/bin/lsof"
     READLINK="${pkgs.coreutils}/bin/readlink"
     BASENAME="${pkgs.coreutils}/bin/basename"
+    DIRNAME="${pkgs.coreutils}/bin/dirname"
     TR="${pkgs.coreutils}/bin/tr"
     SORT="${pkgs.coreutils}/bin/sort"
     AWK="${pkgs.gawk}/bin/awk"
@@ -27,8 +28,100 @@
     declare -A pid_listeners
     declare -A pid_connections
     declare -A port_to_name
+    declare -A port_to_pid
 
-    # ── Pass 1: map every local TCP port to its process name ─────────────────
+    # ── Resolve a friendly display name for any PID ───────────────────────────
+    resolve_display_name() {
+      local pid="$1"
+      local raw_cmd="$2"
+      local full_exe="$3"
+      local exe_base
+      exe_base=$("$BASENAME" "$full_exe" 2>/dev/null || echo "$raw_cmd")
+
+      if [[ "$exe_base" == "node" || "$exe_base" == "bun" || "$exe_base" == "deno" \
+         || "$exe_base" == "electron" || "$raw_cmd" == "MainThread" ]]; then
+
+        mapfile -t _args < <("$TR" '\0' '\n' < /proc/"$pid"/cmdline 2>/dev/null || true)
+
+        # node_modules/.bin/ wins for node/bun/deno
+        for arg in "''${_args[@]}"; do
+          if [[ "$arg" == *"/node_modules/.bin/"* ]]; then
+            echo "$exe_base (''${arg##*/node_modules/.bin/})"
+            return
+          fi
+        done
+
+        if [[ "$exe_base" == "electron" ]]; then
+          # Priority 1: .asar path → climb to app name
+          for arg in "''${_args[@]}"; do
+            [[ "$arg" == "$full_exe" || "$arg" == "/proc/self/exe" ]] && continue
+            [[ -z "$arg" ]] && continue
+            [[ "$arg" == --* ]] && continue
+            if [[ "$arg" == *.asar || "$arg" == */resources/app || "$arg" == */resources/app.asar ]]; then
+              parent="$("$DIRNAME" "$arg")"
+              pname="$("$BASENAME" "$parent")"
+              if [[ "$pname" == "resources" ]]; then
+                parent="$("$DIRNAME" "$parent")"
+                pname="$("$BASENAME" "$parent")"
+              fi
+              # Strip nix store hash prefix (e.g. abc123-vesktop-1.5.3 → vesktop-1.5.3)
+              pname="''${pname#*-}"
+              # Strip version suffix (e.g. vesktop-1.5.3 → vesktop)
+              pname="''${pname%-[0-9]*}"
+              if [[ -n "$pname" && "$pname" != "." ]]; then
+                echo "electron ($pname)"
+                return
+              fi
+            fi
+          done
+
+          # Priority 2: --user-data-dir= (works for subprocesses like network service)
+          for arg in "''${_args[@]}"; do
+            if [[ "$arg" == --user-data-dir=* ]]; then
+              udd="''${arg#--user-data-dir=}"
+              udd_name="$("$BASENAME" "$udd")"
+              if [[ -n "$udd_name" && "$udd_name" != "." ]]; then
+                echo "electron ($udd_name)"
+                return
+              fi
+            fi
+          done
+
+          # Priority 3: first non-flag non-binary arg basename
+          for arg in "''${_args[@]}"; do
+            [[ "$arg" == "$full_exe" || "$arg" == "/proc/self/exe" ]] && continue
+            [[ -z "$arg" ]] && continue
+            [[ "$arg" == --* ]] && continue
+            name_part="$("$BASENAME" "$arg")"
+            [[ -z "$name_part" || "$name_part" == "$exe_base" || "$name_part" == "exe" ]] && continue
+            echo "electron ($name_part)"
+            return
+          done
+
+          echo "electron"
+          return
+        fi
+
+        # node/bun/deno: first real entrypoint arg
+        for arg in "''${_args[@]}"; do
+          [[ "$arg" == "$full_exe" ]] && continue
+          [[ -z "$arg" ]] && continue
+          [[ "$arg" == --* || "$arg" == -e || "$arg" == -r ]] && continue
+          [[ "$arg" == /nix/store/* && ! "$arg" == *.js && ! "$arg" == *.ts && ! "$arg" == *.mjs ]] && continue
+          name_part="$("$BASENAME" "$arg")"
+          [[ -z "$name_part" ]] && continue
+          echo "$exe_base ($name_part)"
+          return
+        done
+
+        echo "$exe_base"
+        return
+      fi
+
+      echo "$exe_base"
+    }
+
+    # ── Pass 1: map every local TCP port to its PID and process name ──────────
     _cur_pid=""
     _cur_cmd=""
 
@@ -46,6 +139,7 @@
           [[ "$local_port" =~ ^[0-9]+$ ]] || continue
           if [[ -z "''${port_to_name[$local_port]+_}" ]]; then
             port_to_name[$local_port]="$_cur_cmd"
+            port_to_pid[$local_port]="$_cur_pid"
           fi
           ;;
       esac
@@ -85,44 +179,23 @@
       raw_name="''${pid_name[$pid]:-}"
       full_exe=$("$READLINK" -f /proc/"$pid"/exe 2>/dev/null || echo "")
       pid_path[$pid]="$full_exe"
+
+      resolved=$(resolve_display_name "$pid" "$raw_name" "$full_exe")
+      pid_name[$pid]="$resolved"
+
       exe_base=$("$BASENAME" "$full_exe" 2>/dev/null || echo "$raw_name")
-
-      if [[ "$exe_base" == "node" || "$exe_base" == "bun" || "$exe_base" == "deno" || "$raw_name" == "MainThread" ]]; then
+      if [[ "$exe_base" == "node" || "$exe_base" == "bun" || "$exe_base" == "deno" \
+         || "$exe_base" == "electron" || "$raw_name" == "MainThread" ]]; then
         mapfile -t _args < <("$TR" '\0' '\n' < /proc/"$pid"/cmdline 2>/dev/null || true)
-        resolved=""
-        script_path=""
-
-        # Priority 1: node_modules/.bin/ entry
         for arg in "''${_args[@]}"; do
-          if [[ "$arg" == *"/node_modules/.bin/"* ]]; then
-            bin_name="''${arg##*/node_modules/.bin/})"
-            resolved="$exe_base ($bin_name"
-            script_path=$("$READLINK" -f "$arg" 2>/dev/null || echo "$arg")
-            break
-          fi
+          [[ "$arg" == "$full_exe" || "$arg" == "/proc/self/exe" ]] && continue
+          [[ -z "$arg" ]] && continue
+          [[ "$arg" == --* || "$arg" == -e || "$arg" == -r ]] && continue
+          [[ "$arg" == /nix/store/* && ! "$arg" == *.js && ! "$arg" == *.ts \
+             && ! "$arg" == *.mjs && ! "$arg" == *.asar ]] && continue
+          pid_script[$pid]="$arg"
+          break
         done
-
-        # Priority 2: first real entrypoint argument
-        if [[ -z "$resolved" ]]; then
-          for arg in "''${_args[@]}"; do
-            [[ "$arg" == "$full_exe" ]] && continue
-            [[ -z "$arg" ]] && continue
-            [[ "$arg" == --* || "$arg" == -e || "$arg" == -r ]] && continue
-            [[ "$arg" == /nix/store/* && ! "$arg" == *.js && ! "$arg" == *.ts && ! "$arg" == *.mjs ]] && continue
-            name_part="$("$BASENAME" "$arg")"
-            [[ -z "$name_part" ]] && continue
-            resolved="$exe_base ($name_part)"
-            script_path="$arg"
-            break
-          done
-        fi
-
-        if [[ -n "$resolved" ]]; then
-          pid_name[$pid]="$resolved"
-          pid_script[$pid]="$script_path"
-        else
-          pid_name[$pid]="$exe_base"
-        fi
       fi
     done
 
@@ -170,7 +243,6 @@
         )
         num_conns="''${#conns[@]}"
 
-        # └─ for last addr regardless of whether it has children
         if [[ $is_last_addr -eq 1 ]]; then
           port_prefix="└─"
         else
@@ -184,9 +256,15 @@
           is_last_conn=$(( j == num_conns - 1 ))
 
           remote_port="''${conn##*:}"
-          conn_app=""
+          conn_label=""
+
           if [[ "$conn" == 127.* || "$conn" == "::1"* ]]; then
-            conn_app="''${port_to_name[$remote_port]:-}"
+            conn_raw_name="''${port_to_name[$remote_port]:-}"
+            conn_pid="''${port_to_pid[$remote_port]:-}"
+            if [[ -n "$conn_pid" && -n "$conn_raw_name" ]]; then
+              conn_exe=$("$READLINK" -f /proc/"$conn_pid"/exe 2>/dev/null || echo "")
+              conn_label=$(resolve_display_name "$conn_pid" "$conn_raw_name" "$conn_exe")
+            fi
           fi
 
           if [[ $is_last_conn -eq 1 ]]; then
@@ -196,8 +274,8 @@
           fi
 
           suffix=""
-          if [[ -n "$conn_app" && "$conn_app" != "''${pid_name[$pid]%% *}" ]]; then
-            suffix="  ''${DIM}($conn_app)''${RESET}"
+          if [[ -n "$conn_label" && "$conn_label" != "''${pid_name[$pid]%% *}" ]]; then
+            suffix="  ''${DIM}($conn_label)''${RESET}"
           fi
 
           if [[ $is_last_addr -eq 1 ]]; then
