@@ -11,6 +11,7 @@
     NOTIFY="${pkgs.libnotify}/bin/notify-send"
     GIT="${pkgs.git}/bin/git"
     DELTA="${pkgs.delta}/bin/delta"
+    JQ="${pkgs.jq}/bin/jq"
 
     CONFIG_DIR="/persist/etc/nixos"
     GIT_PRESET_PATH="${config.custom.programs.easyeffects.presetSource}"
@@ -24,24 +25,36 @@
     if [ ! -f "$GIT_PRESET_PATH" ]; then
       GIT_SUM=""
     else
-      GIT_SUM=$(sha256sum "$GIT_PRESET_PATH"); GIT_SUM=''${GIT_SUM%% *}
+      GIT_SUM=$($JQ --sort-keys . "$GIT_PRESET_PATH" | sha256sum); GIT_SUM=''${GIT_SUM%% *}
     fi
-    LIVE_SUM=$(sha256sum "$LIVE_PRESET"); LIVE_SUM=''${LIVE_SUM%% *}
+    LIVE_SUM=$($JQ --sort-keys . "$LIVE_PRESET" | sha256sum); LIVE_SUM=''${LIVE_SUM%% *}
 
     if [[ "$LIVE_SUM" != "$GIT_SUM" ]]; then
       echo "Changes detected in EasyEffects preset:"
       echo ""
-      $GIT -C "$CONFIG_DIR" diff --no-index "$GIT_PRESET_PATH" "$LIVE_PRESET" | $DELTA \
-        --diff-so-fancy \
-        --width=80 \
-        2>/dev/null || true
-      echo ""
 
+      TMP_GIT=$(mktemp /tmp/micsave-git-XXXXXX.json)
+      TMP_LIVE=$(mktemp /tmp/micsave-live-XXXXXX.json)
+      trap "rm -f $TMP_GIT $TMP_LIVE" EXIT
+
+      $JQ --sort-keys . "$GIT_PRESET_PATH" > "$TMP_GIT"
+      $JQ --sort-keys . "$LIVE_PRESET" > "$TMP_LIVE"
+
+      $GIT -C "$CONFIG_DIR" diff --no-index "$TMP_GIT" "$TMP_LIVE" \
+        | $DELTA \
+            --diff-so-fancy \
+            --width=80 \
+            2>/dev/null || true
+
+      rm -f "$TMP_GIT" "$TMP_LIVE"
+      trap - EXIT
+
+      echo ""
       read -p "Commit these changes? (y/n): " -n 1 -r
       echo
 
       if [[ $REPLY =~ ^[Yy]$ ]]; then
-        cp "$LIVE_PRESET" "$GIT_PRESET_PATH"
+        $JQ --sort-keys . "$LIVE_PRESET" > "$GIT_PRESET_PATH"
         chmod 644 "$GIT_PRESET_PATH"
         $GIT -C "$CONFIG_DIR" add -- "$GIT_PRESET_PATH"
         $GIT -C "$CONFIG_DIR" commit -m "Update EasyEffects preset"
