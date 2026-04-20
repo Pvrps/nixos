@@ -54,6 +54,10 @@ in {
                   focus-ring { width 0; }
                   block-out-from "screencast"
               }''
+      ''        window-rule {
+                  match app-id=r#"^steam$"# title=r#"^Friends List$"#
+                  open-floating true
+              }''
     ];
   };
 }
