@@ -204,6 +204,7 @@
             enableEmojiBypass = true;
             enableStickerBypass = true;
           };
+          volumeBooster.enable = true;
           webScreenShareFixes.enable = true;
         };
       };
