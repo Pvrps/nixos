@@ -7,6 +7,31 @@
     ./general.nix
   ];
 
+  home.persistence."/persist" = {
+    hideMounts = true;
+    directories = [
+      ".local"
+      ".config"
+      ".var"
+      ".ssh"
+      ".gnupg"
+      ".claude"
+      ".steam"
+      ".vscode"
+      ".putty"
+      ".pki"
+      ".cache/nvidia"
+      ".cache/noctalia"
+      "Downloads"
+      "Pictures"
+      "Videos"
+      "Development"
+    ];
+    files = [
+      ".claude.json"
+    ];
+  };
+
   dconf.settings = {
     "org/gtk/settings/file-chooser" = {
       show-hidden = true;

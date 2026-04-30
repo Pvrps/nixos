@@ -21,9 +21,9 @@
   };
 
   fileSystems."/home" = {
-    device = "/persist/home";
-    fsType = "none";
-    options = ["bind"];
+    device = "none";
+    fsType = "tmpfs";
+    options = ["defaults" "mode=755"];
     neededForBoot = true;
   };
 
