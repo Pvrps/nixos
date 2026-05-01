@@ -14,7 +14,17 @@
 
   config = {
     hardware.bluetooth.enable = true;
-    hardware.bluetooth.settings.main.experimental = true;
+    hardware.bluetooth.settings = {
+      General = {
+        Experimental = true;
+        JustWorksRepairing = "always";
+      };
+      Policy = {
+        AutoEnable = true;
+        ReconnectAttempts = 7;
+        ReconnectIntervals = "1,2,4,8,16,32,64";
+      };
+    };
 
     # Geist must be a system-level font so Flatpak exposes it via /run/host/fonts.
     # Home-manager fonts live in the Nix store and aren't reachable inside the sandbox.

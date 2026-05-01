@@ -12,6 +12,7 @@
       "/var/lib/NetworkManager"
       "/var/lib/greetd"
       "/var/lib/tailscale"
+      "/var/lib/bluetooth"
       "/etc/NetworkManager/system-connections"
     ];
 
