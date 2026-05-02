@@ -4,6 +4,18 @@
   ...
 }: let
   cfg = config.custom.programs.fish;
+
+  # Collect all individually persisted files across all persistence mounts.
+  # These are bind-mounted onto tmpfs files so fd --one-file-system sees them;
+  # they must be excluded explicitly by basename.
+  # Each entry in .files is an attrset with a .file field (relative path from $HOME).
+  persistedFiles = lib.concatMap
+    (mount: map (f: f.file) (mount.files or []))
+    (lib.attrValues config.home.persistence);
+
+  persistedFileExcludes = lib.concatMapStrings
+    (f: "--exclude \"${baseNameOf f}\" \\\n            ")
+    persistedFiles;
 in {
   options.custom = {
     programs.fish.enable = lib.mkEnableOption "Fish shell";
@@ -29,8 +41,9 @@ in {
       functions = {
         unpersisted = ''
           # List files in $HOME that are NOT in any persisted directory.
-          # With hideMounts=true, the bind-mounted persist dirs appear as mount points
-          # that fd --one-file-system won't cross, so only ephemeral files are shown.
+          # Persisted directories are bind-mount points that fd --one-file-system
+          # won't cross. Persisted individual files are excluded via --exclude
+          # flags generated automatically from home.persistence at build time.
           fd \
             --one-file-system \
             --base-directory ~ \
@@ -38,7 +51,7 @@ in {
             --hidden \
             --exclude ".cache" \
             --exclude ".npm" \
-            $argv \
+            ${persistedFileExcludes}$argv \
             .
         '';
 
