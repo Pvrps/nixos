@@ -20,13 +20,28 @@ in {
       shellAliases = cfg.aliases;
       interactiveShellInit = ''
         set fish_greeting
-        
+
         if command -q nix-your-shell
           nix-your-shell fish | source
         end
       '';
 
       functions = {
+        unpersisted = ''
+          # List files in $HOME that are NOT in any persisted directory.
+          # With hideMounts=true, the bind-mounted persist dirs appear as mount points
+          # that fd --one-file-system won't cross, so only ephemeral files are shown.
+          fd \
+            --one-file-system \
+            --base-directory ~ \
+            --type f \
+            --hidden \
+            --exclude ".cache" \
+            --exclude ".npm" \
+            $argv \
+            .
+        '';
+
         run = ''
           if string match -q "*.AppImage" $argv[1]
             NIXPKGS_ALLOW_UNFREE=1 nix-shell -p appimage-run --run "appimage-run $argv"
