@@ -285,6 +285,13 @@
       };
       gnomeKeyring.enable = true;
       spotify.enable = true;
+      openrgb.enable = true;
+      liquidctl = {
+        enable = true;
+        lcdImage = ./assets/master-sword.gif;
+        brightness = 100;
+        orientation = 270;
+      };
       pinta.enable = true;
       vscode = {
         enable = true;

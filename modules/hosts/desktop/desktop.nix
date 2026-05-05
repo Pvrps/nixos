@@ -48,6 +48,19 @@
       after = ["network-online.target"];
     };
 
+    services.hardware.openrgb = {
+      enable = true;
+      motherboard = "amd";
+    };
+
+    services.udev.packages = [pkgs.liquidctl];
+
+    # liquidctl's uaccess tag requires logind ACL at plug-in time which doesn't
+    # fire for always-connected devices. Grant access to the users group directly.
+    services.udev.extraRules = ''
+      SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="300c", GROUP="users", MODE="0660"
+    '';
+
     services = {
       pipewire = {
         enable = true;
