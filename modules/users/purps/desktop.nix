@@ -159,6 +159,10 @@
             install_url = "https://addons.mozilla.org/firefox/downloads/latest/the-camelizer-price-history-ch/latest.xpi";
             installation_mode = "force_installed";
           };
+          "webextension@metamask.io" = {
+            install_url = "https://addons.mozilla.org/firefox/downloads/latest/ether-metamask/latest.xpi";
+            installation_mode = "force_installed";
+          };
         };
       };
       steam.enable = true;
