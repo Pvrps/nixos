@@ -98,6 +98,9 @@
                             scale 1.5
                             variable-refresh-rate on-demand=true
                         }''
+          ''            output "HDMI-A-3" {
+                            off
+                        }''
         ];
       };
       foot.enable = true;
