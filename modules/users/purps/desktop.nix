@@ -280,8 +280,8 @@
         plugins = {
           aitumStreamSuite = {
             enable = true;
-            version = "1.1.0";
-            hash = "sha256-ICh2KnXqdiwbFJFVkOtBytuknryECxj3uOsiTr2BI1k=";
+            version = "1.1.2";
+            hash = "sha256:46137e8ec8b92704879c58ed486bede468102935e53d25f3f1a36a5e07c71bca";
           };
         };
       };
