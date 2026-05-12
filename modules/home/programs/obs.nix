@@ -20,6 +20,22 @@
     "${base}/data".source = "${extracted}/usr/share/obs/obs-plugins/${name}";
   };
 
+  # For plugins distributed as flatpak tarballs (layout: <name>/bin/64bit/<name>.so and <name>/data/)
+  # The plugin dir name must match the .so name for OBS to load it.
+  mkPluginFlatpakTarball = {
+    name,
+    src,
+  }: let
+    extracted = pkgs.runCommand "obs-plugin-${name}" {} ''
+      mkdir -p $out
+      ${pkgs.gnutar}/bin/tar -xzf ${src} -C $out --strip-components=1
+    '';
+    base = ".var/app/com.obsproject.Studio/config/obs-studio/plugins/${name}";
+  in {
+    "${base}/bin/64bit/${name}.so".source = "${extracted}/bin/64bit/${name}.so";
+    "${base}/data".source = "${extracted}/data";
+  };
+
   aitumStreamSuiteFiles =
     lib.optionalAttrs cfg.plugins.aitumStreamSuite.enable
     (mkPlugin {
@@ -27,6 +43,16 @@
       src = pkgs.fetchurl {
         url = "https://github.com/Aitum/obs-aitum-stream-suite/releases/download/${cfg.plugins.aitumStreamSuite.version}/aitum-stream-suite-linux-gnu.deb";
         inherit (cfg.plugins.aitumStreamSuite) hash;
+      };
+    });
+  pipewireAudioCaptureFiles =
+    lib.optionalAttrs cfg.plugins.pipewireAudioCapture.enable
+    (mkPluginFlatpakTarball {
+      # OBS loads plugins by scanning subdirs of plugins/; the dir name must match the .so name
+      name = "linux-pipewire-audio";
+      src = pkgs.fetchurl {
+        url = "https://github.com/dimtpap/obs-pipewire-audio-capture/releases/download/${cfg.plugins.pipewireAudioCapture.version}/linux-pipewire-audio-${cfg.plugins.pipewireAudioCapture.version}-flatpak-30.tar.gz";
+        inherit (cfg.plugins.pipewireAudioCapture) hash;
       };
     });
 in {
@@ -44,6 +70,18 @@ in {
           hash = lib.mkOption {
             type = lib.types.str;
             description = "SHA256 hash of the .deb release asset";
+          };
+        };
+        pipewireAudioCapture = {
+          enable = lib.mkEnableOption "PipeWire Audio Capture";
+          version = lib.mkOption {
+            type = lib.types.str;
+            default = "1.2.1";
+            description = "GitHub release tag for pipewire-audio-capture";
+          };
+          hash = lib.mkOption {
+            type = lib.types.str;
+            description = "SHA256 hash of the flatpak tarball release asset";
           };
         };
       };
@@ -67,6 +105,7 @@ in {
 
     home.file = lib.mkMerge [
       aitumStreamSuiteFiles
+      pipewireAudioCaptureFiles
     ];
   };
 }
