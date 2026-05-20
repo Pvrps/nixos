@@ -77,6 +77,7 @@
       ports-summary.enable = true;
     };
     programs = {
+      osu-lazer.enable = true;
       noctalia = {
         enable = true;
         primaryMonitor = "DP-1";
