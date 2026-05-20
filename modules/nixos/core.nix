@@ -48,6 +48,8 @@
   };
 
   networking.networkmanager.enable = true;
+  services.resolved.enable = true;
+  networking.networkmanager.dns = "systemd-resolved";
 
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "en_US.UTF-8";
