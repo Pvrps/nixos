@@ -304,6 +304,7 @@
         brightness = 100;
         orientation = 270;
       };
+      okular.enable = true;
       pinta.enable = true;
       vscode = {
         enable = true;
