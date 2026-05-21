@@ -24,7 +24,15 @@
       remotePlay.openFirewall = true;
       dedicatedServer.openFirewall = true;
     };
-    gamemode.enable = true;
+    gamemode = {
+      enable = true;
+      settings = {
+        cpu = {
+          governor = "performance";
+          energy_performance_preference = "performance";
+        };
+      };
+    };
     gamescope.enable = true;
   };
 }

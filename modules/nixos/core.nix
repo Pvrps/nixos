@@ -22,6 +22,10 @@
       "rd.udev.log_level=3"
       "udev.log_priority=3"
     ];
+    # Raise USB HID polling rate to 1000 Hz (1ms) for devices that don't self-report
+    # (e.g. Wacom CTL-490 defaults to ~133 Hz). Gaming mice with custom rates are unaffected.
+    extraModprobeConfig = "options usbhid mousepoll=1";
+
     blacklistedKernelModules = [
       "dccp"
       "sctp"
