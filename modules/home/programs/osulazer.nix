@@ -38,7 +38,6 @@ in {
         window-rule {
           match app-id="^osu!$"
           open-maximized true
-          allow-tearing true
         }
       ''
     ];
