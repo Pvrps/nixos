@@ -94,17 +94,13 @@
         };
 
         extraConfig.pipewire = {
-          # Pin the PipeWire clock quantum to 512 frames @ 48kHz (~10.7ms).
-          # Without a fixed quantum, OBS negotiates its own preferred buffer size
-          # when it opens, which conflicts with the running quantum and triggers
-          # xruns (audio dropouts / crackling). Pinning min == max == quantum
-          # prevents any client from renegotiating it.
-          "92-fix-obs-crackling" = {
+          "92-flexible-quantum" = {
             "context.properties" = {
               "default.clock.rate" = 48000;
-              "default.clock.quantum" = 512;
+              "default.clock.allowed-rates" = [48000];
+              "default.clock.quantum" = 800;
               "default.clock.min-quantum" = 512;
-              "default.clock.max-quantum" = 512;
+              "default.clock.max-quantum" = 1024;
             };
           };
           "93-virtual-cable" = {
