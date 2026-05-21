@@ -13,6 +13,9 @@
   };
 
   config = {
+    hardware.opentabletdriver.enable = true;
+    hardware.opentabletdriver.daemon.enable = true;
+
     hardware.bluetooth.enable = true;
     hardware.bluetooth.settings = {
       General = {
