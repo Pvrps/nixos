@@ -13,7 +13,8 @@
   ];
 
   boot = {
-    initrd.availableKernelModules = ["nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "nvidia_drm" "nvidia_modeset" "nvidia" "nvidia_uvm"];
+    # Nvidia modules removed from initrd - not needed for boot, were bloating initrd to ~197M
+    initrd.availableKernelModules = ["nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod"];
     initrd.kernelModules = [];
     kernelModules = [
       "kvm-amd"
