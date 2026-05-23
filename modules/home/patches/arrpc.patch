@@ -1,6 +1,6 @@
 --- a/src/bridge.js
 +++ b/src/bridge.js
-@@ -13,11 +13,10 @@ let lastMsg = {};
+@@ -13,11 +13,10 @@
  let port = 1337;
  if (process.env.ARRPC_BRIDGE_PORT) {
    port = parseInt(process.env.ARRPC_BRIDGE_PORT);
@@ -17,21 +17,7 @@
    log('web connected');
 --- a/src/process/index.js
 +++ b/src/process/index.js
-@@ -5,7 +5,12 @@
- import { dirname, join } from 'path';
- import { fileURLToPath } from 'url';
- 
--import DetectableDBTemp from "./detectable.json" with { type: "json" };
-+let DetectableDBTemp = [];
-+try {
-+  DetectableDBTemp = JSON.parse(fs.readFileSync(process.env.HOME + "/.config/arrpc/detectable.json", "utf8"));
-+} catch(e) {
-+  DetectableDBTemp = JSON.parse(fs.readFileSync(new URL("./detectable.json", import.meta.url)));
-+}
- DetectableDBTemp.push({
-   aliases: ["Obs"],
-   executables: [
-@@ -101,8 +106,9 @@
+@@ -106,8 +106,9 @@
  
    // For Windows-style exe paths, include the last 2 segments to catch DB entries
    // We also need to match Linux Native executables, since we swap the suffix later for comparison
@@ -43,3 +29,65 @@
      out.add(stripBitness(last2));
    }
  
+@@ -151,6 +152,16 @@
+ };
+ // -------------------------------------------------------------------------
+ 
++// Build a Steam AppID → Discord entry index from third_party_skus for reaper detection
++const steamAppIdIndex = new Map();
++for (const entry of DetectableDB) {
++  for (const sku of entry.third_party_skus ?? []) {
++    if (sku.distributor === 'steam' && sku.id) {
++      steamAppIdIndex.set(String(sku.id), { id: entry.id, name: entry.name });
++    }
++  }
++}
++
+ const timestamps = {}, names = {}, pids = {};
+ export default class ProcessServer {
+   constructor(handlers) {
+@@ -179,6 +190,44 @@
+       const argsStr = Array.isArray(args) ? args.join(" ") : "";
+       const path = _path.toLowerCase().replaceAll("\\", "/");
+       const cwdPath = _cwdPath.toLowerCase().replaceAll("\\", "/");
++
++      // Steam reaper detection: parse AppId= from Steam's game wrapper process
++      // Steam launches every game as: reaper SteamLaunch AppId=<id> -- <game exe>
++      // This lets us detect any Steam game via third_party_skus without needing
++      // an executables entry in the detectable DB (fixes games like Forza Horizon 6)
++      const exeBase = path.slice(path.lastIndexOf('/') + 1).replace(/.exe$/, '');
++      if (exeBase === 'reaper') {
++        const appIdMatch = argsStr.match(/AppId=(\d+)/);
++        if (appIdMatch) {
++          const entry = steamAppIdIndex.get(appIdMatch[1]);
++          if (entry) {
++            const { id, name } = entry;
++            names[id] = name;
++            pids[id] = pid;
++            ids.push(id);
++            if (!timestamps[id]) {
++              log('detected game! (steam)', name);
++              timestamps[id] = Date.now();
++            }
++            this.handlers.message(
++              { socketId: id },
++              {
++                cmd: 'SET_ACTIVITY',
++                args: {
++                  activity: {
++                    application_id: id,
++                    name,
++                    timestamps: { start: timestamps[id] },
++                  },
++                  pid,
++                },
++              }
++            );
++          }
++        }
++        continue;
++      }
++
+       const toCompare = buildCandidates(path, cwdPath);
+ 
+       for (const { executables, id, name } of DetectableDB) {

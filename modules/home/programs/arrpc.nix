@@ -6,31 +6,23 @@
 }: let
   cfg = config.custom.programs.arrpc;
 
-  # We use the PR #143 branch of arrpc which drastically improves Linux/Proton game detection
+  # We use the PR #143 branch of arrpc which drastically improves Linux/Proton game detection.
+  # The patch adds:
+  #   - ARRPC_BRIDGE_HOST support (binds WebSocket bridge to 127.0.0.1 by default)
+  #   - broader path-segment matching for non-Steam Linux native game detection
+  #   - Steam reaper detection: parses AppId= from Steam's reaper wrapper process and
+  #     cross-references third_party_skus in the detectable DB, fixing games like
+  #     Forza Horizon 6 that have no executables[] entry
   patched-arrpc = pkgs.arrpc.overrideAttrs (old: {
     src = pkgs.fetchFromGitHub {
       owner = "OpenAsar";
       repo = "arrpc";
       rev = "refs/pull/143/head";
-      hash = "sha256-05W372x8O6J+rOax4wrAhu4xia5YUx8HYjLk80l5hxQ=";
+      hash = "sha256-TBVrQN/QoBRKZOgN8Yr0gP0Fn0M+BeojoL3RpKOo5NU=";
     };
 
     patches = [../patches/arrpc.patch];
   });
-
-  # Script to fetch the latest Discord detectable games database
-  fetch-arrpc-db = pkgs.writeShellScript "fetch-arrpc-db" ''
-    ${pkgs.coreutils}/bin/mkdir -p ~/.config/arrpc
-    # Fetch the live database from Discord's API
-    ${pkgs.curl}/bin/curl -sL "https://discord.com/api/v9/applications/detectable" -o ~/.config/arrpc/detectable.json.tmp
-
-    # Only replace if the download was successful (valid JSON array)
-    if ${pkgs.jq}/bin/jq -e 'type == "array"' ~/.config/arrpc/detectable.json.tmp >/dev/null 2>&1; then
-      ${pkgs.coreutils}/bin/mv ~/.config/arrpc/detectable.json.tmp ~/.config/arrpc/detectable.json
-    else
-      ${pkgs.coreutils}/bin/rm -f ~/.config/arrpc/detectable.json.tmp
-    fi
-  '';
 in {
   options.custom.programs.arrpc.enable = lib.mkEnableOption "arRPC background service for Discord Rich Presence";
 
@@ -41,8 +33,6 @@ in {
         After = ["network.target"];
       };
       Service = {
-        # Fetch the latest DB before starting arRPC
-        ExecStartPre = "${fetch-arrpc-db}";
         ExecStart = "${patched-arrpc}/bin/arrpc";
         Restart = "on-failure";
         RestartSec = "5s";
