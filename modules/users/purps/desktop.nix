@@ -77,6 +77,7 @@
       ports-summary.enable = true;
     };
     programs = {
+      stremio.enable = true;
       noctalia = {
         enable = true;
         primaryMonitor = "DP-1";
