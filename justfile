@@ -2,12 +2,9 @@
 default:
     @just --list
 
-# Uses upstream CppNix instead of Lix to update flake.lock.
-# Lix errors on `shallow` git inputs (used by millenium's sub-inputs), CppNix silently ignores them.
-# Lix will still handle all builds normally.
-# Required until Lix adds support for the `shallow` attribute on `github:` inputs.
+# Update Flake
 update:
-    nix run nixpkgs#nixVersions.latest -- flake update
+    nix flake update
 
 # Update the system secrets file
 secrets host=`hostname`:
