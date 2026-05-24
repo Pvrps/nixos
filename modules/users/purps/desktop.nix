@@ -163,10 +163,6 @@
             install_url = "https://addons.mozilla.org/firefox/downloads/latest/ether-metamask/latest.xpi";
             installation_mode = "force_installed";
           };
-          "frankerfacez@frankerfacez.com" = {
-            install_url = "https://addons.mozilla.org/firefox/downloads/latest/frankerfacez/latest.xpi";
-            installation_mode = "force_installed";
-          };
         };
       };
       steam.enable = true;
