@@ -269,7 +269,7 @@
         enable = true;
         packages = [
           "com.github.tchx84.Flatseal"
-          "com.usebottles.bottles"
+          #"com.usebottles.bottles"
         ];
       };
       obs = {
