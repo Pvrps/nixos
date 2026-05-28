@@ -75,8 +75,10 @@
         presetGitPath = "/persist/etc/nixos/modules/users/purps/files/blue_yeti.json";
       };
       ports-summary.enable = true;
+      dir2clip.enable = true;
     };
     programs = {
+      chatterino.enable = true;
       stremio.enable = true;
       noctalia = {
         enable = true;
