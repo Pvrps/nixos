@@ -209,7 +209,7 @@ in {
         # Remove every variant of how this invocation may have been recorded,
         # then flush to disk so it doesn't survive the session.
         for entry in (builtin history | string match --regex '^hist-clean.*')
-          builtin history delete --exact -- $entry
+          builtin history delete --case-sensitive --exact -- $entry
         end
         builtin history save
       '';
