@@ -22,28 +22,26 @@ in {
 
       enableDefaultConfig = false;
 
-      matchBlocks = lib.mkMerge [
+      settings = lib.mkMerge [
         {
           "*" = {
-            addKeysToAgent = "yes";
-
-            # Defaults
-            forwardAgent = false;
-            compression = false;
-            serverAliveInterval = 60;
-            serverAliveCountMax = 3;
-            hashKnownHosts = false;
-            userKnownHostsFile = "~/.ssh/known_hosts";
-            controlMaster = "no";
-            controlPath = "~/.ssh/master-%r@%n:%p";
-            controlPersist = "no";
+            AddKeysToAgent = "yes";
+            ForwardAgent = false;
+            Compression = false;
+            ServerAliveInterval = 60;
+            ServerAliveCountMax = 3;
+            HashKnownHosts = false;
+            UserKnownHostsFile = "~/.ssh/known_hosts";
+            ControlMaster = "no";
+            ControlPath = "~/.ssh/master-%r@%n:%p";
+            ControlPersist = "no";
           };
         }
         (lib.mkIf (cfg.githubKeyPath != null) {
           "github.com" = {
-            hostname = "github.com";
-            user = "git";
-            identityFile = cfg.githubKeyPath;
+            HostName = "github.com";
+            User = "git";
+            IdentityFile = cfg.githubKeyPath;
           };
         })
       ];
