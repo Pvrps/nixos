@@ -6,14 +6,6 @@
 }: let
   cfg = config.custom.scripts.hist-clean;
 
-  fzf = "${pkgs.fzf}/bin/fzf";
-  grep = "${pkgs.gnugrep}/bin/grep";
-  awk = "${pkgs.gawk}/bin/awk";
-  mktemp = "${pkgs.coreutils}/bin/mktemp";
-  mv = "${pkgs.coreutils}/bin/mv";
-  cp = "${pkgs.coreutils}/bin/cp";
-  wc = "${pkgs.coreutils}/bin/wc";
-
   hist-clean = pkgs.writeShellScriptBin "hist-clean" ''
     set -euo pipefail
 
@@ -42,28 +34,20 @@
 
     [[ "''${1:-}" == "-h" || "''${1:-}" == "--help" ]] && usage
 
-    # ── Parse a single history file into "SOURCE\x01RAWLINE\x01DISPLAY" records ─
-    # Format written to the tmp file: SOURCE<SOH>RAWLINE<SOH>DISPLAY
+    # ── Parse history files into "SOURCE\x01RAWLINE\x01DISPLAY" records ──────────
     # SOH (\x01) is used as delimiter since it won't appear in commands.
 
-    ENTRIES_FILE="$(''${mktemp})"
+    ENTRIES_FILE="$(${pkgs.coreutils}/bin/mktemp)"
     trap 'rm -f "''${ENTRIES_FILE}"' EXIT
 
     parse_zsh() {
       local file="$1"
       [[ -f "$file" ]] || return 0
-      # zsh extended history: lines starting with ': ts:elapsed;cmd'
-      # We group pairs: the metadata line + the command line below it.
-      local prev_meta=""
       while IFS= read -r line; do
         if [[ "$line" =~ ^:[[:space:]]*[0-9]+:[0-9]+\; ]]; then
-          prev_meta="$line"
-          # command is the part after the semicolon on the same line
           local cmd="''${line#*;}"
           printf 'zsh\x01%s\x01[zsh] %s\n' "$line" "$cmd" >> "''${ENTRIES_FILE}"
         else
-          # continuation line (multi-line command) — associate with previous meta
-          # represent as its own selectable entry so user can remove it explicitly
           printf 'zsh\x01%s\x01[zsh] %s\n' "$line" "$line" >> "''${ENTRIES_FILE}"
         fi
       done < "$file"
@@ -81,7 +65,6 @@
     parse_fish() {
       local file="$1"
       [[ -f "$file" ]] || return 0
-      # fish history is YAML-ish: '- cmd: <command>' lines followed by '  when: <ts>'
       while IFS= read -r line; do
         if [[ "$line" =~ ^-[[:space:]]cmd:[[:space:]] ]]; then
           local cmd="''${line#*cmd: }"
@@ -94,7 +77,7 @@
     parse_bash "$BASH_HIST"
     parse_fish "$FISH_HIST"
 
-    TOTAL="$(''${wc} -l < "''${ENTRIES_FILE}" | tr -d ' ')"
+    TOTAL="$(${pkgs.coreutils}/bin/wc -l < "''${ENTRIES_FILE}" | tr -d ' ')"
 
     if [[ "$TOTAL" -eq 0 ]]; then
       printf "%bNo history entries found.%b\n" "$YELLOW" "$RESET"
@@ -102,11 +85,10 @@
     fi
 
     # ── Build the display list for fzf ───────────────────────────────────────────
-    # Show the DISPLAY column (field 3) to the user; store the index for lookup.
-    FZF_INPUT_FILE="$(''${mktemp})"
+    FZF_INPUT_FILE="$(${pkgs.coreutils}/bin/mktemp)"
     trap 'rm -f "''${ENTRIES_FILE}" "''${FZF_INPUT_FILE}"' EXIT
 
-    ''${awk} -F'\x01' '{print NR"\x01"$3}' "''${ENTRIES_FILE}" > "''${FZF_INPUT_FILE}"
+    ${pkgs.gawk}/bin/awk -F'\x01' '{print NR"\x01"$3}' "''${ENTRIES_FILE}" > "''${FZF_INPUT_FILE}"
 
     FZF_ARGS=(
       --multi
@@ -123,8 +105,8 @@
     fi
 
     # Run fzf; if user aborts (Esc / Ctrl-C), exit cleanly
-    SELECTED="$(''${awk} -F'\x01' '{print NR"\x01"$3}' "''${ENTRIES_FILE}" \
-      | ''${fzf} "''${FZF_ARGS[@]}" || true)"
+    SELECTED="$(${pkgs.gawk}/bin/awk -F'\x01' '{print NR"\x01"$3}' "''${ENTRIES_FILE}" \
+      | ${pkgs.fzf}/bin/fzf "''${FZF_ARGS[@]}" || true)"
 
     if [[ -z "$SELECTED" ]]; then
       printf "%bNo entries selected. Aborting.%b\n" "$YELLOW" "$RESET"
@@ -133,14 +115,14 @@
 
     # ── Collect the raw lines to delete (by index) ───────────────────────────────
     SELECTED_INDICES="$(printf '%s\n' "$SELECTED" \
-      | ''${awk} -F'\x01' '{print $1}')"
+      | ${pkgs.gawk}/bin/awk -F'\x01' '{print $1}')"
 
     printf "\n%b%s entries selected for deletion:%b\n\n" "$BOLD" \
-      "$(printf '%s\n' "$SELECTED_INDICES" | ''${wc} -l | tr -d ' ')" "$RESET"
+      "$(printf '%s\n' "$SELECTED_INDICES" | ${pkgs.coreutils}/bin/wc -l | tr -d ' ')" "$RESET"
 
     # Show a preview of what will be removed
     while IFS= read -r idx; do
-      display="$(''${awk} -F'\x01' -v n="$idx" 'NR==n{print $3}' "''${ENTRIES_FILE}")"
+      display="$(${pkgs.gawk}/bin/awk -F'\x01' -v n="$idx" 'NR==n{print $3}' "''${ENTRIES_FILE}")"
       printf "  %b-%b %s\n" "$RED" "$RESET" "$display"
     done <<< "$SELECTED_INDICES"
 
@@ -149,15 +131,15 @@
     [[ "$CONFIRM" =~ ^[Yy]$ ]] || { printf "Aborted.\n"; exit 0; }
 
     # ── Build a set of raw lines to remove, per source ───────────────────────────
-    ZSH_REMOVE="$(''${mktemp})"
-    BASH_REMOVE="$(''${mktemp})"
-    FISH_REMOVE="$(''${mktemp})"
+    ZSH_REMOVE="$(${pkgs.coreutils}/bin/mktemp)"
+    BASH_REMOVE="$(${pkgs.coreutils}/bin/mktemp)"
+    FISH_REMOVE="$(${pkgs.coreutils}/bin/mktemp)"
     trap 'rm -f "''${ENTRIES_FILE}" "''${FZF_INPUT_FILE}" "''${ZSH_REMOVE}" "''${BASH_REMOVE}" "''${FISH_REMOVE}"' EXIT
 
     while IFS= read -r idx; do
-      source="$(''${awk} -F'\x01' -v n="$idx" 'NR==n{print $1}' "''${ENTRIES_FILE}")"
-      rawline="$(''${awk} -F'\x01' -v n="$idx" 'NR==n{print $2}' "''${ENTRIES_FILE}")"
-      case "$source" in
+      src="$(${pkgs.gawk}/bin/awk -F'\x01' -v n="$idx" 'NR==n{print $1}' "''${ENTRIES_FILE}")"
+      rawline="$(${pkgs.gawk}/bin/awk -F'\x01' -v n="$idx" 'NR==n{print $2}' "''${ENTRIES_FILE}")"
+      case "$src" in
         zsh)  printf '%s\n' "$rawline" >> "''${ZSH_REMOVE}"  ;;
         bash) printf '%s\n' "$rawline" >> "''${BASH_REMOVE}" ;;
         fish) printf '%s\n' "$rawline" >> "''${FISH_REMOVE}" ;;
@@ -174,22 +156,20 @@
       [[ -s "$removelist" ]] || return 0
 
       local tmp
-      tmp="$(''${mktemp})"
+      tmp="$(${pkgs.coreutils}/bin/mktemp)"
 
-      # For each line in src: print it only if it is NOT in removelist.
-      # Use awk with a lookup table for O(n) performance.
-      ''${awk} '
+      ${pkgs.gawk}/bin/awk '
         NR==FNR { remove[$0]=1; next }
         !($0 in remove)
       ' "$removelist" "$src" > "$tmp"
 
       local before after removed_count
-      before="$(''${wc} -l < "$src" | tr -d ' ')"
-      after="$(''${wc} -l < "$tmp" | tr -d ' ')"
+      before="$(${pkgs.coreutils}/bin/wc -l < "$src" | tr -d ' ')"
+      after="$(${pkgs.coreutils}/bin/wc -l < "$tmp" | tr -d ' ')"
       removed_count=$(( before - after ))
 
-      ''${cp} --backup=simple "$src" "''${src}.bak" 2>/dev/null || true
-      ''${mv} "$tmp" "$src"
+      ${pkgs.coreutils}/bin/cp --backup=simple "$src" "''${src}.bak" 2>/dev/null || true
+      ${pkgs.coreutils}/bin/mv "$tmp" "$src"
 
       printf "  %b%s%b  removed %b%d%b lines  %b(backup: %s.bak)%b\n" \
         "$CYAN" "$label" "$RESET" \
@@ -202,13 +182,12 @@
     rewrite_file "$BASH_HIST" "''${BASH_REMOVE}" "bash"
     rewrite_file "$FISH_HIST" "''${FISH_REMOVE}" "fish"
 
-    # ── Also purge this invocation from history (any shell will pick this up) ─────
-    # Remove any trailing hist-clean lines that just got written by the current shell
+    # ── Purge this invocation from history ────────────────────────────────────────
     for hist_file in "$ZSH_HIST" "$BASH_HIST"; do
       [[ -f "$hist_file" ]] || continue
-      tmp="$(''${mktemp})"
-      ''${grep} -v 'hist-clean' "$hist_file" > "$tmp" || true
-      ''${mv} "$tmp" "$hist_file"
+      tmp_purge="$(${pkgs.coreutils}/bin/mktemp)"
+      ${pkgs.gnugrep}/bin/grep -v 'hist-clean' "$hist_file" > "$tmp_purge" || true
+      ${pkgs.coreutils}/bin/mv "$tmp_purge" "$hist_file"
     done
 
     printf "\n%bDone.%b\n" "$GREEN" "$RESET"
