@@ -367,7 +367,7 @@
       if [ -n "$id" ]; then
           ${pkgs.niri}/bin/niri msg action focus-window --id "$id"
       else
-          nohup steam -system-composer "$@" > /dev/null 2>&1 &
+          nohup env STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 steam -system-composer "$@" > /dev/null 2>&1 &
       fi
     ''} %U";
     icon = "steam";

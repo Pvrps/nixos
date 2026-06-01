@@ -41,7 +41,7 @@ in {
     };
 
     custom.programs.niri.startupCommands = [
-      ''"bash" "-c" "nm-online -q --timeout=30 || true; steam -system-composer -silent > /dev/null 2>&1"''
+      ''"bash" "-c" "nm-online -q --timeout=30 || true; STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 steam -system-composer -silent > /dev/null 2>&1"''
     ];
 
     custom.programs.niri.windowRules = [
