@@ -206,7 +206,12 @@ in {
       description = "Interactive shell history cleaner";
       body = ''
         command hist-clean $argv
-        builtin history delete --prefix 'hist-clean'
+        # Remove every variant of how this invocation may have been recorded,
+        # then flush to disk so it doesn't survive the session.
+        for entry in (builtin history | string match --regex '^hist-clean.*')
+          builtin history delete --exact -- $entry
+        end
+        builtin history save
       '';
     };
   };
