@@ -63,7 +63,12 @@ in {
         frameless = true;
         themeLinks = [
         ];
-        plugins = cfg.plugins // {webRichPresence.enable = true; volumeBooster.enable = true;};
+        plugins =
+          cfg.plugins
+          // {
+            webRichPresence.enable = true;
+            volumeBooster.enable = true;
+          };
       };
     };
 

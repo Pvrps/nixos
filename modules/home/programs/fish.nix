@@ -9,11 +9,13 @@
   # These are bind-mounted onto tmpfs files so fd --one-file-system sees them;
   # they must be excluded explicitly by basename.
   # Each entry in .files is an attrset with a .file field (relative path from $HOME).
-  persistedFiles = lib.concatMap
+  persistedFiles =
+    lib.concatMap
     (mount: map (f: f.file) (mount.files or []))
     (lib.attrValues config.home.persistence);
 
-  persistedFileExcludes = lib.concatMapStrings
+  persistedFileExcludes =
+    lib.concatMapStrings
     (f: "--exclude \"${baseNameOf f}\" \\\n            ")
     persistedFiles;
 in {

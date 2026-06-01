@@ -47,7 +47,7 @@ in {
           screenRadiusRatio = 0;
           scaleRatio = 0.75;
           enableShadows = true;
-          lockScreenMonitors = [ cfg.primaryMonitor ];
+          lockScreenMonitors = [cfg.primaryMonitor];
         };
         ui = {
           boxBorderEnabled = true;
@@ -57,7 +57,7 @@ in {
         };
         notifications = {
           location = "top_right";
-          monitors = [ cfg.primaryMonitor ];
+          monitors = [cfg.primaryMonitor];
         };
         appLauncher = {
           sortByMostUsed = true;
@@ -66,24 +66,24 @@ in {
         bar = {
           widgets = {
             left = [
-              { id = "Launcher"; }
-              { id = "Clock"; }
+              {id = "Launcher";}
+              {id = "Clock";}
               {
                 id = "SystemMonitor";
                 showGpuTemp = true;
               }
-              { id = "ActiveWindow"; }
-              { id = "MediaMini"; }
+              {id = "ActiveWindow";}
+              {id = "MediaMini";}
             ];
             center = [
-              { id = "Workspace"; }
+              {id = "Workspace";}
             ];
             right = [
-              { id = "Tray"; }
-              { id = "NotificationHistory"; }
-              { id = "Battery"; }
-              { id = "Volume"; }
-              { id = "ControlCenter"; }
+              {id = "Tray";}
+              {id = "NotificationHistory";}
+              {id = "Battery";}
+              {id = "Volume";}
+              {id = "ControlCenter";}
             ];
           };
         };
