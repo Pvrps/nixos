@@ -206,12 +206,13 @@ in {
       description = "Interactive shell history cleaner";
       body = ''
         command hist-clean $argv
-        # Remove every variant of how this invocation may have been recorded,
-        # then flush to disk so it doesn't survive the session.
-        for entry in (builtin history | string match --regex '^hist-clean.*')
-          builtin history delete --case-sensitive --exact -- $entry
+        # Fish writes the invocation to disk before executing, so we must
+        # scrub the file directly, then reload into memory.
+        set -l histfile ~/.local/share/fish/fish_history
+        if test -f $histfile
+          sed -i -e '/^- cmd: hist-clean/,+1d' $histfile
+          builtin history merge
         end
-        builtin history save
       '';
     };
   };
