@@ -199,5 +199,15 @@ in {
 
   config = lib.mkIf cfg.enable {
     home.packages = [hist-clean];
+
+    # Fish wrapper: run the binary then delete the invocation from fish's
+    # in-memory history before it is ever written to disk.
+    programs.fish.functions.hist-clean = {
+      description = "Interactive shell history cleaner";
+      body = ''
+        command hist-clean $argv
+        builtin history delete --prefix 'hist-clean'
+      '';
+    };
   };
 }
