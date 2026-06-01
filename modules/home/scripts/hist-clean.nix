@@ -92,6 +92,7 @@
 
     FZF_ARGS=(
       --multi
+      --exact
       --ansi
       --delimiter='\x01'
       --with-nth=2
