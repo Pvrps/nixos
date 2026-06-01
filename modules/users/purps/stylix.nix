@@ -1,6 +1,7 @@
 {pkgs, ...}: {
   stylix = {
     enable = true;
+    enableReleaseChecks = false;
 
     base16Scheme = {
       base00 = "14171d"; # inkBg0     (Background)

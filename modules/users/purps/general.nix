@@ -11,6 +11,7 @@
     username = "purps";
     homeDirectory = "/home/purps";
     stateVersion = "26.05";
+    enableNixpkgsReleaseCheck = false;
 
     packages = with pkgs; [
       nerd-fonts.jetbrains-mono
