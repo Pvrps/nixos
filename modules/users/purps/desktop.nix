@@ -76,6 +76,7 @@
       };
       ports-summary.enable = true;
       dir2clip.enable = true;
+      hist-clean.enable = true;
     };
     programs = {
       chatterino.enable = true;
