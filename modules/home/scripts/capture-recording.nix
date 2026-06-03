@@ -7,8 +7,11 @@
   cfg = config.custom.scripts.capture.recording;
 
   recording-tool = pkgs.writeShellScriptBin "recording-tool" ''
-    PIDFILE="/tmp/recording-tool.pid"
-    RECFILE="/tmp/recording-tool.file"
+    STATE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}/recording-tool"
+    mkdir -p "$STATE_DIR"
+    chmod 700 "$STATE_DIR"
+    PIDFILE="$STATE_DIR/recording.pid"
+    RECFILE="$STATE_DIR/recording.file"
     DIR="$HOME/Videos/Recordings"
     mkdir -p "$DIR"
 
@@ -59,8 +62,11 @@
   '';
 
   monitor-recording-tool = pkgs.writeShellScriptBin "monitor-recording-tool" ''
-    PIDFILE="/tmp/monitor-recording-tool.pid"
-    RECFILE="/tmp/monitor-recording-tool.file"
+    STATE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}/recording-tool"
+    mkdir -p "$STATE_DIR"
+    chmod 700 "$STATE_DIR"
+    PIDFILE="$STATE_DIR/monitor-recording.pid"
+    RECFILE="$STATE_DIR/monitor-recording.file"
     DIR="$HOME/Videos/Recordings"
     mkdir -p "$DIR"
 

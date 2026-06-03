@@ -21,15 +21,18 @@
       exit 1
     fi
 
-    if ! echo "$URL" | $GREP -E -q '^https?://.+/.+'; then
-       $NOTIFY "GitIngest Failed" "Invalid URL. Expecting https://host/user/repo"
+    if ! echo "$URL" | $GREP -E -q '^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(/.*)?$'; then
+       $NOTIFY "GitIngest Failed" "Only public https://github.com/owner/repo URLs are accepted"
+       echo "Error: expected https://github.com/owner/repo"
        exit 1
     fi
+
+    PAYLOAD=$($JQ -n --arg url "$URL" '{input_text: $url, max_file_size: 10000}')
 
     RESPONSE=$($GUM spin --spinner dot --title "Ingesting repository..." --show-output -- \
       $CURL -sS --fail --max-time 60 -X POST "https://gitingest.com/api/ingest" \
       -H "Content-Type: application/json" \
-      -d "{\"input_text\":\"$URL\", \"max_file_size\":10000}")
+      -d "$PAYLOAD")
 
     EXIT_CODE=$?
 

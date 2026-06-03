@@ -23,9 +23,14 @@
   };
 
   networking.hostName = "desktop";
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [5173];
 
   custom = {
+    gaming = {
+      enable = true;
+      steamRemotePlay.openFirewall = true;
+      steamDedicatedServer.openFirewall = true;
+    };
+
     #secureboot.enable = true;
     services.sshfs = {
       enable = true;
@@ -33,8 +38,10 @@
         windwaker = {
           host = "10.0.10.16";
           user = "root";
+          remotePath = "/mnt";
           identityFile = config.sops.secrets."sftp-windwaker-key".path;
           mountPoint = "/mnt/windwaker";
+          allowOther = true;
         };
       };
     };
