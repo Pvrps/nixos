@@ -7,33 +7,38 @@
     ./general.nix
   ];
 
-  home.persistence."/persist" = {
-    hideMounts = true;
-    directories = [
-      ".local"
-      ".config"
-      ".var"
-      ".ssh"
-      ".gnupg"
-      ".claude"
-      ".steam"
-      ".vscode"
-      ".putty"
-      ".pki"
-      ".runelite"
-      ".cache/nvidia"
-      ".cache/noctalia"
-      ".cache/mesa_shader_cache"
-      ".cache/radv_builtin_shaders"
-      "Downloads"
-      "Pictures"
-      "Videos"
-      "Development"
-      "Documents"
+  home = {
+    packages = with pkgs; [
+      trash-cli
     ];
-    files = [
-      ".claude.json"
-    ];
+    persistence."/persist" = {
+      hideMounts = true;
+      directories = [
+        ".local"
+        ".config"
+        ".var"
+        ".ssh"
+        ".gnupg"
+        ".claude"
+        ".steam"
+        ".vscode"
+        ".putty"
+        ".pki"
+        ".runelite"
+        ".cache/nvidia"
+        ".cache/noctalia"
+        ".cache/mesa_shader_cache"
+        ".cache/radv_builtin_shaders"
+        "Downloads"
+        "Pictures"
+        "Videos"
+        "Development"
+        "Documents"
+      ];
+      files = [
+        ".claude.json"
+      ];
+    };
   };
 
   dconf.settings = {
