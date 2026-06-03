@@ -1,0 +1,10 @@
+{
+  "name": "opencode-pinned-tools",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@modelcontextprotocol/server-brave-search": "0.6.2",
+    "@upstash/context7-mcp": "3.1.0",
+    "opencode-claude-auth": "1.5.4"
+  }
+}

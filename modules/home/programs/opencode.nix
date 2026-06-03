@@ -8,6 +8,28 @@
   cfg = config.custom.programs.opencode;
   inherit (cfg) context7 bravesearch superpowers claudeAuth;
 
+  opencodeTools = pkgs.buildNpmPackage {
+    pname = "opencode-pinned-tools";
+    version = "1.0.0";
+    src = ./opencode;
+    npmDepsHash = "sha256-oIBvjRIN+YVU+H8vDkYfbZI4Q/eq3nUmBW6IQ0Kv0YY=";
+    dontNpmBuild = true;
+    nativeBuildInputs = [pkgs.makeWrapper];
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/lib/node_modules/opencode-pinned-tools $out/bin
+      cp -r node_modules package.json package-lock.json $out/lib/node_modules/opencode-pinned-tools
+
+      makeWrapper ${pkgs.nodejs}/bin/node $out/bin/context7-mcp \
+        --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@upstash/context7-mcp/dist/index.js
+      makeWrapper ${pkgs.nodejs}/bin/node $out/bin/mcp-server-brave-search \
+        --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js
+
+      runHook postInstall
+    '';
+  };
+
   # Write the config file if any feature that needs it is enabled
   needsConfigFile = context7.enable || bravesearch.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
 in {
@@ -59,7 +81,7 @@ in {
         [
           opencode
         ]
-        ++ lib.optionals (context7.enable || bravesearch.enable) [pkgs.nodejs];
+        ++ lib.optionals (context7.enable || bravesearch.enable) [opencodeTools];
 
       file = {
         ".config/opencode/opencode.json" = lib.mkIf needsConfigFile {
@@ -68,7 +90,7 @@ in {
               "$schema" = "https://opencode.ai/config.json";
             }
             // lib.optionalAttrs claudeAuth.enable {
-              plugin = ["opencode-claude-auth@latest"];
+              plugin = ["opencode-claude-auth@1.5.4"];
             }
             // lib.optionalAttrs (context7.enable || bravesearch.enable) {
               mcp =
@@ -78,7 +100,7 @@ in {
                     command = [
                       "${pkgs.bash}/bin/bash"
                       "-c"
-                      "npx -y @upstash/context7-mcp --api-key $(cat ${context7.apiKeyPath} | tr -d '\n')"
+                      "${opencodeTools}/bin/context7-mcp --api-key $(cat ${context7.apiKeyPath} | tr -d '\n')"
                     ];
                     enabled = true;
                   };
@@ -89,7 +111,7 @@ in {
                     command = [
                       "${pkgs.bash}/bin/bash"
                       "-c"
-                      "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') npx -y @modelcontextprotocol/server-brave-search"
+                      "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') ${opencodeTools}/bin/mcp-server-brave-search"
                     ];
                     enabled = true;
                   };
@@ -98,9 +120,7 @@ in {
                   nixos = {
                     type = "local";
                     command = [
-                      "${pkgs.bash}/bin/bash"
-                      "-c"
-                      "nix run github:utensils/mcp-nixos"
+                      "${pkgs.mcp-nixos}/bin/mcp-nixos"
                     ];
                     enabled = true;
                   };

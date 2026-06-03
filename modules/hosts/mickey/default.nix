@@ -20,6 +20,7 @@
   };
 
   networking.hostName = "mickey";
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [22];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
@@ -61,6 +62,7 @@
 
     openssh = {
       enable = true;
+      openFirewall = false;
       settings = {
         PermitRootLogin = "no";
       };

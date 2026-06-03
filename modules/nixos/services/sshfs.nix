@@ -27,10 +27,20 @@ in {
             default = 22;
             description = "SSH Port to connect to.";
           };
+          remotePath = lib.mkOption {
+            type = lib.types.str;
+            default = "/";
+            description = "Remote path to mount.";
+          };
           identityFile = lib.mkOption {
             type = lib.types.nullOr lib.types.path;
             default = null;
             description = "Path to SSH private key file";
+          };
+          allowOther = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Allow users other than the mounting user to access the FUSE mount.";
           };
           mountPoint = lib.mkOption {
             type = lib.types.str;
@@ -43,7 +53,6 @@ in {
               "reconnect"
               "ServerAliveInterval=15"
               "ServerAliveCountMax=3"
-              "allow_other"
             ];
             description = "Extra options to pass to sshfs (-o).";
           };
@@ -59,9 +68,9 @@ in {
 
     systemd.services = lib.mapAttrs' (name: mountCfg: let
       hasIdentity = mountCfg.identityFile != null;
-      options = lib.concatStringsSep "," (mountCfg.extraOptions ++ lib.optional hasIdentity "IdentityFile=${mountCfg.identityFile}");
+      options = lib.concatStringsSep "," (mountCfg.extraOptions ++ lib.optional mountCfg.allowOther "allow_other" ++ lib.optional hasIdentity "IdentityFile=${mountCfg.identityFile}");
 
-      sshfsCmd = "${pkgs.sshfs}/bin/sshfs ${mountCfg.user}@${mountCfg.host}:/ ${mountCfg.mountPoint} -p ${toString mountCfg.port} -f -o ${options}";
+      sshfsCmd = "${pkgs.sshfs}/bin/sshfs ${lib.escapeShellArgs ["${mountCfg.user}@${mountCfg.host}:${mountCfg.remotePath}" mountCfg.mountPoint "-p" (toString mountCfg.port) "-f" "-o" options]}";
 
       execStartCmd = sshfsCmd;
     in
