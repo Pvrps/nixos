@@ -17,7 +17,7 @@ in {
       [options]
       overlay = true
       overlay_font = ${config.stylix.fonts.monospace.name or "monospace"}:12
-      background = checkerboard
+      background = checks
     '';
 
     xdg.mimeApps.defaultApplications = {
