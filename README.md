@@ -56,42 +56,6 @@ Things to watch for:
 
 This repo uses [`nh`](https://github.com/nix-community/nh) through the included `justfile`.
 
-Build the current host without switching:
-
-```sh
-just build
-```
-
-Build and switch the current host:
-
-```sh
-just switch
-```
-
-Build a specific host:
-
-```sh
-just build ${HOST}
-```
-
-Update flake inputs:
-
-```sh
-just update
-```
-
-Format the repository:
-
-```sh
-just format
-```
-
-Edit host secrets with SOPS:
-
-```sh
-just secrets ${HOST}
-```
-
 ## Secrets
 
 Secrets are managed with `sops-nix`. Encrypted host secret files live beside each host under `modules/hosts/<host>/_secrets.yaml`. The age keys themselves are not stored in this repository.

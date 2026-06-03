@@ -2,9 +2,10 @@
 default:
     @just --list
 
-# Update Flake
+# Update flake inputs and pinned OpenCode MCP tools
 update:
     nix flake update
+    nix shell nixpkgs#nodejs nixpkgs#prefetch-npm-deps -c scripts/update-opencode-tools
 
 # Update the system secrets file
 secrets host=`hostname`:

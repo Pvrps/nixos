@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT=$(git rev-parse --show-toplevel)
+PKG_DIR="$ROOT/modules/home/programs/opencode"
+PKG_JSON="$PKG_DIR/package.json"
+MODULE_FILE="$ROOT/modules/home/programs/opencode.nix"
+
+for cmd in node npm prefetch-npm-deps; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "Missing required command: $cmd" >&2
+    echo "Run through: nix shell nixpkgs#nodejs nixpkgs#prefetch-npm-deps -c scripts/update-opencode-tools" >&2
+    exit 1
+  fi
+done
+
+export PKG_JSON
+node <<'NODE'
+const cp = require("node:child_process");
+const fs = require("node:fs");
+
+const pkgPath = process.env.PKG_JSON;
+const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+const deps = pkg.dependencies ?? {};
+
+for (const name of Object.keys(deps).sort()) {
+  const current = deps[name];
+  const latest = cp.execFileSync("npm", ["view", name, "version"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "inherit"],
+  }).trim();
+
+  deps[name] = latest;
+  if (current === latest) {
+    console.log(`${name}: ${current} (current)`);
+  } else {
+    console.log(`${name}: ${current} -> ${latest}`);
+  }
+}
+
+pkg.dependencies = deps;
+fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
+NODE
+
+(
+  cd "$PKG_DIR"
+  npm install --package-lock-only --ignore-scripts --no-audit
+  npm audit --audit-level=high
+)
+
+NPM_DEPS_HASH=$(prefetch-npm-deps "$PKG_DIR/package-lock.json")
+export MODULE_FILE NPM_DEPS_HASH
+node <<'NODE'
+const fs = require("node:fs");
+
+const moduleFile = process.env.MODULE_FILE;
+const hash = process.env.NPM_DEPS_HASH;
+const text = fs.readFileSync(moduleFile, "utf8");
+const pattern = /npmDepsHash = "sha256-[^"]+";/;
+
+if (!pattern.test(text)) {
+  throw new Error(`Could not find npmDepsHash in ${moduleFile}`);
+}
+
+const next = text.replace(pattern, `npmDepsHash = "${hash}";`);
+
+if (next === text) {
+  console.log(`npmDepsHash: ${hash} (unchanged)`);
+} else {
+  fs.writeFileSync(moduleFile, next);
+  console.log(`npmDepsHash: ${hash}`);
+}
+NODE
