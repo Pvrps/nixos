@@ -8,27 +8,7 @@
   cfg = config.custom.programs.opencode;
   inherit (cfg) context7 bravesearch superpowers claudeAuth;
 
-  opencodeTools = pkgs.buildNpmPackage {
-    pname = "opencode-pinned-tools";
-    version = "1.0.0";
-    src = ./opencode;
-    npmDepsHash = "sha256-QrDrhIE5ct8Xr1jK+aDSv9TiBzVrlcy72jcq4nOqCRw=";
-    dontNpmBuild = true;
-    nativeBuildInputs = [pkgs.makeWrapper];
-    installPhase = ''
-      runHook preInstall
 
-      mkdir -p $out/lib/node_modules/opencode-pinned-tools $out/bin
-      cp -r node_modules package.json package-lock.json $out/lib/node_modules/opencode-pinned-tools
-
-      makeWrapper ${pkgs.nodejs}/bin/node $out/bin/context7-mcp \
-        --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@upstash/context7-mcp/dist/index.js
-      makeWrapper ${pkgs.nodejs}/bin/node $out/bin/mcp-server-brave-search \
-        --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js
-
-      runHook postInstall
-    '';
-  };
 
   # Write the config file if any feature that needs it is enabled
   needsConfigFile = context7.enable || bravesearch.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
@@ -64,7 +44,29 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf cfg.enable (let
+    opencodeTools = pkgs.buildNpmPackage {
+      pname = "opencode-pinned-tools";
+      version = "1.0.0";
+      src = ./opencode;
+      npmDepsHash = "sha256-QrDrhIE5ct8Xr1jK+aDSv9TiBzVrlcy72jcq4nOqCRw=";
+      dontNpmBuild = true;
+      nativeBuildInputs = [pkgs.makeWrapper];
+      installPhase = ''
+        runHook preInstall
+
+        mkdir -p $out/lib/node_modules/opencode-pinned-tools $out/bin
+        cp -r node_modules package.json package-lock.json $out/lib/node_modules/opencode-pinned-tools
+
+        makeWrapper ${pkgs.nodejs}/bin/node $out/bin/context7-mcp \
+          --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@upstash/context7-mcp/dist/index.js
+        makeWrapper ${pkgs.nodejs}/bin/node $out/bin/mcp-server-brave-search \
+          --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js
+
+        runHook postInstall
+      '';
+    };
+  in {
     assertions = [
       {
         assertion = !context7.enable || context7.apiKeyPath != "";
@@ -159,5 +161,5 @@ in {
           '';
       };
     };
-  };
+  });
 }
