@@ -17,11 +17,6 @@ in {
       enableBashIntegration = true;
       enableZshIntegration = true;
       enableFishIntegration = true;
-      settings = {
-        preview = {
-          image_protocol = "sixel";
-        };
-      };
     };
   };
 }
