@@ -114,6 +114,7 @@
         ];
       };
       foot.enable = true;
+      termfilepickers.enable = true;
       zen = {
         enable = true;
         homepage = "https://homepage.windwaker.ca/";

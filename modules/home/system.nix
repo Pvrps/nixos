@@ -5,4 +5,8 @@
   options.custom.system = {
     wayland.enable = lib.mkEnableOption "Wayland compositor active";
   };
+
+  config = {
+    xdg.mimeApps.enable = true;
+  };
 }

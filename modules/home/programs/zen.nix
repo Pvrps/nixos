@@ -52,6 +52,11 @@ in {
         // {
           settings =
             (profile.settings or {})
+            // {
+              # Force Zen to use the XDG desktop portal for file picker dialogs
+              # so that xdg-desktop-portal-termfilepickers intercepts them.
+              "widget.use-xdg-desktop-portal.file-picker" = 1;
+            }
             // lib.optionalAttrs (cfg.homepage != null) {
               "zen.urlbar.replace-newtab" = false;
               "browser.startup.page" = 1;
