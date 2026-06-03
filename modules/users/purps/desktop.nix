@@ -260,7 +260,7 @@
           enable = true;
           apiKeyPath = osConfig.sops.secrets."bravesearch-api-key".path;
         };
-        superpowers.enable = true;
+        #superpowers.enable = true;
         claudeAuth.enable = true;
         mcp-nixos.enable = true;
       };
