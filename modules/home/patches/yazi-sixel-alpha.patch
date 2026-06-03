@@ -1,0 +1,85 @@
+--- a/yazi-adapter/src/drivers/sixel.rs	2026-06-03 13:45:23.168287844 -0400
++++ b/yazi-adapter/src/drivers/sixel.rs	2026-06-03 14:24:04.779645024 -0400
+@@ -2,7 +2,7 @@
+ 
+ use anyhow::{Result, bail};
+ use crossterm::{cursor::MoveTo, queue};
+-use image::{DynamicImage, GenericImageView, RgbImage};
++use image::{DynamicImage, GenericImageView, ImageBuffer, Rgb, RgbImage};
+ use palette::{Srgb, cast::ComponentsAs};
+ use quantette::{PaletteSize, color_map::IndexedColorMap, wu::{BinnerU8x3, WuU8x3}};
+ use ratatui::layout::Rect;
+@@ -50,7 +50,13 @@
+ 
+ 		let (qo, img) = tokio::task::spawn_blocking(move || match &img {
+ 			DynamicImage::ImageRgb8(rgb) => Self::quantify(rgb, false).map(|q| (q, img)),
+-			_ => Self::quantify(&img.to_rgb8(), alpha).map(|q| (q, img)),
++			_ => {
++				if alpha {
++					Self::quantify(&Self::flatten_alpha(&img), false).map(|q| (q, img))
++				} else {
++					Self::quantify(&img.to_rgb8(), false).map(|q| (q, img))
++				}
++			}
+ 		})
+ 		.await??;
+ 
+@@ -63,7 +69,7 @@
+ 				write!(
+ 					buf,
+ 					"#{};2;{};{};{}",
+-					i + alpha as usize,
++					i,
+ 					c.red as u16 * 100 / 255,
+ 					c.green as u16 * 100 / 255,
+ 					c.blue as u16 * 100 / 255
+@@ -76,11 +82,7 @@
+ 				let mut last = 0;
+ 				let mut repeat = 0usize;
+ 				for x in 0..img.width() {
+-					let idx = if img.get_pixel(x, y)[3] == 0 {
+-						0
+-					} else {
+-						qo.indices[y as usize * img.width() as usize + x as usize] + alpha as u8
+-					};
++					let idx = qo.indices[y as usize * img.width() as usize + x as usize];
+ 
+ 					if idx == last || repeat == 0 {
+ 						(last, repeat) = (idx, repeat + 1);
+@@ -114,6 +116,36 @@
+ 		.await?
+ 	}
+ 
++	/// Composite an image that has an alpha channel onto a checkerboard
++	/// background before quantisation.  Semi-transparent pixels are properly
++	/// alpha-composited so the checkerboard shows through, while fully
++	/// transparent pixels become the checkerboard colour directly.  The
++	/// resulting image is fully opaque, so no alpha reservation is needed
++	/// in the Sixel palette — all 256 slots are available for colours.
++	fn flatten_alpha(img: &DynamicImage) -> RgbImage {
++		// Checkerboard tile size in pixels.
++		const TILE: u32 = 8;
++		// Light and dark grey tiles — mid-tones visible against any content.
++		const LIGHT: [u8; 3] = [0xCC, 0xCC, 0xCC];
++		const DARK:  [u8; 3] = [0x88, 0x88, 0x88];
++
++		let rgba = img.to_rgba8();
++		let (w, h) = rgba.dimensions();
++
++		ImageBuffer::from_fn(w, h, |x, y| {
++			let px = rgba.get_pixel(x, y);
++			let a = px[3] as f32 / 255.0;
++
++			let bg = if ((x / TILE) + (y / TILE)) % 2 == 0 { LIGHT } else { DARK };
++
++			Rgb([
++				(a * px[0] as f32 + (1.0 - a) * bg[0] as f32).round() as u8,
++				(a * px[1] as f32 + (1.0 - a) * bg[1] as f32).round() as u8,
++				(a * px[2] as f32 + (1.0 - a) * bg[2] as f32).round() as u8,
++			])
++		})
++	}
++
+ 	fn quantify(rgb: &RgbImage, alpha: bool) -> Result<QuantizeOutput<Srgb<u8>>> {
+ 		let buf = &rgb.as_raw()[..(rgb.pixels().len() * 3)];
+ 		let colors: &[Srgb<u8>] = buf.components_as();
