@@ -82,7 +82,7 @@ in {
       package = inputs.xdp-termfilepickers.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
         customYazi = pkgs.yazi;
       };
-      config.terminal_command = terminalCommand;
+      config.terminal_command = terminalCommand ++ terminalExecArgs;
     };
 
     home.packages = [

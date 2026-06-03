@@ -96,7 +96,8 @@
                         }''
         ];
       };
-      foot.enable = true;
+      #foot.enable = true;
+      ghostty.enable = true;
       termfilepickers.enable = true;
       gnomeKeyring.enable = true;
     };
