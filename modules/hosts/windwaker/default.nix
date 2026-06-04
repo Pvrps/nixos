@@ -27,17 +27,6 @@
   # Disable resolved from core.nix — networkd handles DNS directly
   services.resolved.enable = lib.mkForce false;
 
-  # systemd-networkd network configuration.
-  #
-  # UDM/SE port "Server" (port 7) is configured as:
-  #   Native VLAN: 10 (Server, 10.0.10.0/24) — untagged on the wire
-  #   Tagged VLAN Management: Allow All — VLAN 120 (DMZ) arrives tagged
-  #
-  # Therefore:
-  #   eno1       — receives untagged frames → VLAN 10 (internal LAN)
-  #   eno1.120   — VLAN sub-interface for tagged VLAN 120 (DMZ)
-  #
-  # No eno1.10 sub-interface needed; eno1 itself carries VLAN 10 traffic.
   systemd.network = {
     enable = true;
 
@@ -107,8 +96,6 @@
   };
 
   # Create docker bridge networks bound to the VLAN sub-interfaces.
-  # lan_bridge  → replaces internal_bridge (was eth0 in LXC)
-  # dmz_bridge  → replaces external_bridge (was eth1 in LXC)
   # These are idempotent: the || true prevents failure if the network already exists.
   systemd.services.docker-networks = {
     description = "Create persistent Docker bridge networks";
