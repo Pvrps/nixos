@@ -80,27 +80,31 @@ TMP_KEY_FILE="$SCRIPT_DIR/keys.txt"
 
 mkdir -p "$AGE_DIR"
 
-read -r -p "Bring over own SOPS age key file using magic-wormhole? (y/N): " bring_key
-if [[ $bring_key =~ ^[Yy]$ ]]; then
-  log_info "Setting up magic-wormhole to receive key..."
-  log_info "On your other machine, run: wormhole send ~/.config/sops/age/keys.txt"
-  if ! nix-shell -p magic-wormhole --run "wormhole receive -o \"$TMP_KEY_FILE\""; then
-    log_error "Failed to receive key via magic-wormhole."
-    exit 1
-  fi
-fi
-
-if [ -f "$TMP_KEY_FILE" ]; then
-  log_info "Using existing age key at $TMP_KEY_FILE"
-  cp "$TMP_KEY_FILE" "$AGE_KEY_FILE"
-  rm -f "$TMP_KEY_FILE"
+if [ -f "$AGE_KEY_FILE" ]; then
+  log_info "Age key already exists at $AGE_KEY_FILE — skipping generation."
 else
-  log_info "Creating age key for sops-nix..."
-  if ! nix-shell -p age --run "age-keygen -o $AGE_KEY_FILE"; then
-    log_error "Failed to generate age key."
-    exit 1
+  read -r -p "Bring over own SOPS age key file using magic-wormhole? (y/N): " bring_key
+  if [[ $bring_key =~ ^[Yy]$ ]]; then
+    log_info "Setting up magic-wormhole to receive key..."
+    log_info "On your other machine, run: wormhole send ~/.config/sops/age/keys.txt"
+    if ! nix-shell -p magic-wormhole --run "wormhole receive -o \"$TMP_KEY_FILE\""; then
+      log_error "Failed to receive key via magic-wormhole."
+      exit 1
+    fi
   fi
-  log_info "Age key created at $AGE_KEY_FILE"
+
+  if [ -f "$TMP_KEY_FILE" ]; then
+    log_info "Using received age key."
+    cp "$TMP_KEY_FILE" "$AGE_KEY_FILE"
+    rm -f "$TMP_KEY_FILE"
+  else
+    log_info "Creating age key for sops-nix..."
+    if ! nix-shell -p age --run "age-keygen -o $AGE_KEY_FILE"; then
+      log_error "Failed to generate age key."
+      exit 1
+    fi
+    log_info "Age key created at $AGE_KEY_FILE"
+  fi
 fi
 
 chown -R 0:0 "/mnt/persist/system"
