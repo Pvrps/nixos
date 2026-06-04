@@ -8,6 +8,7 @@
     ./_disko.nix
     ./_persist.nix
     ./users.nix
+    ./services/network.nix
 
     ../../../modules/nixos/core.nix
   ];

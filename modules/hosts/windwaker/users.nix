@@ -44,6 +44,8 @@
         group = "users";
         mode = "0600";
       };
+
+      "network-env" = {};
     };
   };
 }
