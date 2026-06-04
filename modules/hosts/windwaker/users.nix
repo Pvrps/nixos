@@ -16,18 +16,16 @@
         extraGroups = ["wheel" "docker" "networkmanager" "video" "audio" "input"];
         shell = pkgs.fish;
         hashedPasswordFile = config.sops.secrets."purps-password".path;
-        # TODO: add your SSH public key here before running install.sh
-        # openssh.authorizedKeys.keys = [
-        #   "ssh-ed25519 AAAA... purps@yourmachine"
-        # ];
+        openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKXahrPYpFxiNEPA+IFJYRnn6DwABTtHy0H26HkoWbEw purps@desktop"
+        ];
       };
 
       root = {
         hashedPassword = "!"; # password login disabled; SSH key only
-        # TODO: add your SSH public key here before running install.sh
-        # openssh.authorizedKeys.keys = [
-        #   "ssh-ed25519 AAAA... purps@yourmachine"
-        # ];
+        openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1ja+8eNXLnaCJ418HETeJKE9MbGWxCkuISufkbVMmh purps@desktop"
+        ];
       };
     };
   };
