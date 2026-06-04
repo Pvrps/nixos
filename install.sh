@@ -300,12 +300,17 @@ inject_secret_via_wormhole() {
   log_info "'$secret_name' injected and encrypted successfully."
 }
 
-inject_secret_via_wormhole "github-ssh-key"
+# Only prompt if the secret isn't already in the encrypted file
+if nix-shell -p sops --run "SOPS_AGE_KEY_FILE='$AGE_KEY_FILE' sops -d '$SECRETS_FILE_PERSISTENT'" 2>/dev/null | grep -q "^github-ssh-key:"; then
+  log_info "github-ssh-key already present in secrets — skipping."
+else
+  inject_secret_via_wormhole "github-ssh-key"
+fi
 
 log_info "Activating swap to prevent OOM during nixos-install..."
 SWAPFILE="/mnt/.swap/swapfile"
 if [ -f "$SWAPFILE" ]; then
-  swapon "$SWAPFILE" && log_info "Swap activated at $SWAPFILE." || log_warn "Failed to activate swap (non-fatal)."
+  swapon "$SWAPFILE" 2>/dev/null && log_info "Swap activated at $SWAPFILE." || log_info "Swap already active or skipped (non-fatal)."
 else
   log_warn "Swapfile not found at $SWAPFILE — OOM may occur on low-RAM machines."
 fi
