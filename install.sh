@@ -123,7 +123,7 @@ log_info "Public key: $PUBLIC_KEY"
 
 SOPS_YAML="$SCRIPT_DIR/.sops.yaml"
 
-if ! grep -q "$HOST_DIR/_secrets\.yaml" "$SOPS_YAML"; then
+if ! grep -q "$PUBLIC_KEY" "$SOPS_YAML"; then
   log_info "Adding new host rule to .sops.yaml..."
   cat >>"$SOPS_YAML" <<EOF
   - path_regex: $HOST_DIR/_secrets\.yaml\$
@@ -183,7 +183,19 @@ else
   auto_pass="n"
 fi
 
-if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
+SECRETS_FILE_PERSISTENT_EARLY="/mnt/persist/etc/nixos/modules/hosts/$HOST/_secrets.yaml"
+# Check both the working copy and the persistent copy — on a re-run the
+# working copy may still be the unencrypted placeholder from git.
+SECRETS_ALREADY_ENCRYPTED=false
+if grep -q "ENC\[AES256_GCM" "$SECRETS_FILE" 2>/dev/null; then
+  SECRETS_ALREADY_ENCRYPTED=true
+elif grep -q "ENC\[AES256_GCM" "$SECRETS_FILE_PERSISTENT_EARLY" 2>/dev/null; then
+  log_info "Found encrypted secrets in persistent location — copying to working copy."
+  cp "$SECRETS_FILE_PERSISTENT_EARLY" "$SECRETS_FILE"
+  SECRETS_ALREADY_ENCRYPTED=true
+fi
+
+if [ "$SECRETS_ALREADY_ENCRYPTED" = "false" ]; then
   log_info "Generating initial secrets for host '$HOST'..."
 
   TMP_SECRETS=$(mktemp)
@@ -234,8 +246,7 @@ if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
   fi
   rm -f "$TMP_SECRETS"
 else
-  log_info "secrets.yaml already exists and is encrypted; skipping user password generation."
-  log_info "If you need to edit secrets, use: sops $SECRETS_FILE"
+  log_info "secrets.yaml already encrypted — skipping user password generation."
 fi
 
 log_info "Copying configuration to /mnt/persist/etc/nixos/..."
