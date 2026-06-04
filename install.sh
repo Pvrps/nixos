@@ -314,7 +314,7 @@ inject_secret_via_wormhole() {
 }
 
 # Only prompt if the secret isn't already in the encrypted file
-if nix-shell -p sops --run "SOPS_AGE_KEY_FILE='$AGE_KEY_FILE' sops -d '$SECRETS_FILE_PERSISTENT'" 2>/dev/null | grep -q "^github-ssh-key:"; then
+if nix-shell -p sops --run "SOPS_AGE_KEY_FILE='$AGE_KEY_FILE' sops -d '$SECRETS_FILE_PERSISTENT'" 2>/dev/null | grep -q "github-ssh-key"; then
   log_info "github-ssh-key already present in secrets — skipping."
 else
   inject_secret_via_wormhole "github-ssh-key"
