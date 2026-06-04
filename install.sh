@@ -64,15 +64,15 @@ if ! nix --experimental-features "nix-command flakes" run github:nix-community/d
 fi
 log_info "Disk partitioning completed successfully."
 
-if [ -f "$SCRIPT_DIR/$HOST_DIR/hardware.nix" ] && grep -q "fileSystems" "$SCRIPT_DIR/$HOST_DIR/hardware.nix"; then
-  log_info "hardware.nix already exists and seems populated; skipping generation."
+if [ -f "$SCRIPT_DIR/$HOST_DIR/_hardware.nix" ] && grep -q "fileSystems" "$SCRIPT_DIR/$HOST_DIR/_hardware.nix"; then
+  log_info "_hardware.nix already exists and seems populated; skipping generation."
 else
   log_info "Generating hardware configuration..."
-  if ! nixos-generate-config --no-filesystems --show-hardware-config >"$SCRIPT_DIR/$HOST_DIR/hardware.nix"; then
+  if ! nixos-generate-config --no-filesystems --show-hardware-config >"$SCRIPT_DIR/$HOST_DIR/_hardware.nix"; then
     log_error "Failed to generate hardware configuration."
     exit 1
   fi
-  log_info "Hardware configuration saved to $HOST_DIR/hardware.nix"
+  log_info "Hardware configuration saved to $HOST_DIR/_hardware.nix"
 fi
 
 AGE_DIR="/mnt/persist/system/sops/age"
