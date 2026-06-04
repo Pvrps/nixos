@@ -51,8 +51,8 @@ log_info "Internet connectivity: OK"
 
 log_info "Running disko to partition and format the disk for host '$HOST'..."
 log_warn "This will WIPE THE DISK specified in $HOST_DIR/_disko.nix!"
-read -r -p "Are you sure you want to continue? (yes/no): " confirm
-if [ "$confirm" != "yes" ]; then
+read -r -p "Are you sure you want to continue? (Y/n): " confirm
+if [[ $confirm =~ ^[Nn] ]]; then
   log_error "Installation aborted by user."
   exit 1
 fi
