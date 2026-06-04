@@ -220,7 +220,7 @@ if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
   if [ -s "$TMP_SECRETS" ]; then
     log_info "Encrypting secrets.yaml..."
     cat "$TMP_SECRETS" >"$SECRETS_FILE"
-    if ! nix-shell -p sops --run "SOPS_AGE_KEY_FILE=$AGE_KEY_FILE sops -e -i $SECRETS_FILE"; then
+    if ! nix-shell -p sops --run "SOPS_AGE_KEY_FILE='$AGE_KEY_FILE' sops -e -i '$SECRETS_FILE'"; then
       log_error "Failed to encrypt secrets.yaml."
       rm -f "$TMP_SECRETS"
       exit 1
@@ -286,12 +286,12 @@ inject_secret_via_wormhole() {
   tmp_plain=$(mktemp)
 
   # Decrypt current secrets into plaintext, append new secret, re-encrypt
-  SOPS_AGE_KEY_FILE="$AGE_KEY_FILE" nix-shell -p sops --run \
-    "sops -d '$SECRETS_FILE_PERSISTENT'" >"$tmp_plain"
+  nix-shell -p sops --run \
+    "SOPS_AGE_KEY_FILE='$AGE_KEY_FILE' sops -d '$SECRETS_FILE_PERSISTENT'" >"$tmp_plain"
   printf '\n%s\n' "$secret_yaml" >>"$tmp_plain"
   cat "$tmp_plain" >"$SECRETS_FILE_PERSISTENT"
-  SOPS_AGE_KEY_FILE="$AGE_KEY_FILE" nix-shell -p sops --run \
-    "sops -e -i '$SECRETS_FILE_PERSISTENT'"
+  nix-shell -p sops --run \
+    "SOPS_AGE_KEY_FILE='$AGE_KEY_FILE' sops -e -i '$SECRETS_FILE_PERSISTENT'"
   rm -f "$tmp_plain"
 
   log_info "'$secret_name' injected and encrypted successfully."
