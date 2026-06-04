@@ -165,6 +165,21 @@ done
 # =========================================================================
 # 2. GENERATE SECRETS (Only runs if secrets.yaml is missing or empty)
 # =========================================================================
+
+# Detect whether this host disables password authentication (SSH-key-only hosts).
+# If PasswordAuthentication is false, offer to auto-generate random passwords
+# instead of prompting — the user will never need to type them.
+SSH_PASSWORD_AUTH=$(nix --experimental-features "nix-command flakes" eval --raw \
+  ".#nixosConfigurations.$HOST.config.services.openssh.settings.PasswordAuthentication" 2>/dev/null || echo "true")
+
+if [ "$SSH_PASSWORD_AUTH" = "false" ]; then
+  log_info "SSH PasswordAuthentication is disabled on this host (SSH-key-only)."
+  read -r -p "Auto-generate random passwords for all users? (Y/n): " auto_pass
+  auto_pass="${auto_pass:-Y}"
+else
+  auto_pass="n"
+fi
+
 if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
   log_info "Generating initial secrets for host '$HOST'..."
 
@@ -174,23 +189,28 @@ if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
     INSTALL_USER="${USER_ENTRY%%:*}"
     if [ -z "$INSTALL_USER" ] || [ "$INSTALL_USER" == "root" ]; then continue; fi
 
-    echo -n "Enter password for user $INSTALL_USER: "
-    read -s USER_PASSWORD
-    echo
-    echo -n "Confirm password for $INSTALL_USER: "
-    read -s USER_PASSWORD_CONFIRM
-    echo
+    if [[ $auto_pass =~ ^[Yy]$ ]]; then
+      log_info "Auto-generating random password for $INSTALL_USER..."
+      USER_PASSWORD=$(nix-shell -p openssl --run "openssl rand -base64 32" | tr -d '\n')
+    else
+      echo -n "Enter password for user $INSTALL_USER: "
+      read -s USER_PASSWORD
+      echo
+      echo -n "Confirm password for $INSTALL_USER: "
+      read -s USER_PASSWORD_CONFIRM
+      echo
 
-    if [ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]; then
-      log_error "Passwords do not match for $INSTALL_USER. Aborting."
-      rm -f "$TMP_SECRETS"
-      exit 1
-    fi
+      if [ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]; then
+        log_error "Passwords do not match for $INSTALL_USER. Aborting."
+        rm -f "$TMP_SECRETS"
+        exit 1
+      fi
 
-    if [ -z "$USER_PASSWORD" ]; then
-      log_error "Password cannot be empty for $INSTALL_USER. Aborting."
-      rm -f "$TMP_SECRETS"
-      exit 1
+      if [ -z "$USER_PASSWORD" ]; then
+        log_error "Password cannot be empty for $INSTALL_USER. Aborting."
+        rm -f "$TMP_SECRETS"
+        exit 1
+      fi
     fi
 
     PASSWORD_HASH=$(echo -n "$USER_PASSWORD" | nix-shell -p mkpasswd --run "mkpasswd -m sha-512 --stdin" | tr -d '\n')
@@ -207,7 +227,7 @@ if [ ! -s "$SECRETS_FILE" ] || ! grep -q "ENC\[AES256_GCM" "$SECRETS_FILE"; then
     fi
     log_info "Passwords created and encrypted successfully."
   else
-    log_warn "No users provided. secrets.yaml will remain unchanged."
+    log_warn "No users found. secrets.yaml will remain unchanged."
   fi
   rm -f "$TMP_SECRETS"
 else
