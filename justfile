@@ -8,8 +8,9 @@ update:
     nix shell nixpkgs#nodejs nixpkgs#prefetch-npm-deps -c scripts/update-opencode-tools
 
 # Update the system secrets file
-secrets host=`hostname`:
-    sudo SOPS_AGE_KEY_FILE=/persist/system/sops/age/keys.txt nix --extra-experimental-features "nix-command flakes" run nixpkgs#sops -- modules/hosts/{{host}}/_secrets.yaml
+# Optionally override the age key path (e.g. during install from live USB)
+secrets host=`hostname` keyfile="/persist/system/sops/age/keys.txt":
+    sudo SOPS_AGE_KEY_FILE={{keyfile}} nix --extra-experimental-features "nix-command flakes" run nixpkgs#sops -- modules/hosts/{{host}}/_secrets.yaml
 
 # Build and set the new configuration for the next boot
 boot host=`hostname`:

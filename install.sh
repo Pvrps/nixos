@@ -267,7 +267,12 @@ Installation completed successfully for host $HOST!
 ${GREEN}Your age key is stored at:${NC} $AGE_KEY_FILE
 ${GREEN}Configuration is at:${NC} $PERSISTENT_CONFIG
 
-${YELLOW}To complete installation:${NC}
+${YELLOW}Before rebooting, add any remaining secrets (e.g. github-ssh-key):${NC}
+
+   cd $PERSISTENT_CONFIG
+   just secrets $HOST $AGE_KEY_FILE
+
+${YELLOW}Then reboot:${NC}
    reboot
 
 EOF
