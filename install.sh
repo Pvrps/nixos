@@ -255,9 +255,24 @@ log_info "Copying configuration to /mnt/persist/etc/nixos/..."
 PERSISTENT_CONFIG="/mnt/persist/etc/nixos"
 
 mkdir -p "$PERSISTENT_CONFIG"
+# Back up the persistent secrets file before overwriting — it may contain
+# previously injected secrets (e.g. github-ssh-key) that aren't in the
+# working copy.
+PERSISTENT_SECRETS_BAK="$PERSISTENT_CONFIG/modules/hosts/$HOST/_secrets.yaml"
+if grep -q "ENC\[AES256_GCM" "$PERSISTENT_SECRETS_BAK" 2>/dev/null; then
+  cp "$PERSISTENT_SECRETS_BAK" "$SECRETS_FILE.bak"
+fi
 cp -r "$SCRIPT_DIR/." "$PERSISTENT_CONFIG/"
 # Ensure we own the copied config folder (assuming main user is 1000)
 chown -R 1000:100 "$PERSISTENT_CONFIG" 2>/dev/null || true
+
+# The cp -r above may have overwritten the persistent secrets file (which may
+# have had github-ssh-key injected) with the working copy. Restore it from a
+# backup taken before the copy.
+if [ -f "$SECRETS_FILE.bak" ]; then
+  cp "$SECRETS_FILE.bak" "$PERSISTENT_CONFIG/modules/hosts/$HOST/_secrets.yaml"
+  rm -f "$SECRETS_FILE.bak"
+fi
 
 log_info "Preparing Git repository in persistent location..."
 git config --global --add safe.directory "$PERSISTENT_CONFIG"
@@ -314,7 +329,8 @@ inject_secret_via_wormhole() {
 }
 
 # Only prompt if the secret isn't already in the encrypted file
-if nix-shell -p sops --run "SOPS_AGE_KEY_FILE='$AGE_KEY_FILE' sops -d '$SECRETS_FILE_PERSISTENT'" 2>/dev/null | grep -q "github-ssh-key"; then
+DECRYPTED_SECRETS=$(nix-shell -p sops --run "SOPS_AGE_KEY_FILE='$AGE_KEY_FILE' sops -d '$SECRETS_FILE_PERSISTENT'" 2>/dev/null || echo "")
+if echo "$DECRYPTED_SECRETS" | grep -q "github-ssh-key"; then
   log_info "github-ssh-key already present in secrets — skipping."
 else
   inject_secret_via_wormhole "github-ssh-key"
