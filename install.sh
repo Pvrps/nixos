@@ -169,7 +169,7 @@ done
 # Detect whether this host disables password authentication (SSH-key-only hosts).
 # If PasswordAuthentication is false, offer to auto-generate random passwords
 # instead of prompting — the user will never need to type them.
-SSH_PASSWORD_AUTH=$(nix --experimental-features "nix-command flakes" eval --raw \
+SSH_PASSWORD_AUTH=$(nix --experimental-features "nix-command flakes" eval --json \
   ".#nixosConfigurations.$HOST.config.services.openssh.settings.PasswordAuthentication" 2>/dev/null || echo "true")
 
 if [ "$SSH_PASSWORD_AUTH" = "false" ]; then
