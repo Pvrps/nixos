@@ -299,6 +299,14 @@ inject_secret_via_wormhole() {
 
 inject_secret_via_wormhole "github-ssh-key"
 
+log_info "Activating swap to prevent OOM during nixos-install..."
+SWAPFILE="/mnt/.swap/swapfile"
+if [ -f "$SWAPFILE" ]; then
+  swapon "$SWAPFILE" && log_info "Swap activated at $SWAPFILE." || log_warn "Failed to activate swap (non-fatal)."
+else
+  log_warn "Swapfile not found at $SWAPFILE — OOM may occur on low-RAM machines."
+fi
+
 log_info "Running nixos-install from persistent location..."
 log_warn "This may take a while..."
 
