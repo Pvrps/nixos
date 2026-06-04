@@ -1,6 +1,7 @@
 {
   pkgs,
   osConfig,
+  lib,
   ...
 }: {
   imports = [
@@ -43,7 +44,9 @@
     };
     ssh = {
       enable = true;
-      githubKeyPath = osConfig.sops.secrets."github-ssh-key".path;
+      githubKeyPath = lib.mkIf
+        (osConfig.sops.secrets ? "github-ssh-key")
+        osConfig.sops.secrets."github-ssh-key".path;
     };
     starship.enable = true;
     lazygit.enable = true;
