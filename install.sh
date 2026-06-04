@@ -251,15 +251,53 @@ git -C "$PERSISTENT_CONFIG" add -A
 git -C "$PERSISTENT_CONFIG" -c "user.name=Automated Install" -c "user.email=install@localhost" commit -m "Install: automated hardware and secrets generation for $HOST" || true
 
 # =========================================================================
-# 3. SECRETS PAUSE — add any remaining secrets before nixos-install
+# 3. INJECT EXTRA SECRETS via wormhole before nixos-install
 # =========================================================================
-log_info "Opening secrets editor for $HOST — add any required secrets (e.g. github-ssh-key)."
-log_info "Save and close the editor when done to continue with nixos-install."
+# For each known secret key that requires a file (not a password), offer to
+# receive it via magic-wormhole and inject it directly into _secrets.yaml.
 
-cd "$PERSISTENT_CONFIG"
-SOPS_AGE_KEY_FILE="$AGE_KEY_FILE" nix --extra-experimental-features "nix-command flakes" \
-  run nixpkgs#sops -- "modules/hosts/$HOST/_secrets.yaml"
-cd "$SCRIPT_DIR"
+SECRETS_FILE_PERSISTENT="$PERSISTENT_CONFIG/modules/hosts/$HOST/_secrets.yaml"
+
+inject_secret_via_wormhole() {
+  local secret_name="$1"
+  local tmp_file
+  tmp_file=$(mktemp)
+
+  read -r -p "Receive '$secret_name' via magic-wormhole? (y/N): " do_wormhole
+  if [[ ! $do_wormhole =~ ^[Yy]$ ]]; then
+    rm -f "$tmp_file"
+    return
+  fi
+
+  log_info "On your other machine run: wormhole send <path/to/key>"
+  if ! nix-shell -p magic-wormhole --run "wormhole receive -o '$tmp_file'"; then
+    log_error "Failed to receive '$secret_name' via magic-wormhole."
+    rm -f "$tmp_file"
+    return
+  fi
+
+  # Build the YAML block: first line is the key, subsequent lines indented
+  local secret_yaml
+  secret_yaml=$(printf '%s: |\n' "$secret_name"; sed 's/^/  /' "$tmp_file")
+  rm -f "$tmp_file"
+
+  # Append to a plaintext temp file, re-encrypt the whole secrets file
+  local tmp_plain
+  tmp_plain=$(mktemp)
+
+  # Decrypt current secrets into plaintext, append new secret, re-encrypt
+  SOPS_AGE_KEY_FILE="$AGE_KEY_FILE" nix-shell -p sops --run \
+    "sops -d '$SECRETS_FILE_PERSISTENT'" >"$tmp_plain"
+  printf '\n%s\n' "$secret_yaml" >>"$tmp_plain"
+  cat "$tmp_plain" >"$SECRETS_FILE_PERSISTENT"
+  SOPS_AGE_KEY_FILE="$AGE_KEY_FILE" nix-shell -p sops --run \
+    "sops -e -i '$SECRETS_FILE_PERSISTENT'"
+  rm -f "$tmp_plain"
+
+  log_info "'$secret_name' injected and encrypted successfully."
+}
+
+inject_secret_via_wormhole "github-ssh-key"
 
 log_info "Running nixos-install from persistent location..."
 log_warn "This may take a while..."
