@@ -250,6 +250,29 @@ git config --global --add safe.directory "$PERSISTENT_CONFIG"
 git -C "$PERSISTENT_CONFIG" add -A
 git -C "$PERSISTENT_CONFIG" -c "user.name=Automated Install" -c "user.email=install@localhost" commit -m "Install: automated hardware and secrets generation for $HOST" || true
 
+# =========================================================================
+# 3. SECRETS PAUSE — add any remaining secrets before nixos-install
+# =========================================================================
+cat <<EOF
+
+${YELLOW}==========================================================
+Before installation: add any remaining secrets
+==========================================================${NC}
+
+The age key is at: ${GREEN}$AGE_KEY_FILE${NC}
+The config is at:  ${GREEN}$PERSISTENT_CONFIG${NC}
+
+Run the following to open the secrets editor now:
+
+   ${GREEN}cd $PERSISTENT_CONFIG && just secrets $HOST $AGE_KEY_FILE${NC}
+
+Add any secrets that are required for activation (e.g. github-ssh-key).
+When done, return here and press Enter to continue with nixos-install.
+
+EOF
+
+read -r -p "Press Enter when secrets are ready (or Ctrl+C to abort)..."
+
 log_info "Running nixos-install from persistent location..."
 log_warn "This may take a while..."
 
@@ -264,15 +287,7 @@ ${GREEN}==========================================================
 Installation completed successfully for host $HOST!
 ==========================================================${NC}
 
-${GREEN}Your age key is stored at:${NC} $AGE_KEY_FILE
-${GREEN}Configuration is at:${NC} $PERSISTENT_CONFIG
-
-${YELLOW}Before rebooting, add any remaining secrets (e.g. github-ssh-key):${NC}
-
-   cd $PERSISTENT_CONFIG
-   just secrets $HOST $AGE_KEY_FILE
-
-${YELLOW}Then reboot:${NC}
+${YELLOW}To complete installation:${NC}
    reboot
 
 EOF
