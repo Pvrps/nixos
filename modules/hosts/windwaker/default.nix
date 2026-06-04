@@ -95,6 +95,10 @@
     };
   };
 
+  # Docker needs both USB SSD partitions before containers with bind mounts can start
+  systemd.services.docker.after = ["mnt-general.mount" "mnt-media.mount"];
+  systemd.services.docker.wants = ["mnt-general.mount" "mnt-media.mount"];
+
   # Create docker bridge networks bound to the VLAN sub-interfaces.
   # These are idempotent: the || true prevents failure if the network already exists.
   systemd.services.docker-networks = {

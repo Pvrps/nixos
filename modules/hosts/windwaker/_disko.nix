@@ -47,6 +47,10 @@
     };
   };
 
+  # USB SSD partitions — existing data, not managed by disko
+  # 250G /mnt/general (docker volumes: compose files, .env files, app configs)
+  # 681G /mnt/media    (media library: immich library + postgres)
+  # Docker depends on both — containers bind-mount from both partitions
   fileSystems = {
     "/persist".neededForBoot = true;
 
