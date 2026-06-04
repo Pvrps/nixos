@@ -44,6 +44,18 @@
     ssh = {
       enable = true;
       githubKeyPath = osConfig.sops.secrets."github-ssh-key".path;
+      extraHosts = {
+        "windwaker" = {
+          HostName = "10.0.10.16";
+          User = "purps";
+          IdentityFile = "~/.ssh/id_ed25519_windwaker_purps";
+        };
+        "windwaker-root" = {
+          HostName = "10.0.10.16";
+          User = "root";
+          IdentityFile = "~/.ssh/id_ed25519_windwaker_root";
+        };
+      };
     };
     starship.enable = true;
     lazygit.enable = true;

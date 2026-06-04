@@ -13,6 +13,11 @@ in {
         default = null;
         description = "Path to the SSH key for github.com";
       };
+      extraHosts = lib.mkOption {
+        type = lib.types.attrsOf lib.types.attrs;
+        default = {};
+        description = "Additional SSH host entries";
+      };
     };
   };
 
@@ -23,6 +28,7 @@ in {
       enableDefaultConfig = false;
 
       settings = lib.mkMerge [
+        cfg.extraHosts
         {
           "*" = {
             AddKeysToAgent = "yes";
