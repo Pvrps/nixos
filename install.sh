@@ -169,20 +169,6 @@ done
 # 2. GENERATE SECRETS (Only runs if secrets.yaml is missing or empty)
 # =========================================================================
 
-# Detect whether this host disables password authentication (SSH-key-only hosts).
-# If PasswordAuthentication is false, offer to auto-generate random passwords
-# instead of prompting — the user will never need to type them.
-SSH_PASSWORD_AUTH=$(nix --experimental-features "nix-command flakes" eval --json \
-  ".#nixosConfigurations.$HOST.config.services.openssh.settings.PasswordAuthentication" 2>/dev/null || echo "true")
-
-if [ "$SSH_PASSWORD_AUTH" = "false" ]; then
-  log_info "SSH PasswordAuthentication is disabled on this host (SSH-key-only)."
-  read -r -p "Auto-generate random passwords for all users? (Y/n): " auto_pass
-  auto_pass="${auto_pass:-Y}"
-else
-  auto_pass="n"
-fi
-
 SECRETS_FILE_PERSISTENT_EARLY="/mnt/persist/etc/nixos/modules/hosts/$HOST/_secrets.yaml"
 # Check both the working copy and the persistent copy — on a re-run the
 # working copy may still be the unencrypted placeholder from git.
@@ -196,6 +182,19 @@ elif grep -q "ENC\[AES256_GCM" "$SECRETS_FILE_PERSISTENT_EARLY" 2>/dev/null; the
 fi
 
 if [ "$SECRETS_ALREADY_ENCRYPTED" = "false" ]; then
+  # Detect whether this host disables password authentication (SSH-key-only hosts).
+  # If PasswordAuthentication is false, offer to auto-generate random passwords
+  # instead of prompting — the user will never need to type them.
+  SSH_PASSWORD_AUTH=$(nix --experimental-features "nix-command flakes" eval --json \
+    ".#nixosConfigurations.$HOST.config.services.openssh.settings.PasswordAuthentication" 2>/dev/null || echo "true")
+
+  if [ "$SSH_PASSWORD_AUTH" = "false" ]; then
+    log_info "SSH PasswordAuthentication is disabled on this host (SSH-key-only)."
+    read -r -p "Auto-generate random passwords for all users? (Y/n): " auto_pass
+    auto_pass="${auto_pass:-Y}"
+  else
+    auto_pass="n"
+  fi
   log_info "Generating initial secrets for host '$HOST'..."
 
   TMP_SECRETS=$(mktemp)
