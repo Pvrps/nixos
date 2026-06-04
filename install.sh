@@ -309,7 +309,10 @@ inject_secret_via_wormhole() {
 
   # Build the YAML block: first line is the key, subsequent lines indented
   local secret_yaml
-  secret_yaml=$(printf '%s: |\n' "$secret_name"; sed 's/^/  /' "$tmp_file")
+  secret_yaml=$(
+    printf '%s: |\n' "$secret_name"
+    sed 's/^/  /' "$tmp_file"
+  )
   rm -f "$tmp_file"
 
   # Append to a plaintext temp file, re-encrypt the whole secrets file

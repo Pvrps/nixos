@@ -8,8 +8,6 @@
   cfg = config.custom.programs.opencode;
   inherit (cfg) context7 bravesearch superpowers claudeAuth;
 
-
-
   # Write the config file if any feature that needs it is enabled
   needsConfigFile = context7.enable || bravesearch.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
 in {
