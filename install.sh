@@ -157,12 +157,15 @@ for USER_ENTRY in "${USERS[@]}"; do
 
   if [ -z "$INSTALL_USER" ] || [ "$INSTALL_USER" == "root" ]; then continue; fi
 
-  log_info "Pre-creating persistent home directory for $INSTALL_USER (UID: $USER_UID)..."
-  mkdir -p "/mnt/persist/home/$INSTALL_USER"
-
-  # Set correct ownership right away so Impermanence doesn't cause Permission Denied errors
-  # 100 is the default GID for the 'users' group in NixOS
-  chown "$USER_UID:100" "/mnt/persist/home/$INSTALL_USER"
+  if [ -d "/mnt/persist/home/$INSTALL_USER" ]; then
+    log_info "Persistent home for $INSTALL_USER already exists — skipping."
+  else
+    log_info "Pre-creating persistent home directory for $INSTALL_USER (UID: $USER_UID)..."
+    mkdir -p "/mnt/persist/home/$INSTALL_USER"
+    # Set correct ownership right away so Impermanence doesn't cause Permission Denied errors
+    # 100 is the default GID for the 'users' group in NixOS
+    chown "$USER_UID:100" "/mnt/persist/home/$INSTALL_USER"
+  fi
 done
 
 # =========================================================================
