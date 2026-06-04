@@ -253,25 +253,13 @@ git -C "$PERSISTENT_CONFIG" -c "user.name=Automated Install" -c "user.email=inst
 # =========================================================================
 # 3. SECRETS PAUSE — add any remaining secrets before nixos-install
 # =========================================================================
-cat <<EOF
+log_info "Opening secrets editor for $HOST — add any required secrets (e.g. github-ssh-key)."
+log_info "Save and close the editor when done to continue with nixos-install."
 
-${YELLOW}==========================================================
-Before installation: add any remaining secrets
-==========================================================${NC}
-
-The age key is at: ${GREEN}$AGE_KEY_FILE${NC}
-The config is at:  ${GREEN}$PERSISTENT_CONFIG${NC}
-
-Run the following to open the secrets editor now:
-
-   ${GREEN}cd $PERSISTENT_CONFIG && just secrets $HOST $AGE_KEY_FILE${NC}
-
-Add any secrets that are required for activation (e.g. github-ssh-key).
-When done, return here and press Enter to continue with nixos-install.
-
-EOF
-
-read -r -p "Press Enter when secrets are ready (or Ctrl+C to abort)..."
+cd "$PERSISTENT_CONFIG"
+SOPS_AGE_KEY_FILE="$AGE_KEY_FILE" nix --extra-experimental-features "nix-command flakes" \
+  run nixpkgs#sops -- "modules/hosts/$HOST/_secrets.yaml"
+cd "$SCRIPT_DIR"
 
 log_info "Running nixos-install from persistent location..."
 log_warn "This may take a while..."
