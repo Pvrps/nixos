@@ -7,3 +7,7 @@ creation_rules:
     key_groups:
       - age:
           - age1aesmd0esqfkv9ms8g8ur0knjqvvymzhdj3q3zzq4yqewp8ykjgqswkm7gq
+  - path_regex: modules/hosts/windwaker/_secrets\.yaml$
+    key_groups:
+      - age:
+          - age1cvx2v7vcmf0y9vmsq3nhkxuwkvgdmwa00e44p7zn2cdq7mgs79qq5ej46s
