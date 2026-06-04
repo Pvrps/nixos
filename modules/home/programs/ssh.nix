@@ -13,6 +13,16 @@ in {
         default = null;
         description = "Path to the SSH key for github.com";
       };
+      windwakerPurpsKeyPath = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Path to the SSH key for windwaker (purps user)";
+      };
+      windwakerRootKeyPath = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Path to the SSH key for windwaker (root user)";
+      };
       extraHosts = lib.mkOption {
         type = lib.types.attrsOf lib.types.attrs;
         default = {};

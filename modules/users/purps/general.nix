@@ -3,9 +3,7 @@
   osConfig,
   ...
 }: {
-  imports = [
-    ./stylix.nix
-  ];
+  imports = [];
 
   home = {
     username = "purps";

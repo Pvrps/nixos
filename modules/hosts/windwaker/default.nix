@@ -119,6 +119,9 @@
     };
   };
 
+  # SSH-key-only host — passwords are random and unknown, so wheel must not need one for sudo
+  security.sudo.wheelNeedsPassword = false;
+
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   sops.defaultSopsFile = ./_secrets.yaml;

@@ -38,8 +38,8 @@
         windwaker = {
           host = "10.0.10.16";
           user = "root";
-          remotePath = "/mnt";
-          identityFile = config.sops.secrets."sftp-windwaker-key".path;
+          remotePath = "/";
+          identityFile = config.sops.secrets."windwaker-root-key".path;
           mountPoint = "/mnt/windwaker";
           allowOther = true;
         };

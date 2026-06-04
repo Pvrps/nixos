@@ -1,6 +1,7 @@
-{...}: {
+{osConfig, ...}: {
   imports = [
     ./general.nix
+    ./stylix.nix
     ./profiles/desktop.nix
     ./profiles/browsers.nix
     ./profiles/dev.nix
@@ -9,16 +10,20 @@
     ./profiles/hardware.nix
   ];
 
-  custom.programs.ssh.extraHosts = {
-    "windwaker" = {
-      HostName = "10.0.10.16";
-      User = "purps";
-      IdentityFile = "~/.ssh/id_ed25519_windwaker_purps";
-    };
-    "windwaker-root" = {
-      HostName = "10.0.10.16";
-      User = "root";
-      IdentityFile = "~/.ssh/id_ed25519_windwaker_root";
+  custom.programs.ssh = {
+    windwakerPurpsKeyPath = osConfig.sops.secrets."windwaker-purps-key".path;
+    windwakerRootKeyPath = osConfig.sops.secrets."windwaker-root-key".path;
+    extraHosts = {
+      "windwaker" = {
+        HostName = "10.0.10.16";
+        User = "purps";
+        IdentityFile = osConfig.sops.secrets."windwaker-purps-key".path;
+      };
+      "windwaker-root" = {
+        HostName = "10.0.10.16";
+        User = "root";
+        IdentityFile = osConfig.sops.secrets."windwaker-root-key".path;
+      };
     };
   };
 }

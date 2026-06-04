@@ -26,10 +26,16 @@
         neededForUsers = true;
       };
 
-      "sftp-windwaker-key" = {
-        owner = "root";
-        group = "root";
-        mode = "0400";
+      "windwaker-purps-key" = {
+        owner = "purps";
+        group = "users";
+        mode = "0600";
+      };
+
+      "windwaker-root-key" = {
+        owner = "purps";
+        group = "users";
+        mode = "0600";
       };
 
       "github-ssh-key" = {
