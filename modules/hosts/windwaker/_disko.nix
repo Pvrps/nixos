@@ -47,10 +47,6 @@
     };
   };
 
-  # USB SSD partitions — existing data, not managed by disko
-  # 250G /mnt/general (docker volumes, compose files, .env files)
-  # 681G /mnt/media    (media library — immich library + postgres)
-  # Mount order: docker.service waits for /mnt/general via systemd mount units
   fileSystems = {
     "/persist".neededForBoot = true;
 
