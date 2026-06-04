@@ -50,7 +50,7 @@ fi
 log_info "Internet connectivity: OK"
 
 log_info "Running disko to partition and format the disk for host '$HOST'..."
-log_warn "This will WIPE THE DISK specified in $HOST_DIR/disko.nix!"
+log_warn "This will WIPE THE DISK specified in $HOST_DIR/_disko.nix!"
 read -r -p "Are you sure you want to continue? (yes/no): " confirm
 if [ "$confirm" != "yes" ]; then
   log_error "Installation aborted by user."
@@ -58,8 +58,8 @@ if [ "$confirm" != "yes" ]; then
 fi
 
 log_info "Starting disk partitioning with disko..."
-if ! nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko ./$HOST_DIR/disko.nix; then
-  log_error "Disko failed. Please check your disko.nix configuration."
+if ! nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko ./$HOST_DIR/_disko.nix; then
+  log_error "Disko failed. Please check your _disko.nix configuration."
   exit 1
 fi
 log_info "Disk partitioning completed successfully."

@@ -156,6 +156,11 @@
           users.mike = import ./modules/users/mike;
           users.purps = import ./modules/users/purps/general.nix;
         };
+
+        nixosConfigurations.windwaker = mkHost {
+          host = "windwaker";
+          users.purps = import ./modules/users/purps/general.nix;
+        };
       };
 
       perSystem = {pkgs, ...}: {
