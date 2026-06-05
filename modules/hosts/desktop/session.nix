@@ -10,7 +10,7 @@
   programs = {
     niri = {
       enable = true;
-      useNautilus = !config.home-manager.users.purps.custom.programs.termfilepickers.enable;
+      useNautilus = false;
     };
     gpu-screen-recorder.enable = true;
   };
