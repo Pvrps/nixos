@@ -2,13 +2,22 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     ./_hardware.nix
     ./_disko.nix
     ./_persist.nix
     ./users.nix
     ./services/network.nix
+    ./services/rustdesk.nix
+    ./services/homepage.nix
+    ./services/immich.nix
+    ./services/audiobookshelf.nix
+    ./services/cwa.nix
+    ./services/suwayomi.nix
+    ./services/asf.nix
+    ./services/twitchpointminer.nix
 
     ../../../modules/nixos/core.nix
   ];
@@ -49,8 +58,8 @@
         networkConfig = {
           Address = "10.0.10.16/24";
           Gateway = "10.0.10.1";
-          DNS = ["10.0.10.1"];
-          VLAN = ["eno1.120"];
+          DNS = [ "10.0.10.1" ];
+          VLAN = [ "eno1.120" ];
           LinkLocalAddressing = "no";
         };
       };
@@ -70,9 +79,9 @@
   # Firewall: SSH only on the internal LAN interface (eno1, native VLAN 10)
   networking.firewall = {
     enable = true;
-    interfaces."eno1".allowedTCPPorts = [22];
+    interfaces."eno1".allowedTCPPorts = [ 22 ];
     # Docker manages its own iptables rules for container port exposure
-    trustedInterfaces = ["docker0"];
+    trustedInterfaces = [ "docker0" ];
   };
 
   services.openssh = {
@@ -97,16 +106,25 @@
   };
 
   # Docker needs both USB SSD partitions before containers with bind mounts can start
-  systemd.services.docker.after = ["mnt-general.mount" "mnt-media.mount"];
-  systemd.services.docker.wants = ["mnt-general.mount" "mnt-media.mount"];
+  systemd.services.docker.after = [
+    "mnt-general.mount"
+    "mnt-media.mount"
+  ];
+  systemd.services.docker.wants = [
+    "mnt-general.mount"
+    "mnt-media.mount"
+  ];
 
   # Create docker bridge networks bound to the VLAN sub-interfaces.
   # These are idempotent: the || true prevents failure if the network already exists.
   systemd.services.docker-networks = {
     description = "Create persistent Docker bridge networks";
-    after = ["docker.service" "network-online.target"];
-    wants = ["network-online.target"];
-    wantedBy = ["multi-user.target"];
+    after = [
+      "docker.service"
+      "network-online.target"
+    ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -120,6 +138,10 @@
           --driver bridge \
           --opt "com.docker.network.bridge.bind_iface=eno1.120" \
           dmz_bridge || true
+
+        ${pkgs.docker}/bin/docker network create \
+          --driver bridge \
+          immich_internal || true
       '';
     };
   };
