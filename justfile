@@ -7,10 +7,14 @@ update:
     nix flake update
     nix shell nixpkgs#nodejs nixpkgs#prefetch-npm-deps -c scripts/update-opencode-tools
 
-# Update the system secrets file
+# Edit a sops-encrypted secrets file
 # Optionally override the age key path (e.g. during install from live USB)
-secrets host=`hostname` keyfile="/persist/system/sops/age/keys.txt":
-    sudo SOPS_AGE_KEY_FILE={{keyfile}} nix --extra-experimental-features "nix-command flakes" run nixpkgs#sops -- modules/hosts/{{host}}/_secrets.yaml
+#   just secrets                                                → _secrets.yaml
+#   just secrets services/_docker-secrets                       → services/_docker-secrets.yaml
+#   just secrets services/_docker-secrets windwaker             → override host
+#   just secrets services/_docker-secrets windwaker /path/key   → override host + key
+secrets secretsfile="_secrets" host=`hostname` keyfile="/persist/system/sops/age/keys.txt":
+    @sudo SOPS_AGE_KEY_FILE={{keyfile}} nix --extra-experimental-features "nix-command flakes" run nixpkgs#sops -- modules/hosts/{{host}}/{{secretsfile}}.yaml
 
 # Build and set the new configuration for the next boot
 boot host=`hostname`:
