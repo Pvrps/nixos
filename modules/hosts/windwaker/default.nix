@@ -80,8 +80,8 @@
   networking.firewall = {
     enable = true;
     interfaces."eno1".allowedTCPPorts = [ 22 ];
-    # Docker manages its own iptables rules for container port exposure
-    trustedInterfaces = [ "docker0" ];
+    # Podman manages its own iptables rules for container port exposure
+    trustedInterfaces = [ "podman0" ];
   };
 
   services.openssh = {
@@ -93,34 +93,34 @@
     };
   };
 
-  # Docker
-  virtualisation.docker = {
+  # Podman
+  virtualisation.podman = {
     enable = true;
-    # Docker daemon settings
-    daemon.settings = {
-      # Disable userland proxy for better performance
-      userland-proxy = false;
-      # Use iptables for port forwarding
-      iptables = true;
-    };
+    # Expose a Docker-compatible socket so tools like homepage can use it
+    dockerSocket.enable = true;
+    # Clean up unused images/containers automatically
+    autoPrune.enable = true;
   };
 
-  # Docker needs both USB SSD partitions before containers with bind mounts can start
-  systemd.services.docker.after = [
+  # Podman needs both USB SSD partitions before containers with bind mounts can start
+  systemd.services.podman.after = [
     "mnt-general.mount"
     "mnt-media.mount"
   ];
-  systemd.services.docker.wants = [
+  systemd.services.podman.wants = [
     "mnt-general.mount"
     "mnt-media.mount"
   ];
 
-  # Create docker bridge networks bound to the VLAN sub-interfaces.
-  # These are idempotent: the || true prevents failure if the network already exists.
-  systemd.services.docker-networks = {
-    description = "Create persistent Docker bridge networks";
+  # Create Podman networks.
+  # - lan_bridge: standard bridge; containers publish ports to the host IP (10.0.10.16)
+  # - dmz_bridge: macvlan on eno1.120 so cloudflared-tunnel appears directly on VLAN 120
+  # - immich_internal: isolated internal bridge for the Immich stack
+  # All commands are idempotent via || true.
+  systemd.services.podman-networks = {
+    description = "Create persistent Podman networks";
     after = [
-      "docker.service"
+      "podman.service"
       "network-online.target"
     ];
     wants = [ "network-online.target" ];
@@ -128,19 +128,21 @@
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "create-docker-networks" ''
-        ${pkgs.docker}/bin/docker network create \
+      ExecStart = pkgs.writeShellScript "create-podman-networks" ''
+        ${pkgs.podman}/bin/podman network create \
           --driver bridge \
-          --opt "com.docker.network.bridge.bind_iface=eno1" \
           lan_bridge || true
 
-        ${pkgs.docker}/bin/docker network create \
-          --driver bridge \
-          --opt "com.docker.network.bridge.bind_iface=eno1.120" \
+        ${pkgs.podman}/bin/podman network create \
+          --driver macvlan \
+          --opt parent=eno1.120 \
+          --subnet 10.10.20.0/24 \
+          --gateway 10.10.20.1 \
           dmz_bridge || true
 
-        ${pkgs.docker}/bin/docker network create \
+        ${pkgs.podman}/bin/podman network create \
           --driver bridge \
+          --internal \
           immich_internal || true
       '';
     };

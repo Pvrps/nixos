@@ -33,9 +33,9 @@ in
     };
   };
 
-  systemd.services."docker-calibre-web-automated" = {
-    after = [ "docker-networks.service" ];
-    requires = [ "docker-networks.service" ];
-    bindsTo = [ "docker.service" ];
+  systemd.services."podman-calibre-web-automated" = {
+    after = [ "podman-networks.service" ];
+    requires = [ "podman-networks.service" ];
+    bindsTo = [ "podman.service" ];
   };
 }

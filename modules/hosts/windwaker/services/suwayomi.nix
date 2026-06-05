@@ -21,9 +21,9 @@ in
     };
   };
 
-  systemd.services."docker-suwayomi" = {
-    after = [ "docker-networks.service" ];
-    requires = [ "docker-networks.service" ];
-    bindsTo = [ "docker.service" ];
+  systemd.services."podman-suwayomi" = {
+    after = [ "podman-networks.service" ];
+    requires = [ "podman-networks.service" ];
+    bindsTo = [ "podman.service" ];
   };
 }

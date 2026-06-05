@@ -38,15 +38,15 @@ in
   };
 
   systemd.services = {
-    "docker-twitch-points-miner-purps" = {
-      after = [ "docker-networks.service" ];
-      requires = [ "docker-networks.service" ];
-      bindsTo = [ "docker.service" ];
+    "podman-twitch-points-miner-purps" = {
+      after = [ "podman-networks.service" ];
+      requires = [ "podman-networks.service" ];
+      bindsTo = [ "podman.service" ];
     };
-    "docker-twitch-points-miner-inori" = {
-      after = [ "docker-networks.service" ];
-      requires = [ "docker-networks.service" ];
-      bindsTo = [ "docker.service" ];
+    "podman-twitch-points-miner-inori" = {
+      after = [ "podman-networks.service" ];
+      requires = [ "podman-networks.service" ];
+      bindsTo = [ "podman.service" ];
     };
   };
 }

@@ -19,9 +19,9 @@ in
     };
   };
 
-  systemd.services."docker-archi-steam-farm" = {
-    after = [ "docker-networks.service" ];
-    requires = [ "docker-networks.service" ];
-    bindsTo = [ "docker.service" ];
+  systemd.services."podman-archi-steam-farm" = {
+    after = [ "podman-networks.service" ];
+    requires = [ "podman-networks.service" ];
+    bindsTo = [ "podman.service" ];
   };
 }

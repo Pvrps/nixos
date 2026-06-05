@@ -67,20 +67,20 @@ in
   };
 
   systemd.services = {
-    "docker-tailscale-rustdesk" = {
-      after = [ "docker-networks.service" ];
-      requires = [ "docker-networks.service" ];
-      bindsTo = [ "docker.service" ];
+    "podman-tailscale-rustdesk" = {
+      after = [ "podman-networks.service" ];
+      requires = [ "podman-networks.service" ];
+      bindsTo = [ "podman.service" ];
     };
-    "docker-hbbs" = {
-      after = [ "docker-networks.service" ];
-      requires = [ "docker-networks.service" ];
-      bindsTo = [ "docker.service" ];
+    "podman-hbbs" = {
+      after = [ "podman-networks.service" ];
+      requires = [ "podman-networks.service" ];
+      bindsTo = [ "podman.service" ];
     };
-    "docker-hbbr" = {
-      after = [ "docker-networks.service" ];
-      requires = [ "docker-networks.service" ];
-      bindsTo = [ "docker.service" ];
+    "podman-hbbr" = {
+      after = [ "podman-networks.service" ];
+      requires = [ "podman-networks.service" ];
+      bindsTo = [ "podman.service" ];
     };
   };
 }

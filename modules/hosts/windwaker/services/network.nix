@@ -8,7 +8,7 @@ let
 in
 {
   sops.secrets."network-env".sopsFile = ./_secrets.yaml;
-  virtualisation.oci-containers.backend = "docker";
+  virtualisation.oci-containers.backend = "podman";
 
   virtualisation.oci-containers.containers = {
     cloudflared-tunnel = {
@@ -72,20 +72,20 @@ in
   };
 
   systemd.services = {
-    "docker-cloudflared-tunnel" = {
-      after = [ "docker-networks.service" ];
-      requires = [ "docker-networks.service" ];
-      bindsTo = [ "docker.service" ];
+    "podman-cloudflared-tunnel" = {
+      after = [ "podman-networks.service" ];
+      requires = [ "podman-networks.service" ];
+      bindsTo = [ "podman.service" ];
     };
-    "docker-nginx-proxy-manager" = {
-      after = [ "docker-networks.service" ];
-      requires = [ "docker-networks.service" ];
-      bindsTo = [ "docker.service" ];
+    "podman-nginx-proxy-manager" = {
+      after = [ "podman-networks.service" ];
+      requires = [ "podman-networks.service" ];
+      bindsTo = [ "podman.service" ];
     };
-    "docker-pihole" = {
-      after = [ "docker-networks.service" ];
-      requires = [ "docker-networks.service" ];
-      bindsTo = [ "docker.service" ];
+    "podman-pihole" = {
+      after = [ "podman-networks.service" ];
+      requires = [ "podman-networks.service" ];
+      bindsTo = [ "podman.service" ];
     };
   };
 }

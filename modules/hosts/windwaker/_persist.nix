@@ -8,9 +8,8 @@
       "/var/log"
       "/var/lib/nixos"
       "/var/lib/systemd/coredump"
-      # Docker state and layer cache (grows over time; lives on sda btrfs)
-      "/var/lib/docker"
-      "/etc/docker"
+      # Podman state and layer cache (grows over time; lives on sda btrfs)
+      "/var/lib/containers"
     ];
 
     files = [

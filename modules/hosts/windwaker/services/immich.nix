@@ -56,25 +56,25 @@ in {
   };
 
   systemd.services = {
-    "docker-immich-server" = {
-      after = ["docker-networks.service"];
-      requires = ["docker-networks.service"];
-      bindsTo = ["docker.service"];
+    "podman-immich-server" = {
+      after = ["podman-networks.service"];
+      requires = ["podman-networks.service"];
+      bindsTo = ["podman.service"];
     };
-    "docker-immich-machine-learning" = {
-      after = ["docker-networks.service"];
-      requires = ["docker-networks.service"];
-      bindsTo = ["docker.service"];
+    "podman-immich-machine-learning" = {
+      after = ["podman-networks.service"];
+      requires = ["podman-networks.service"];
+      bindsTo = ["podman.service"];
     };
-    "docker-redis" = {
-      after = ["docker-networks.service"];
-      requires = ["docker-networks.service"];
-      bindsTo = ["docker.service"];
+    "podman-redis" = {
+      after = ["podman-networks.service"];
+      requires = ["podman-networks.service"];
+      bindsTo = ["podman.service"];
     };
-    "docker-database" = {
-      after = ["docker-networks.service"];
-      requires = ["docker-networks.service"];
-      bindsTo = ["docker.service"];
+    "podman-database" = {
+      after = ["podman-networks.service"];
+      requires = ["podman-networks.service"];
+      bindsTo = ["podman.service"];
     };
   };
 }
