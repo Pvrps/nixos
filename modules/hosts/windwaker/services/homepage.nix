@@ -24,6 +24,5 @@ in
   systemd.services."podman-homepage" = {
     after = [ "podman-networks.service" ];
     requires = [ "podman-networks.service" ];
-    bindsTo = [ "podman.service" ];
   };
 }

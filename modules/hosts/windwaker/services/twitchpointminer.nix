@@ -41,12 +41,11 @@ in
     "podman-twitch-points-miner-purps" = {
       after = [ "podman-networks.service" ];
       requires = [ "podman-networks.service" ];
-      bindsTo = [ "podman.service" ];
     };
     "podman-twitch-points-miner-inori" = {
       after = [ "podman-networks.service" ];
       requires = [ "podman-networks.service" ];
-      bindsTo = [ "podman.service" ];
     };
   };
 }
+

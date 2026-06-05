@@ -131,6 +131,7 @@
       ExecStart = pkgs.writeShellScript "create-podman-networks" ''
         ${pkgs.podman}/bin/podman network create \
           --driver bridge \
+          --disable-dns \
           lan_bridge || true
 
         ${pkgs.podman}/bin/podman network create \

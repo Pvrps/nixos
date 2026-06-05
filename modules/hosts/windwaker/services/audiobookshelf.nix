@@ -26,6 +26,5 @@ in
   systemd.services."podman-audiobookshelf" = {
     after = [ "podman-networks.service" ];
     requires = [ "podman-networks.service" ];
-    bindsTo = [ "podman.service" ];
   };
 }

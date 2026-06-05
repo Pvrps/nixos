@@ -36,6 +36,5 @@ in
   systemd.services."podman-calibre-web-automated" = {
     after = [ "podman-networks.service" ];
     requires = [ "podman-networks.service" ];
-    bindsTo = [ "podman.service" ];
   };
 }

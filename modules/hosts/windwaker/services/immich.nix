@@ -59,22 +59,18 @@ in {
     "podman-immich-server" = {
       after = ["podman-networks.service"];
       requires = ["podman-networks.service"];
-      bindsTo = ["podman.service"];
     };
     "podman-immich-machine-learning" = {
       after = ["podman-networks.service"];
       requires = ["podman-networks.service"];
-      bindsTo = ["podman.service"];
     };
     "podman-redis" = {
       after = ["podman-networks.service"];
       requires = ["podman-networks.service"];
-      bindsTo = ["podman.service"];
     };
     "podman-database" = {
       after = ["podman-networks.service"];
       requires = ["podman-networks.service"];
-      bindsTo = ["podman.service"];
     };
   };
 }

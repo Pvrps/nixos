@@ -22,6 +22,6 @@ in
   systemd.services."podman-archi-steam-farm" = {
     after = [ "podman-networks.service" ];
     requires = [ "podman-networks.service" ];
-    bindsTo = [ "podman.service" ];
   };
 }
+

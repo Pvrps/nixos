@@ -70,17 +70,14 @@ in
     "podman-tailscale-rustdesk" = {
       after = [ "podman-networks.service" ];
       requires = [ "podman-networks.service" ];
-      bindsTo = [ "podman.service" ];
     };
     "podman-hbbs" = {
       after = [ "podman-networks.service" ];
       requires = [ "podman-networks.service" ];
-      bindsTo = [ "podman.service" ];
     };
     "podman-hbbr" = {
       after = [ "podman-networks.service" ];
       requires = [ "podman-networks.service" ];
-      bindsTo = [ "podman.service" ];
     };
   };
 }

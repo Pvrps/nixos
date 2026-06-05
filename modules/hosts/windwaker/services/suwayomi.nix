@@ -24,6 +24,6 @@ in
   systemd.services."podman-suwayomi" = {
     after = [ "podman-networks.service" ];
     requires = [ "podman-networks.service" ];
-    bindsTo = [ "podman.service" ];
   };
 }
+

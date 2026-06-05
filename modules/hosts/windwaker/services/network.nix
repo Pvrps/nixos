@@ -75,17 +75,14 @@ in
     "podman-cloudflared-tunnel" = {
       after = [ "podman-networks.service" ];
       requires = [ "podman-networks.service" ];
-      bindsTo = [ "podman.service" ];
     };
     "podman-nginx-proxy-manager" = {
       after = [ "podman-networks.service" ];
       requires = [ "podman-networks.service" ];
-      bindsTo = [ "podman.service" ];
     };
     "podman-pihole" = {
       after = [ "podman-networks.service" ];
       requires = [ "podman-networks.service" ];
-      bindsTo = [ "podman.service" ];
     };
   };
 }
