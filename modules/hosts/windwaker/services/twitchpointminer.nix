@@ -13,10 +13,6 @@ in
       autoStart = true;
       networks = [ "lan_bridge" ];
       ports = [ "55000:5000" ];
-      extraOptions = [
-        "-i"
-        "-t"
-      ];
       environment.TERM = "xterm-256color";
       volumes = [
         "${dockerVolumeDir}/twitch-points-miner-purps/analytics:/usr/src/app/analytics"
@@ -31,10 +27,6 @@ in
       autoStart = true;
       networks = [ "lan_bridge" ];
       ports = [ "55001:5000" ];
-      extraOptions = [
-        "-i"
-        "-t"
-      ];
       environment.TERM = "xterm-256color";
       volumes = [
         "${dockerVolumeDir}/twitch-points-miner-inori/analytics:/usr/src/app/analytics"
