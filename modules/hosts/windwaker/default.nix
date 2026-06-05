@@ -143,7 +143,6 @@
 
         ${pkgs.podman}/bin/podman network create \
           --driver bridge \
-          --internal \
           immich_internal || true
       '';
     };
