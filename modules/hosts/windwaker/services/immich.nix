@@ -16,12 +16,16 @@ in {
       extraOptions = [
         "--add-host=database:10.89.1.4"
         "--add-host=redis:10.89.1.3"
+        "--add-host=immich-machine-learning:10.89.1.2"
       ];
       dependsOn = [
         "redis"
         "database"
       ];
       ports = ["62283:2283"];
+      environment = {
+        HOST = "0.0.0.0";
+      };
       volumes = [
         "${uploadVolumeDir}/immich/library:/usr/src/app/upload"
         "/etc/localtime:/etc/localtime:ro"
