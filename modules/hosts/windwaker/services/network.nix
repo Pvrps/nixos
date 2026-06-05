@@ -67,14 +67,17 @@ in {
     "docker-cloudflared-tunnel" = {
       after = ["docker-networks.service"];
       requires = ["docker-networks.service"];
+      bindsTo = ["docker.service"];
     };
     "docker-nginx-proxy-manager" = {
       after = ["docker-networks.service"];
       requires = ["docker-networks.service"];
+      bindsTo = ["docker.service"];
     };
     "docker-pihole" = {
       after = ["docker-networks.service"];
       requires = ["docker-networks.service"];
+      bindsTo = ["docker.service"];
     };
   };
 }
