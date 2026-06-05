@@ -5,6 +5,7 @@
 }: let
   dockerVolumeDir = "/mnt/general/docker";
 in {
+  sops.secrets."network-env".sopsFile = ./_secrets.yaml;
   virtualisation.oci-containers.backend = "docker";
 
   virtualisation.oci-containers.containers = {
