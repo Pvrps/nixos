@@ -12,7 +12,10 @@ in {
     immich-server = {
       image = "ghcr.io/immich-app/immich-server:release";
       autoStart = true;
-      networks = ["immich_internal"];
+      networks = [
+        "immich_internal"
+        "lan_bridge"
+      ];
       dependsOn = [
         "redis"
         "database"
