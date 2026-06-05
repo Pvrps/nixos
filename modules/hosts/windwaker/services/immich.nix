@@ -19,7 +19,7 @@ in {
       ];
       ports = ["62283:2283"];
       environment = {
-        HOST = "0.0.0.0";
+        IMMICH_HOST = "0.0.0.0";
       };
       volumes = [
         "${uploadVolumeDir}/immich/library:/usr/src/app/upload"
