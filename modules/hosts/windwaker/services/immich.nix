@@ -13,6 +13,10 @@ in {
       image = "ghcr.io/immich-app/immich-server:release";
       autoStart = true;
       networks = ["immich_internal"];
+      extraHosts = [
+        "database:10.89.1.4"
+        "redis:10.89.1.3"
+      ];
       dependsOn = [
         "redis"
         "database"
