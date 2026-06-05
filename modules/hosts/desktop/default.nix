@@ -38,7 +38,7 @@
         windwaker = {
           host = "10.0.10.16";
           user = "root";
-          remotePath = "/mnt/windwaker/mnt/";
+          remotePath = "/mnt/";
           identityFile = config.sops.secrets."windwaker-root-key".path;
           mountPoint = "/mnt/windwaker";
           allowOther = true;
