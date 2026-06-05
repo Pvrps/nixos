@@ -13,8 +13,8 @@ update:
 #   just secrets services/_docker-secrets                       → services/_docker-secrets.yaml
 #   just secrets services/_docker-secrets windwaker             → override host
 #   just secrets services/_docker-secrets windwaker /path/key   → override host + key
-secrets secretsfile="_secrets" host=`hostname` keyfile="/persist/system/sops/age/keys.txt":
-    sudo SOPS_AGE_KEY_FILE={{keyfile}} nix --extra-experimental-features "nix-command flakes" run nixpkgs#sops -- modules/hosts/{{host}}/{{secretsfile}}.yaml
+secrets secretsfile="_secrets" host=`hostname` keyfile="/persist/system/sops/age/keys.txt" age="age1cvx2v7vcmf0y9vmsq3nhkxuwkvgdmwa00e44p7zn2cdq7mgs79qq5ej46s":
+    sudo SOPS_AGE_KEY_FILE={{keyfile}} nix --extra-experimental-features "nix-command flakes" run nixpkgs#sops -- --age {{age}} modules/hosts/{{host}}/{{secretsfile}}.yaml
 
 # Build and set the new configuration for the next boot
 boot host=`hostname`:
