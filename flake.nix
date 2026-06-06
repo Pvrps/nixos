@@ -79,6 +79,10 @@
       inputs.flake-parts.follows = "flake-parts";
     };
 
+    quadlet-nix = {
+      url = "github:SEIAROTg/quadlet-nix";
+    };
+
     nh = {
       url = "github:nix-community/nh";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -111,6 +115,7 @@
     import-tree,
     lanzaboote,
     nix-index-database,
+    quadlet-nix,
     ...
   } @ inputs:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -131,6 +136,7 @@
               home-manager.nixosModules.home-manager
               nix-flatpak.nixosModules.nix-flatpak
               lanzaboote.nixosModules.lanzaboote
+              quadlet-nix.nixosModules.quadlet
               {
                 home-manager = {
                   useUserPackages = true;

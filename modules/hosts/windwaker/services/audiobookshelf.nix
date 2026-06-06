@@ -1,19 +1,19 @@
 {
-  config,
-  lib,
   ...
 }:
 let
   dockerVolumeDir = "/mnt/general/docker";
 in
 {
-  virtualisation.oci-containers.containers = {
-    audiobookshelf = {
+  virtualisation.quadlet.containers.audiobookshelf = {
+    autoStart = true;
+    containerConfig = {
       image = "ghcr.io/advplyr/audiobookshelf:latest";
-      autoStart = true;
       networks = [ "lan_bridge" ];
-      ports = [ "13378:80" ];
-      environment.TZ = "America/Toronto";
+      publishPorts = [ "13378:80" ];
+      environments = {
+        TZ = "America/Toronto";
+      };
       volumes = [
         "${dockerVolumeDir}/audiobookshelf/audiobooks:/audiobooks"
         "${dockerVolumeDir}/audiobookshelf/podcasts:/podcasts"
@@ -21,10 +21,9 @@ in
         "${dockerVolumeDir}/audiobookshelf/metadata:/metadata"
       ];
     };
-  };
-
-  systemd.services."podman-audiobookshelf" = {
-    after = [ "podman-networks.service" ];
-    requires = [ "podman-networks.service" ];
+    serviceConfig = {
+      Restart = "always";
+      RestartSec = "10";
+    };
   };
 }

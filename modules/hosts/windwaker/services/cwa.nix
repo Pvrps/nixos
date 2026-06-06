@@ -1,6 +1,5 @@
 {
   config,
-  lib,
   ...
 }:
 let
@@ -9,14 +8,14 @@ in
 {
   sops.secrets."cwa-env".sopsFile = ./_secrets.yaml;
 
-  virtualisation.oci-containers.containers = {
-    calibre-web-automated = {
+  virtualisation.quadlet.containers.calibre-web-automated = {
+    autoStart = true;
+    containerConfig = {
       image = "crocodilestick/calibre-web-automated:latest";
-      autoStart = true;
       networks = [ "lan_bridge" ];
-      ports = [ "28083:8083" ];
+      publishPorts = [ "28083:8083" ];
       environmentFiles = [ config.sops.secrets."cwa-env".path ];
-      environment = {
+      environments = {
         PUID = "1000";
         PGID = "1000";
         TZ = "America/Toronto";
@@ -31,10 +30,9 @@ in
         "${dockerVolumeDir}/calibre_web_automated/plugins:/config/.config/calibre/plugins"
       ];
     };
-  };
-
-  systemd.services."podman-calibre-web-automated" = {
-    after = [ "podman-networks.service" ];
-    requires = [ "podman-networks.service" ];
+    serviceConfig = {
+      Restart = "always";
+      RestartSec = "10";
+    };
   };
 }

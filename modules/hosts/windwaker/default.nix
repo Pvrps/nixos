@@ -77,10 +77,9 @@
     };
   };
 
-  # Firewall: SSH only on the internal LAN interface (eno1, native VLAN 10)
+  # Firewall: SSH + Cockpit on the internal LAN interface (eno1, native VLAN 10)
   networking.firewall = {
     enable = true;
-    interfaces."eno1".allowedTCPPorts = [ 22 ];
     # Podman manages its own iptables rules for container port exposure
     trustedInterfaces = [ "podman0" ];
   };
@@ -94,60 +93,29 @@
     };
   };
 
-  # Podman
+  # Podman — quadlet-nix enables virtualisation.podman automatically;
+  # these options layer on top for the docker socket and auto-pruning.
   virtualisation.podman = {
-    enable = true;
-    # Expose a Docker-compatible socket so tools like homepage can use it
-    dockerSocket.enable = true;
-    # Clean up unused images/containers automatically
+    dockerSocket.enable = true; # keeps homepage's /var/run/docker.sock mount working
     autoPrune.enable = true;
   };
 
-  # Podman needs both USB SSD partitions before containers with bind mounts can start
-  systemd.services.podman.after = [
-    "mnt-general.mount"
-    "mnt-media.mount"
-  ];
-  systemd.services.podman.wants = [
-    "mnt-general.mount"
-    "mnt-media.mount"
-  ];
-
-  # Create Podman networks.
-  # - lan_bridge: standard bridge; containers publish ports to the host IP (10.0.10.16)
-  # - dmz_bridge: macvlan on eno1.120 so cloudflared-tunnel appears directly on VLAN 120
-  # - immich_internal: isolated internal bridge for the Immich stack
-  # All commands are idempotent via || true.
-  systemd.services.podman-networks = {
-    description = "Create persistent Podman networks";
-    after = [
-      "podman.service"
-      "network-online.target"
-    ];
-    wants = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "create-podman-networks" ''
-        ${pkgs.podman}/bin/podman network create \
-          --driver bridge \
-          --disable-dns \
-          lan_bridge || true
-
-        ${pkgs.podman}/bin/podman network create \
-          --driver macvlan \
-          --opt parent=eno1.120 \
-          --subnet 10.10.20.0/24 \
-          --gateway 10.10.20.1 \
-          dmz_bridge || true
-
-        ${pkgs.podman}/bin/podman network create \
-          --driver bridge \
-          immich_internal || true
-      '';
+  # Cockpit web UI with the Podman plugin.
+  # Reverse-proxy podman.windwaker.ca → 10.0.10.16:9090 via nginx-proxy-manager.
+  services.cockpit = {
+    enable = true;
+    port = 9090;
+    openFirewall = false; # exposed only on the LAN interface below
+    plugins = [ pkgs.cockpit-podman ];
+    settings = {
+      WebService.Origins = "https://podman.windwaker.ca wss://podman.windwaker.ca";
     };
   };
+
+  networking.firewall.interfaces."eno1".allowedTCPPorts = [
+    22
+    9090
+  ];
 
   # SSH-key-only host — passwords are random and unknown, so wheel must not need one for sudo
   security.sudo.wheelNeedsPassword = false;

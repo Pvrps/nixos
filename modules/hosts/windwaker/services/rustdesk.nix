@@ -1,6 +1,5 @@
 {
   config,
-  lib,
   ...
 }:
 let
@@ -9,75 +8,95 @@ in
 {
   sops.secrets."rustdesk-env".sopsFile = ./_secrets.yaml;
 
-  virtualisation.oci-containers.containers = {
+  virtualisation.quadlet.containers = {
     tailscale-rustdesk = {
-      image = "tailscale/tailscale:latest";
       autoStart = true;
-      networks = [ "lan_bridge" ];
-      capabilities = {
-        NET_ADMIN = true;
-        NET_RAW = true;
+      containerConfig = {
+        image = "tailscale/tailscale:latest";
+        networks = [ "lan_bridge" ];
+        addCapabilities = [
+          "NET_ADMIN"
+          "NET_RAW"
+        ];
+        devices = [ "/dev/net/tun:/dev/net/tun" ];
+        environmentFiles = [ config.sops.secrets."rustdesk-env".path ];
+        environments = {
+          TS_STATE_DIR = "/var/lib/tailscale";
+          TS_USERSPACE = "false";
+          TS_HOSTNAME = "rustdesk";
+        };
+        publishPorts = [
+          "21115:21115/tcp"
+          "21116:21116/tcp"
+          "21116:21116/udp"
+          "21117:21117/tcp"
+          "21118:21118/tcp"
+          "21119:21119/tcp"
+        ];
+        volumes = [
+          "${dockerVolumeDir}/tailscale-rustdesk:/var/lib/tailscale"
+        ];
       };
-      devices = [ "/dev/net/tun:/dev/net/tun" ];
-      environmentFiles = [ config.sops.secrets."rustdesk-env".path ];
-      environment = {
-        TS_STATE_DIR = "/var/lib/tailscale";
-        TS_USERSPACE = "false";
-        TS_HOSTNAME = "rustdesk";
+      serviceConfig = {
+        Restart = "always";
+        RestartSec = "10";
       };
-      ports = [
-        "21115:21115/tcp"
-        "21116:21116/tcp"
-        "21116:21116/udp"
-        "21117:21117/tcp"
-        "21118:21118/tcp"
-        "21119:21119/tcp"
-      ];
-      volumes = [
-        "${dockerVolumeDir}/tailscale-rustdesk:/var/lib/tailscale"
-      ];
     };
 
+    # hbbs and hbbr share the tailscale-rustdesk network namespace.
+    # Quadlet does not have a first-class option for --network=container:,
+    # so it is passed through podmanArgs. No publishPorts here — traffic
+    # flows through the tailscale-rustdesk container's network stack.
     hbbs = {
-      image = "rustdesk/rustdesk-server:latest";
       autoStart = true;
-      cmd = [ "hbbs" ];
-      dependsOn = [ "tailscale-rustdesk" ];
-      extraOptions = [ "--network=container:tailscale-rustdesk" ];
-      environment.TZ = "America/Toronto";
-      volumes = [
-        "${dockerVolumeDir}/rustdesk:/root"
-      ];
+      containerConfig = {
+        image = "rustdesk/rustdesk-server:latest";
+        exec = "hbbs";
+        podmanArgs = [ "--network=container:systemd-tailscale-rustdesk" ];
+        environments = {
+          TZ = "America/Toronto";
+        };
+        volumes = [
+          "${dockerVolumeDir}/rustdesk:/root"
+        ];
+      };
+      unitConfig = {
+        After = [ "tailscale-rustdesk.service" ];
+        Requires = [ "tailscale-rustdesk.service" ];
+      };
+      serviceConfig = {
+        Restart = "always";
+        RestartSec = "10";
+      };
     };
 
     hbbr = {
-      image = "rustdesk/rustdesk-server:latest";
       autoStart = true;
-      cmd = [ "hbbr" ];
-      dependsOn = [
-        "tailscale-rustdesk"
-        "hbbs"
-      ];
-      extraOptions = [ "--network=container:tailscale-rustdesk" ];
-      environment.TZ = "America/Toronto";
-      volumes = [
-        "${dockerVolumeDir}/rustdesk:/root"
-      ];
-    };
-  };
-
-  systemd.services = {
-    "podman-tailscale-rustdesk" = {
-      after = [ "podman-networks.service" ];
-      requires = [ "podman-networks.service" ];
-    };
-    "podman-hbbs" = {
-      after = [ "podman-networks.service" ];
-      requires = [ "podman-networks.service" ];
-    };
-    "podman-hbbr" = {
-      after = [ "podman-networks.service" ];
-      requires = [ "podman-networks.service" ];
+      containerConfig = {
+        image = "rustdesk/rustdesk-server:latest";
+        exec = "hbbr";
+        podmanArgs = [ "--network=container:systemd-tailscale-rustdesk" ];
+        environments = {
+          TZ = "America/Toronto";
+        };
+        volumes = [
+          "${dockerVolumeDir}/rustdesk:/root"
+        ];
+      };
+      unitConfig = {
+        After = [
+          "tailscale-rustdesk.service"
+          "hbbs.service"
+        ];
+        Requires = [
+          "tailscale-rustdesk.service"
+          "hbbs.service"
+        ];
+      };
+      serviceConfig = {
+        Restart = "always";
+        RestartSec = "10";
+      };
     };
   };
 }
