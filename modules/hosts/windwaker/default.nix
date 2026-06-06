@@ -108,7 +108,7 @@
     openFirewall = false; # exposed only on the LAN interface below
     plugins = [ pkgs.cockpit-podman ];
     settings = {
-      WebService.Origins = "https://podman.windwaker.ca wss://podman.windwaker.ca";
+      WebService.Origins = lib.mkForce "https://podman.windwaker.ca wss://podman.windwaker.ca https://localhost:9090";
     };
   };
 
