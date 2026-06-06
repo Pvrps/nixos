@@ -13,7 +13,7 @@ in
       image = "indifferentbroccoli/runescape-dragonwilds-server-docker:latest";
       autoStart = true;
       networks = [ "lan_bridge" ];
-      ports = [ "7777:7777/udp" ];
+      ports = [ "55180:55180/udp" ];
       environmentFiles = [ config.sops.secrets."dragonwilds-env".path ];
       environment = {
         PUID = "1000";
@@ -21,7 +21,7 @@ in
         OWNER_ID = "0002ae80ae5c49c684eb9fdd41395eb7";
         SERVER_NAME = "DragonWildsServer";
         DEFAULT_WORLD_NAME = "MyWorld";
-        DEFAULT_PORT = "7777";
+        DEFAULT_PORT = "55180";
         MAX_PLAYERS = "6";
         UPDATE_ON_START = "true";
       };
