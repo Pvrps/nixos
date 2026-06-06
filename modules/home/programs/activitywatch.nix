@@ -17,6 +17,7 @@ in {
     xdg.configFile."activitywatch/aw-server-rust/config.toml" = lib.mkIf cfg.openNetwork {
       text = ''
         address = "0.0.0.0"
+        cors_regex = [".*"]
       '';
     };
 
