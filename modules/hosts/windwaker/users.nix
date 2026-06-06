@@ -24,7 +24,7 @@
       podman-admin = {
         isNormalUser = true;
         uid = 1001;
-        extraGroups = [ "docker" ];
+        extraGroups = [ "docker" "podman" ];
         shell = pkgs.bash;
         hashedPasswordFile = config.sops.secrets."podman-admin-password".path;
       };

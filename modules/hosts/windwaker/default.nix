@@ -110,12 +110,10 @@
     openFirewall = false; # exposed only on the LAN interface below
     plugins = [ pkgs.cockpit-podman ];
     settings = {
-      # Tell Cockpit the public origin so it generates correct CSP and
-      # accepts WebSocket upgrades arriving with that Origin header.
       WebService.Origins = lib.mkForce "https://podman.windwaker.ca wss://podman.windwaker.ca";
-      # Tell Cockpit to trust X-Forwarded-Proto from NPM so it knows the
-      # browser connection is already HTTPS and won't redirect.
       WebService.ProtocolHeader = "X-Forwarded-Proto";
+      # Point cockpit-podman at the system (rootful) socket instead of the user socket
+      Session.Environment = "CONTAINER_HOST=unix:///run/podman/podman.sock";
     };
   };
 
