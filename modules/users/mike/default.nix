@@ -132,6 +132,7 @@
     activitywatch = {
       enable = true;
       withInput = true;
+      openNetwork = true;
     };
     firefox = {
       enable = true;

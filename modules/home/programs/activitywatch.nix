@@ -10,9 +10,17 @@ in {
     enable = lib.mkEnableOption "ActivityWatch time tracking";
     withInput = lib.mkEnableOption "Input watcher (keypress/mouse tracking)";
     useAwatcher = lib.mkEnableOption "Use awatcher instead of default watchers (works on X11 and Wayland)";
+    openNetwork = lib.mkEnableOption "Bind aw-server to all interfaces for remote access (restrict with firewall as needed)";
   };
 
   config = lib.mkIf cfg.enable {
+    xdg.configFile."activitywatch/aw-server/aw-server.toml" = lib.mkIf cfg.openNetwork {
+      text = ''
+        [server]
+        host = "0.0.0.0"
+      '';
+    };
+
     home.packages =
       [pkgs.activitywatch]
       ++ lib.optionals cfg.useAwatcher [pkgs.awatcher];

@@ -20,7 +20,7 @@
   };
 
   networking.hostName = "mickey";
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [22];
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [22 5600];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
