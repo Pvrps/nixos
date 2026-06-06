@@ -11,7 +11,6 @@
 
     ../../../modules/nixos/core.nix
     ../../../modules/nixos/tailscale.nix
-    ../../../modules/nixos/services/rustdesk.nix
     ../../../modules/nixos/secureboot.nix
   ];
 
@@ -68,8 +67,6 @@
       };
     };
   };
-
-  services.rustdesk-relay.enable = true;
 
   sops.defaultSopsFile = ./_secrets.yaml;
 }
