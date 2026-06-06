@@ -76,8 +76,7 @@ in
     playit-agent = {
       image = "ghcr.io/playit-cloud/playit-agent:0.17";
       autoStart = true;
-      networks = [ "dmz_bridge" ];
-      extraOptions = [ "--network-alias=playit-agent" ];
+      networks = [ "lan_bridge" ];
       environmentFiles = [ config.sops.secrets."playit-env".path ];
     };
   };
