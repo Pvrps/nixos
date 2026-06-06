@@ -19,10 +19,7 @@ in
         "run"
       ];
       autoStart = true;
-      networks = [
-        "lan_bridge"
-        "dmz_bridge"
-      ];
+      networks = [ "lan_bridge" ];
       environmentFiles = [ config.sops.secrets."network-env".path ];
       environment = {
         TUNNEL_DNS_UPSTREAM = "1.1.1.2";
