@@ -113,8 +113,6 @@
       WebService.Origins = lib.mkForce "https://podman.windwaker.ca wss://podman.windwaker.ca";
       WebService.ProtocolHeader = "X-Forwarded-Proto";
       Session.Environment = "CONTAINER_HOST=unix:///run/podman/podman.sock";
-      # Hide system/build users (nixbld UIDs 30001+) from the accounts page
-      Users.MinUid = 1000;
     };
   };
 
@@ -140,9 +138,6 @@
       ];
     }
   ];
-
-  # Windwaker pulls from cache rather than building locally — 4 build users is plenty
-  nix.nrBuildUsers = 4;
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
