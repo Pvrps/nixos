@@ -59,6 +59,11 @@ in {
       after = ["display-manager.service"];
       wants = ["display-manager.service"];
       wantedBy = ["multi-user.target"];
+      environment = {
+        HOME = "/root";
+        XDG_DATA_HOME = "/root/.local/share";
+        XDG_CONFIG_HOME = "/root/.config";
+      };
       serviceConfig = {
         Type = "simple";
         Restart = "always";
