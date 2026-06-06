@@ -141,6 +141,9 @@
     }
   ];
 
+  # Windwaker pulls from cache rather than building locally — 4 build users is plenty
+  nix.nrBuildUsers = 4;
+
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   sops.defaultSopsFile = ./_secrets.yaml;
