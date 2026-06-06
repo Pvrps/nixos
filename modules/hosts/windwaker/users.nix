@@ -21,6 +21,16 @@
         ];
       };
 
+      podman-admin = {
+        isNormalUser = true;
+        uid = 1001;
+        # docker group allows podman socket access (cockpit-podman uses it)
+        extraGroups = [ "docker" ];
+        # No shell — this account is only for Cockpit web UI login
+        shell = pkgs.shadow;
+        hashedPasswordFile = config.sops.secrets."podman-admin-password".path;
+      };
+
       root = {
         hashedPassword = "!"; # password login disabled; SSH key only
         openssh.authorizedKeys.keys = [
@@ -34,6 +44,10 @@
     age.keyFile = "/persist/system/sops/age/keys.txt";
     secrets = {
       "purps-password" = {
+        neededForUsers = true;
+      };
+
+      "podman-admin-password" = {
         neededForUsers = true;
       };
 
