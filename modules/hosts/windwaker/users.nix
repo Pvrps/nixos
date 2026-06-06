@@ -26,8 +26,8 @@
         uid = 1001;
         # docker group allows podman socket access (cockpit-podman uses it)
         extraGroups = [ "docker" ];
-        # No shell — this account is only for Cockpit web UI login
-        shell = pkgs.shadow;
+        # Minimal shell — cockpit-bridge needs a valid shell to spawn a session
+        shell = pkgs.bash;
         hashedPasswordFile = config.sops.secrets."podman-admin-password".path;
       };
 
