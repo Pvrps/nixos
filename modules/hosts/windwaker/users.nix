@@ -24,9 +24,7 @@
       podman-admin = {
         isNormalUser = true;
         uid = 1001;
-        # docker group allows podman socket access (cockpit-podman uses it)
         extraGroups = [ "docker" ];
-        # Minimal shell — cockpit-bridge needs a valid shell to spawn a session
         shell = pkgs.bash;
         hashedPasswordFile = config.sops.secrets."podman-admin-password".path;
       };

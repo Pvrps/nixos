@@ -127,6 +127,21 @@
   # SSH-key-only host — passwords are random and unknown, so wheel must not need one for sudo
   security.sudo.wheelNeedsPassword = false;
 
+  # Allow podman-admin to run cockpit-bridge --privileged as root without a password.
+  # This is the minimum needed for Cockpit to show system services and containers.
+  # The command path is pinned to the exact cockpit store path to prevent privilege escalation.
+  security.sudo.extraRules = [
+    {
+      users = [ "podman-admin" ];
+      commands = [
+        {
+          command = "${pkgs.cockpit}/libexec/cockpit-bridge --privileged";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
+
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   sops.defaultSopsFile = ./_secrets.yaml;
