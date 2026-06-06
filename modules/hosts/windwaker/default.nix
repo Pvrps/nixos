@@ -108,13 +108,11 @@
     openFirewall = false; # exposed only on the LAN interface below
     plugins = [ pkgs.cockpit-podman ];
     settings = {
-      # Origins: allow the reverse-proxy domain (both http for initial load and ws/wss for websockets)
-      WebService.Origins = lib.mkForce "https://podman.windwaker.ca wss://podman.windwaker.ca http://podman.windwaker.ca ws://podman.windwaker.ca https://localhost:9090";
-      # AllowedHosts: tells Cockpit to accept requests with these Host headers,
-      # which also fixes the Content-Security-Policy it generates
+      # Origins: allow the reverse-proxy domain (ws/wss for websockets, https for login)
+      WebService.Origins = lib.mkForce "https://podman.windwaker.ca wss://podman.windwaker.ca https://localhost:9090";
+      # AllowedHosts: accept requests with these Host headers (fixes CSP generation)
+      # and prevents Cockpit from issuing an HTTP→HTTPS redirect loop via NPM
       WebService.AllowedHosts = "podman.windwaker.ca localhost";
-      # ProtocolHeader: tells Cockpit the real protocol when behind a proxy
-      WebService.ProtocolHeader = "X-Forwarded-Proto";
     };
   };
 
