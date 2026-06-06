@@ -52,7 +52,7 @@ in
       containerConfig = {
         image = "rustdesk/rustdesk-server:latest";
         exec = "hbbs";
-        podmanArgs = [ "--network=container:systemd-tailscale-rustdesk" ];
+        podmanArgs = [ "--network=container:tailscale-rustdesk" ];
         environments = {
           TZ = "America/Toronto";
         };
@@ -75,7 +75,7 @@ in
       containerConfig = {
         image = "rustdesk/rustdesk-server:latest";
         exec = "hbbr";
-        podmanArgs = [ "--network=container:systemd-tailscale-rustdesk" ];
+        podmanArgs = [ "--network=container:tailscale-rustdesk" ];
         environments = {
           TZ = "America/Toronto";
         };
