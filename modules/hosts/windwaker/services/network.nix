@@ -15,7 +15,7 @@ in
       # Fixed subnet so the gateway (10.88.0.1) is stable across rebuilds.
       lan_bridge.networkConfig = {
         disableDns = true;
-        subnets = [ "10.88.0.0/24" ];
+        subnets = [ "10.99.0.0/24" ];
       };
 
       # macvlan on eno1.120 so cloudflared-tunnel appears directly on VLAN 120
