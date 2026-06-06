@@ -81,7 +81,8 @@
   networking.firewall = {
     enable = true;
     # Podman manages its own iptables rules for container port exposure
-    trustedInterfaces = [ "podman0" ];
+    # podman1/podman2 are the bridge interfaces for quadlet networks (lan_bridge, immich_internal)
+    trustedInterfaces = [ "podman0" "podman1" "podman2" ];
   };
 
   services.openssh = {
