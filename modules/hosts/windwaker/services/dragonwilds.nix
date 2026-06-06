@@ -13,6 +13,7 @@ in
       image = "indifferentbroccoli/runescape-dragonwilds-server-docker:latest";
       autoStart = true;
       networks = [ "lan_bridge" ];
+      ports = [ "7777:7777/udp" ];
       environmentFiles = [ config.sops.secrets."dragonwilds-env".path ];
       environment = {
         OWNER_ID = "0002ae80ae5c49c684eb9fdd41395eb7";
