@@ -18,6 +18,7 @@
     ./services/suwayomi.nix
     ./services/asf.nix
     ./services/twitchpointminer.nix
+    ./services/dragonwilds.nix
 
     ../../../modules/nixos/core.nix
   ];

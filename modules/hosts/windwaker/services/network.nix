@@ -8,6 +8,7 @@ let
 in
 {
   sops.secrets."network-env".sopsFile = ./_secrets.yaml;
+  sops.secrets."playit-env".sopsFile = ./_secrets.yaml;
   virtualisation.oci-containers.backend = "podman";
 
   virtualisation.oci-containers.containers = {
@@ -71,6 +72,14 @@ in
         "${dockerVolumeDir}/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
       ];
     };
+
+    playit-agent = {
+      image = "ghcr.io/playit-cloud/playit-agent:0.17";
+      autoStart = true;
+      networks = [ "dmz_bridge" ];
+      extraOptions = [ "--network-alias=playit-agent" ];
+      environmentFiles = [ config.sops.secrets."playit-env".path ];
+    };
   };
 
   systemd.services = {
@@ -83,6 +92,10 @@ in
       requires = [ "podman-networks.service" ];
     };
     "podman-pihole" = {
+      after = [ "podman-networks.service" ];
+      requires = [ "podman-networks.service" ];
+    };
+    "podman-playit-agent" = {
       after = [ "podman-networks.service" ];
       requires = [ "podman-networks.service" ];
     };
