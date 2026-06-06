@@ -133,7 +133,7 @@
       users = [ "podman-admin" ];
       commands = [
         {
-          command = "${pkgs.cockpit}/libexec/cockpit-bridge --privileged";
+          command = "${pkgs.cockpit}/bin/cockpit-bridge --privileged";
           options = [ "NOPASSWD" ];
         }
       ];
