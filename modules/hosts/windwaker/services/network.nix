@@ -11,8 +11,12 @@ in
 
   virtualisation.quadlet = {
     networks = {
-      # Standard bridge — containers publish ports to the host IP (10.0.10.16)
-      lan_bridge.networkConfig.disableDns = true;
+      # Standard bridge — containers publish ports to the host IP (10.0.10.16).
+      # Fixed subnet so the gateway (10.88.0.1) is stable across rebuilds.
+      lan_bridge.networkConfig = {
+        disableDns = true;
+        subnets = [ "10.88.0.0/24" ];
+      };
 
       # macvlan on eno1.120 so cloudflared-tunnel appears directly on VLAN 120
       dmz_bridge = {
