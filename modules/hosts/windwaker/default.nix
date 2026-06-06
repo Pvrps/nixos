@@ -112,8 +112,9 @@
     settings = {
       WebService.Origins = lib.mkForce "https://podman.windwaker.ca wss://podman.windwaker.ca";
       WebService.ProtocolHeader = "X-Forwarded-Proto";
-      # Point cockpit-podman at the system (rootful) socket instead of the user socket
       Session.Environment = "CONTAINER_HOST=unix:///run/podman/podman.sock";
+      # Hide system/build users (nixbld UIDs 30001+) from the accounts page
+      Users.MinUid = 1000;
     };
   };
 
