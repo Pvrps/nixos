@@ -14,7 +14,7 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    xdg.configFile."activitywatch/aw-server/aw-server.toml" = lib.mkIf cfg.openNetwork {
+    xdg.configFile."activitywatch/aw-server-rust/aw-server.toml" = lib.mkIf cfg.openNetwork {
       text = ''
         [server]
         host = "0.0.0.0"
