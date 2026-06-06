@@ -102,18 +102,28 @@
 
   # Cockpit web UI with the Podman plugin.
   # Reverse-proxy podman.windwaker.ca → 10.0.10.16:9090 via nginx-proxy-manager.
+  # NPM handles TLS; Cockpit is configured to serve plain HTTP only.
   services.cockpit = {
     enable = true;
     port = 9090;
     openFirewall = false; # exposed only on the LAN interface below
     plugins = [ pkgs.cockpit-podman ];
     settings = {
-      # Origins: allow the reverse-proxy domain (ws/wss for websockets, https for login)
+      # Origins: allow the reverse-proxy domain (wss for websockets, https for login)
       WebService.Origins = lib.mkForce "https://podman.windwaker.ca wss://podman.windwaker.ca https://localhost:9090";
-      # AllowedHosts: accept requests with these Host headers (fixes CSP generation)
-      # and prevents Cockpit from issuing an HTTP→HTTPS redirect loop via NPM
+      # AllowedHosts: accept Host headers from the reverse proxy; fixes CSP generation
       WebService.AllowedHosts = "podman.windwaker.ca localhost";
     };
+  };
+
+  # Pass --no-tls to cockpit-ws so it serves plain HTTP without redirecting.
+  # NPM handles TLS termination externally.
+  # Also pass --for-tls-proxy so Cockpit accepts https:// Origins correctly.
+  systemd.services.cockpit = {
+    serviceConfig.ExecStart = lib.mkForce [
+      ""
+      "${pkgs.cockpit}/libexec/cockpit-ws --no-tls --port=9090"
+    ];
   };
 
   networking.firewall.interfaces."eno1".allowedTCPPorts = [
