@@ -37,6 +37,7 @@
           ".local/share/kwalletd"
           ".local/share/kactivitymanagerd"
           ".local/share/kscreen"
+          ".local/share/activitywatch"
         ];
       };
 

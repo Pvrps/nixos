@@ -19,6 +19,11 @@ in {
         default = {};
         description = "Firefox browser extension settings";
       };
+      extensionPolicies = lib.mkOption {
+        type = lib.types.attrsOf lib.types.anything;
+        default = {};
+        description = "Firefox 3rdparty extension policies (e.g. pre-accepting consent dialogs)";
+      };
       homepage = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
@@ -101,6 +106,8 @@ in {
               installation_mode = "force_installed";
             };
           };
+      } // lib.optionalAttrs (cfg.extensionPolicies != {}) {
+        "3rdparty".Extensions = cfg.extensionPolicies;
       };
     };
   };
