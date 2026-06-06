@@ -12,6 +12,7 @@
     ../../../modules/nixos/core.nix
     ../../../modules/nixos/tailscale.nix
     ../../../modules/nixos/secureboot.nix
+    ../../../modules/nixos/services/rustdesk.nix
   ];
 
   programs.nh = {
@@ -66,6 +67,12 @@
         PermitRootLogin = "no";
       };
     };
+  };
+
+  custom.services.rustdesk = {
+    enable = true;
+    server = config.sops.secrets."rustdesk-server".path;
+    keyFile = config.sops.secrets."rustdesk-key".path;
   };
 
   sops.defaultSopsFile = ./_secrets.yaml;

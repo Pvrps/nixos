@@ -47,8 +47,8 @@
         mode = "0600";
       };
       "rustdesk-key" = {
-        owner = "mike";
-        group = "users";
+        owner = "root";
+        group = "root";
         mode = "0600";
       };
     };
