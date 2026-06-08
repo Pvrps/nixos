@@ -98,11 +98,11 @@ in {
       }
     ];
 
-    custom.programs.niri.windowRules = lib.mkIf config.custom.programs.niri.enable [
-      ''        window-rule {
-                    match app-id="file-chooser"
-                    open-floating true
-                }''
-    ];
+    custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
+      window-rule {
+          match app-id="file-chooser"
+          open-floating true
+      }
+    '';
   };
 }

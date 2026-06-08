@@ -46,23 +46,22 @@ in {
       JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2
     '';
 
-    custom.programs.niri.windowRules = lib.mkIf config.custom.programs.niri.enable [
-      # Keep the small launcher window floating so it doesn't hijack a tile slot.
-      ''        window-rule {
-                  match app-id=r#"^com\.adamcake\.Bolt$"#
-                  open-floating true
-                  open-maximized false
-              }''
-      # RuneLite game window – maximise on open so it fills the logical workspace.
-      ''        window-rule {
-                  match app-id=r#"^RuneLite$"#
-                  open-maximized true
-              }''
-      # Jagex native client (launched by Bolt).
-      ''        window-rule {
-                  match app-id=r#"^jagex_launcher$"#
-                  open-maximized true
-              }''
-    ];
+    custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
+      window-rule {
+          match app-id=r#"^com\.adamcake\.Bolt$"#
+          open-floating true
+          open-maximized false
+      }
+
+      window-rule {
+          match app-id=r#"^RuneLite$"#
+          open-maximized true
+      }
+
+      window-rule {
+          match app-id=r#"^jagex_launcher$"#
+          open-maximized true
+      }
+    '';
   };
 }

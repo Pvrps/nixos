@@ -5,94 +5,104 @@
   ...
 }: let
   cfg = config.custom.programs.niri;
-  colors = config.lib.stylix.colors.withHashtag;
-  niriCfg = config.custom.programs.niri;
 
-  # Each list is joined so all entries render at the correct column in the KDL.
-  # Startup commands are top-level nodes separated by a single newline.
-  startupLines = lib.concatStringsSep "\n" (map (cmd: "spawn-at-startup ${cmd}") niriCfg.startupCommands);
-  # Generate the Mod+Return terminal keybind only when a default terminal is configured.
-  terminalKeybind =
-    lib.optionalString (niriCfg.defaultTerminal != null)
-    ''Mod+Return { spawn "${niriCfg.defaultTerminal}"; }'';
-  # Keybinds live inside binds {}; after template stripping they sit at col 4,
-  # so subsequent entries use "\n    " to maintain the 4-space indentation.
-  # terminalKeybind is prepended (with separator) only when non-empty.
-  allKeybinds =
-    lib.optional (terminalKeybind != "") terminalKeybind
-    ++ niriCfg.keybinds;
-  keybindLines = lib.concatStringsSep "\n    " allKeybinds;
-  # Blocks are top-level KDL nodes separated by blank lines.
-  windowRuleBlocks = lib.concatStringsSep "\n\n" niriCfg.windowRules;
-  layerRuleBlocks = lib.concatStringsSep "\n\n" niriCfg.layerRules;
-  outputBlocks = lib.concatStringsSep "\n\n" niriCfg.outputs;
+  startupLines = lib.concatStringsSep "\n" (map (cmd: "spawn-at-startup ${cmd}") cfg.startupCommands);
 
-  # Include the DISPLAY environment block only when xwaylandDisplay is set.
-  # xwayland-satellite is automatically added to startupCommands when xwaylandDisplay is set.
-  # The trailing newline provides spacing before the next top-level block.
-  envBlock = lib.optionalString (niriCfg.xwaylandDisplay != null) ''
+  terminalKeybind = lib.optionalString (cfg.defaultTerminal != null)
+    ''    Mod+Return { spawn "${cfg.defaultTerminal}"; }'';
+
+  allBinds = lib.concatStringsSep "\n    "
+    (lib.optional (terminalKeybind != "") terminalKeybind ++ cfg.keybinds)
+    + lib.optionalString (cfg.bindsConfig != "") "\n    ${cfg.bindsConfig}";
+
+  envBlock = lib.optionalString (cfg.xwaylandDisplay != null) ''
     environment {
-        DISPLAY "${niriCfg.xwaylandDisplay}"
+        DISPLAY "${cfg.xwaylandDisplay}"
     }
 
   '';
 in {
-  options.custom = {
-    programs.niri = {
-      enable = lib.mkEnableOption "Niri Wayland compositor";
-      startupCommands = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "List of full shell commands to run on Niri startup";
-      };
-      xwaylandDisplay = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = "Xwayland display socket (e.g. \":11\"). When set, adds DISPLAY to niri's environment block and automatically starts xwayland-satellite.";
-      };
-      outputs = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "List of niri output {} KDL blocks (one string per monitor)";
-      };
-      defaultTerminal = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Command for the default terminal emulator.
-          When set, niri binds Mod+Return to spawn this command.
-          Only one terminal module should set this at a time (use lib.mkDefault
-          to get a conflict error if two modules both claim the default terminal).
-        '';
-      };
-      keybinds = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "Extra keybind lines to include in the niri binds block";
-      };
-      windowRules = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "Extra window-rule blocks to include in the niri config";
-      };
-      layerRules = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "Extra layer-rule blocks to include in the niri config";
-      };
-      cornerRadius = lib.mkOption {
-        type = lib.types.ints.unsigned;
-        default = 8;
-        description = "Corner radius applied to all windows via a global geometry-corner-radius window rule (0 = square corners).";
-      };
+  options.custom.programs.niri = {
+    enable = lib.mkEnableOption "Niri Wayland compositor";
+
+    xwaylandDisplay = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Xwayland display socket (e.g. \":11\"). Automatically starts xwayland-satellite when set.";
+    };
+
+    defaultTerminal = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Default terminal command. Auto-binds Mod+Return. Use lib.mkDefault to catch conflicts.";
+    };
+
+    startupCommands = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = "Commands to spawn at startup.";
+    };
+
+    keybinds = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = "Keybind lines appended into the auto-generated binds block alongside Mod+Return.";
+    };
+
+    inputConfig = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Raw KDL input {} block.";
+    };
+
+    outputConfig = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Raw KDL output {} blocks.";
+    };
+
+    layoutConfig = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Raw KDL layout {} block.";
+    };
+
+    windowRulesConfig = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Raw KDL window-rule {} blocks.";
+    };
+
+    layerRulesConfig = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Raw KDL layer-rule {} blocks.";
+    };
+
+    bindsConfig = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Keybind lines placed inside the binds {} block. Do not wrap in binds {}. Combined with Mod+Return and module keybinds.";
+    };
+
+    gesturesConfig = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Raw KDL gestures {} block.";
+    };
+
+    extraConfig = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Raw KDL appended after all sections. For screenshot-path and anything else.";
     };
   };
 
   config = lib.mkIf cfg.enable {
     custom.system.wayland.enable = true;
 
-    custom.programs.niri.startupCommands = lib.mkIf (niriCfg.xwaylandDisplay != null) [
-      ''"${pkgs.xwayland-satellite}/bin/xwayland-satellite" "${niriCfg.xwaylandDisplay}"''
+    custom.programs.niri.startupCommands = lib.mkIf (cfg.xwaylandDisplay != null) [
+      ''"${pkgs.xwayland-satellite}/bin/xwayland-satellite" "${cfg.xwaylandDisplay}"''
     ];
 
     xdg.configFile."niri/config.kdl".text = ''
@@ -102,91 +112,26 @@ in {
 
       ${startupLines}
 
-      window-rule {
-          open-maximized true
-      }
-
-      ${windowRuleBlocks}
-
-      ${layerRuleBlocks}
-
-      input {
-          keyboard {
-              xkb {
-
-              }
-          }
-          mouse {
-              accel-profile "flat"
-              accel-speed 0.15
-          }
-          touchpad {
-              tap
-              natural-scroll
-          }
-      }
-
-      ${outputBlocks}
-
-      layout {
-          gaps 6
-          default-column-width { proportion 0.5; }
-          focus-ring {
-              off
-          }
-          border {
-              off
-          }
-
-          struts {
-              left -6
-              right -6
-          }
-      }
-
-
-      window-rule {
-          geometry-corner-radius ${toString niriCfg.cornerRadius}
-          clip-to-geometry true
-      }
+      ${cfg.inputConfig}
 
       prefer-no-csd
 
-      screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
+      ${cfg.outputConfig}
+
+      ${cfg.layoutConfig}
+
+      ${cfg.windowRulesConfig}
+
+      ${cfg.layerRulesConfig}
+
+      ${lib.optionalString (allBinds != "") ''
       binds {
-          ${keybindLines}
+          ${allBinds}
+      }''}
 
-          Mod+Q { close-window; }
-          Mod+Shift+Grave { quit; }
-          Mod+Tab { toggle-overview; }
+      ${cfg.gesturesConfig}
 
-          Mod+Left  { focus-column-or-monitor-left; }
-          Mod+Right { focus-column-or-monitor-right; }
-          Mod+Up    { focus-window-or-workspace-up; }
-          Mod+Down  { focus-window-or-workspace-down; }
-          Mod+Z     { toggle-window-floating; }
-          Mod+Ctrl+Left  { focus-monitor-left; }
-          Mod+Ctrl+Right { focus-monitor-right; }
-
-          Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
-          Mod+Shift+Right { move-column-right-or-to-monitor-right; }
-          Mod+Shift+Up    { move-window-up-or-to-workspace-up; }
-          Mod+Shift+Down  { move-window-down-or-to-workspace-down; }
-            Mod+Ctrl+Shift+Left  { set-column-width "-5%"; }
-            Mod+Ctrl+Shift+Right { set-column-width "+5%"; }
-            Mod+Ctrl+Shift+Up    { set-window-height "-5%"; }
-            Mod+Ctrl+Shift+Down  { set-window-height "+5%"; }
-            Mod+Shift+Z { switch-focus-between-floating-and-tiling; }
-            Mod+F { maximize-column; }
-            Mod+Shift+F { fullscreen-window; }
-        }
-
-      gestures {
-          hot-corners {
-              off
-          }
-      }
-
+      ${cfg.extraConfig}
     '';
   };
 }

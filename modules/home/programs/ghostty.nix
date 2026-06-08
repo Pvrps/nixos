@@ -69,19 +69,16 @@ in {
     ];
     custom.programs.termfilepickers.terminal.execArgs = lib.mkDefault ["-e"];
 
-    custom.programs.niri.windowRules = lib.mkIf config.custom.programs.niri.enable [
-      ''
-        window-rule {
+    custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
+      window-rule {
           match app-id="ghostty"
           draw-border-with-background false
-        }
-      ''
-      ''
-        window-rule {
+      }
+
+      window-rule {
           match app-id="file-chooser"
           draw-border-with-background false
-        }
-      ''
-    ];
+      }
+    '';
   };
 }

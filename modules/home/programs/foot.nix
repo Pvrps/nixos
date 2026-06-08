@@ -6,7 +6,14 @@
 }: let
   cfg = config.custom.programs.foot;
 in {
-  options.custom.programs.foot.enable = lib.mkEnableOption "Foot terminal emulator";
+  options.custom.programs.foot = {
+    enable = lib.mkEnableOption "Foot terminal emulator";
+    pad = lib.mkOption {
+      type = lib.types.str;
+      default = "4x4";
+      description = "Internal padding inside the terminal window, in the format WxH (logical pixels).";
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     assertions = [
@@ -24,7 +31,7 @@ in {
         main = {
           font = "${config.stylix.fonts.monospace.name}:size=${toString config.stylix.fonts.sizes.terminal}";
           dpi-aware = "no";
-          pad = "8x8";
+          pad = config.custom.programs.foot.pad;
         };
         "colors-dark" = {
           alpha = config.stylix.opacity.terminal;

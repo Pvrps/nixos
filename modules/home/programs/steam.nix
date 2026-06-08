@@ -44,20 +44,21 @@ in {
       ''"bash" "-c" "nm-online -q --timeout=30 || true; STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 steam -system-composer -silent > /dev/null 2>&1"''
     ];
 
-    custom.programs.niri.windowRules = [
-      ''        window-rule {
-                  match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
-                  open-floating true
-                  open-maximized false
-                  open-focused false
-                  default-floating-position x=10 y=10 relative-to="bottom-right"
-                  focus-ring { width 0; }
-                  block-out-from "screencast"
-              }''
-      ''        window-rule {
-                  match app-id=r#"^steam$"# title=r#"^Friends List$"#
-                  open-floating true
-              }''
-    ];
+    custom.programs.niri.windowRulesConfig = ''
+      window-rule {
+          match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
+          open-floating true
+          open-maximized false
+          open-focused false
+          default-floating-position x=10 y=10 relative-to="bottom-right"
+          focus-ring { width 0; }
+          block-out-from "screencast"
+      }
+
+      window-rule {
+          match app-id=r#"^steam$"# title=r#"^Friends List$"#
+          open-floating true
+      }
+    '';
   };
 }

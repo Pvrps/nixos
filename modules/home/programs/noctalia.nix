@@ -129,12 +129,12 @@ in {
         ''Mod+Shift+L { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }''
       ];
 
-      layerRules = [
-        ''          layer-rule {
-                      match namespace=r#"^noctalia-notifications"#
-                      block-out-from "screen-capture"
-                  }''
-      ];
+      layerRulesConfig = ''
+        layer-rule {
+            match namespace=r#"^noctalia-notifications"#
+            block-out-from "screen-capture"
+        }
+      '';
     };
   };
 }

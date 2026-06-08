@@ -76,13 +76,13 @@ in {
       ''"bash" "-c" "nm-online -q --timeout=30 || true; vesktop --start-minimized > /dev/null 2>&1"''
     ];
 
-    custom.programs.niri.windowRules = lib.mkIf config.custom.programs.niri.enable [
-      ''        window-rule {
-                  match app-id="vesktop" title="Discord Updater"
-                  match app-id="vesktop" title="Checking for updates..."
-                  open-floating true
-                  open-maximized false
-              }''
-    ];
+    custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
+      window-rule {
+          match app-id="vesktop" title="Discord Updater"
+          match app-id="vesktop" title="Checking for updates..."
+          open-floating true
+          open-maximized false
+      }
+    '';
   };
 }
