@@ -36,6 +36,8 @@
         if [ -n "$CONNECTED_DISP" ]; then
           ${pkgs.xorg.xrandr}/bin/xrandr --output "$CONNECTED_DISP" --mode 1920x1080 || true
         fi
+        # Grant root access to the display so the RustDesk system service can attach
+        ${pkgs.xorg.xhost}/bin/xhost +SI:localuser:root
       '';
     };
 

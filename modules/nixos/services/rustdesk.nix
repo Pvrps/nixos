@@ -22,7 +22,7 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [pkgs.rustdesk-flutter pkgs.xorg.xauth];
+    environment.systemPackages = [pkgs.rustdesk-flutter];
 
     # Write RustDesk2.toml for root on first boot (file absent = never written).
     # rustdesk owns the file from that point forward; we don't overwrite.
@@ -68,17 +68,9 @@ in {
         Type = "simple";
         Restart = "always";
         RestartSec = "5s";
-        # Merge SDDM's Xauthority cookie into root's authority so the daemon
-        # can attach to :0 before any user logs in.
         ExecStart = let
           script = pkgs.writeShellScript "rustdesk-system" ''
             export DISPLAY=:0
-            for f in /run/sddm/xauth_* /var/run/sddm/xauth_*; do
-              [ -f "$f" ] || continue
-              ${pkgs.xorg.xauth}/bin/xauth -f "$f" extract - "$DISPLAY" \
-                | ${pkgs.xorg.xauth}/bin/xauth merge - 2>/dev/null || true
-              break
-            done
             exec ${pkgs.rustdesk-flutter}/bin/rustdesk --server
           '';
         in "${script}";
