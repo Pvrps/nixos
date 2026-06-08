@@ -28,12 +28,27 @@
     # Point every LSP at the system-installed binary so Zed never
     # tries to download its own copy.
     lsp = {
+      # Keep the Nix extension's "nil" entry alive so it doesn't error.
       nil = (sysBin pkgs.nil "nil") // {
         initialization_options = {
           nix = {
             flake = {
-              # Suppress the "fetch missing flake inputs?" prompt
-              autoArchive = false;
+              autoArchive = true;
+            };
+          };
+        };
+      };
+      nixd = (sysBin pkgs.nixd "nixd") // {
+        initialization_options = {
+          nixd = {
+            nixpkgs = {
+              expr = "import <nixpkgs> { }";
+            };
+            formatting = {
+              command = [ "alejandra" ];
+            };
+            flake = {
+              autoArchive = true;
             };
           };
         };

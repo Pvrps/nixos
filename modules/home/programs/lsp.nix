@@ -14,6 +14,7 @@ in {
     home.packages = with pkgs; [
       # --- Language Servers (LSP) ---
       nil # nix
+      nixd # nix
       basedpyright # python
       typescript-language-server # javascript, typescript, jsx, tsx
       vscode-langservers-extracted # html, css, scss, json, jsonc, json5
@@ -33,7 +34,7 @@ in {
       sqls # sql
       jq-lsp # jq
 
-      vtsls # typescript (zed-preferred ts server)
+      vtsls # typescript
       tailwindcss-language-server # tailwindcss
 
       # --- Formatters & Runtimes ---

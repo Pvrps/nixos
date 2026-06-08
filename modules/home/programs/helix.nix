@@ -39,7 +39,7 @@ in {
 
       languages = {
         language-server = {
-          nil = {command = "${pkgs.nil}/bin/nil";};
+          nixd = {command = "${pkgs.nixd}/bin/nixd";};
           basedpyright = {
             command = "${pkgs.basedpyright}/bin/basedpyright-langserver";
             args = ["--stdio"];
@@ -56,6 +56,7 @@ in {
           {
             name = "nix";
             auto-format = true;
+            language-servers = ["nixd"];
             formatter = {command = "${pkgs.alejandra}/bin/alejandra";};
           }
           {
