@@ -10,6 +10,7 @@
       "/var/lib/systemd/coredump"
       # Podman state and layer cache (grows over time; lives on sda btrfs)
       "/var/lib/containers"
+      "/var/lib/tailscale"
     ];
 
     files = [

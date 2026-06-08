@@ -21,6 +21,7 @@
     ./services/beszel-hub.nix
 
     ../../../modules/nixos/core.nix
+    ../../../modules/nixos/tailscale.nix
     ../../../modules/nixos/beszel-agent.nix
   ];
 
