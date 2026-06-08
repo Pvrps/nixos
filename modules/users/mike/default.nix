@@ -141,6 +141,7 @@
         id = 0;
         name = "mike";
         isDefault = true;
+        path = "mike";
       };
       extensionSettings = {
         "uBlock0@raymondhill.net" = {
