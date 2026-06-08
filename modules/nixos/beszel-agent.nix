@@ -76,6 +76,7 @@ in {
         PrivateDevices = lib.mkForce false;
         PrivateUsers = lib.mkForce false;
         ProtectKernelModules = lib.mkForce false;
+        SystemCallFilter = lib.mkForce [];
       })
     ];
   };
