@@ -11,8 +11,16 @@ in {
 
     key = lib.mkOption {
       type = lib.types.str;
-      description = "Hub SSH public key (shown in the Add System dialog). Not secret.";
+      default = "";
+      description = "Hub SSH public key for hub→agent SSH connections. Not secret.";
       example = "ssh-ed25519 AAAA...";
+    };
+
+    tokenFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Path to a file containing the WebSocket registration token. Used for agent→hub connections via HUB_URL.";
+      example = "/run/secrets/beszel-agent-token";
     };
 
     hubUrl = lib.mkOption {
@@ -45,6 +53,7 @@ in {
       extraPath = cfg.gpuPackages;
       environment =
         lib.optionalAttrs (cfg.key != "") { KEY = cfg.key; }
+        // lib.optionalAttrs (cfg.tokenFile != null) { TOKEN_FILE = cfg.tokenFile; }
         // lib.optionalAttrs (cfg.hubUrl != "") { HUB_URL = cfg.hubUrl; }
         // lib.optionalAttrs (cfg.extraFilesystems != []) {
           EXTRA_FILESYSTEMS = lib.concatStringsSep " " cfg.extraFilesystems;
