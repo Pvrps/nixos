@@ -140,6 +140,33 @@
       "tailwindcss-language-server" = sysBin pkgs.tailwindcss-language-server "tailwindcss-language-server";
       "tailwindcss-intellisense-css" = sysBin pkgs.tailwindcss-language-server "tailwindcss-language-server";
       "just-lsp" = sysBin pkgs.just-lsp "just-lsp";
+      ols = sysBin pkgs.ols "ols";
+      jdtls = {
+        binary = {
+          path = "${pkgs.jdt-language-server}/bin/jdtls";
+          ignore_system_version = true;
+          arguments = ["--jvm-arg=-javaagent:${pkgs.lombok}/share/java/lombok.jar"];
+        };
+        settings = {
+          java = {
+            configuration = {
+              updateBuildConfiguration = "automatic";
+              runtimes = [
+                { name = "JavaSE-1.8";  path = "${pkgs.zulu8}"; }
+                { name = "JavaSE-11"; path = "${pkgs.zulu11}"; }
+                { name = "JavaSE-17"; path = "${pkgs.zulu17}"; }
+                { name = "JavaSE-21"; path = "${pkgs.zulu21}"; default = true; }
+              ];
+            };
+            eclipse = {
+              advancedGradleModelSupported = true;
+            };
+            import = {
+              gradle = { };
+            };
+          };
+        };
+      };
       "package-version-server" = sysBin pkgs.package-version-server "package-version-server";
       "vscode-css-language-server" =
         (sysBin pkgs.vscode-langservers-extracted "vscode-css-language-server")

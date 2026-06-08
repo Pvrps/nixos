@@ -37,31 +37,13 @@ in {
           basedpyright = {
             command = "${pkgs.basedpyright}/bin/basedpyright-langserver";
             args = ["--stdio"];
-            config = {
-              python = {
-                pythonPath = ".venv/bin/python";
-              };
-              basedpyright = {
-                analysis = {
-                  typeCheckingMode = "standard";
-                  diagnosticSeverityOverrides = {
-                    reportMissingImports = "warning";
-                    reportMissingModuleSource = "warning";
-                    reportMissingTypeStubs = "warning";
-                    reportOptionalMemberAccess = "warning";
-                    reportOptionalSubscript = "warning";
-                    reportAttributeAccessIssue = "warning";
-                    reportGeneralTypeIssues = "warning";
-                    reportArgumentType = "warning";
-                    reportUninitializedInstanceVariable = "warning";
-                    reportCallIssue = "warning";
-                  };
-                };
-              };
-            };
+          };
+          ols = {command = "${pkgs.ols}/bin/ols";};
+          jdtls = {
+            command = "${pkgs.jdt-language-server}/bin/jdtls";
+            args = ["--jvm-arg=-javaagent:${pkgs.lombok}/share/java/lombok.jar"];
           };
         };
-
         language = [
           {
             name = "nix";
@@ -179,6 +161,17 @@ in {
               command = "${pkgs.just}/bin/just";
               args = ["--fmt" "--unstable"];
             };
+          }
+          {
+            name = "odin";
+            auto-format = true;
+            language-servers = ["ols"];
+            formatter = {command = "${pkgs.ols}/bin/odinfmt";};
+          }
+          {
+            name = "java";
+            auto-format = true;
+            language-servers = ["jdtls"];
           }
         ];
       };
