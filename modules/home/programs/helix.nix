@@ -39,6 +39,7 @@ in {
 
       languages = {
         language-server = {
+          just-lsp = {command = "${pkgs.just-lsp}/bin/just-lsp";};
           nixd = {command = "${pkgs.nixd}/bin/nixd";};
           basedpyright = {
             command = "${pkgs.basedpyright}/bin/basedpyright-langserver";
@@ -176,6 +177,15 @@ in {
             name = "fish";
             auto-format = true;
             formatter = {command = "${pkgs.fish}/bin/fish_indent";};
+          }
+          {
+            name = "just";
+            auto-format = true;
+            language-servers = ["just-lsp"];
+            formatter = {
+              command = "${pkgs.just}/bin/just";
+              args = ["--fmt" "--unstable"];
+            };
           }
         ];
       };

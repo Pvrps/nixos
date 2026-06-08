@@ -36,6 +36,7 @@ in {
 
       vtsls # typescript
       tailwindcss-language-server # tailwindcss
+      just-lsp # just
 
       # --- Formatters & Runtimes ---
       alejandra # nix

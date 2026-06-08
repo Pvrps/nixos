@@ -134,6 +134,7 @@
         };
       "tailwindcss-language-server" = sysBin pkgs.tailwindcss-language-server "tailwindcss-language-server";
       "tailwindcss-intellisense-css" = sysBin pkgs.tailwindcss-language-server "tailwindcss-language-server";
+      "just-lsp" = sysBin pkgs.just-lsp "just-lsp";
       "package-version-server" = sysBin pkgs.package-version-server "package-version-server";
       eslint = {
         settings = {
