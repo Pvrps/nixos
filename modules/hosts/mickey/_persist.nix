@@ -33,7 +33,7 @@
           "Documents"
           "Desktop"
           ".config"
-          ".config/mozilla/firefox"
+          ".mozilla/firefox"
           ".local/share/kwalletd"
           ".local/share/kactivitymanagerd"
           ".local/share/kscreen"
