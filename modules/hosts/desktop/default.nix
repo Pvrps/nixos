@@ -53,7 +53,6 @@
   custom.services.beszel-agent = {
     enable = true;
     key = "";
-    tokenFile = config.sops.secrets."beszel-agent-token".path;
     hubUrl = "https://beszel.windwaker.ca";
     gpuPackages = [pkgs.nvidia-smi];
   };

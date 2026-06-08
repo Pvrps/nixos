@@ -35,12 +35,6 @@ in {
       description = "Packages added to the agent PATH for GPU monitoring (e.g. intel-gpu-tools, nvidia-smi).";
     };
 
-    tokenFile = lib.mkOption {
-      type = lib.types.str;
-      description = "Path to a file containing TOKEN=<token>. Use a sops-managed secret.";
-      example = "/run/secrets/beszel-agent-token";
-    };
-
     capPerfmon = lib.mkEnableOption "Grant CAP_PERFMON to the agent service (required for intel_gpu_top)";
   };
 
@@ -48,7 +42,6 @@ in {
     services.beszel.agent = {
       enable = true;
       openFirewall = true;
-      environmentFile = cfg.tokenFile;
       extraPath = cfg.gpuPackages;
       environment =
         lib.optionalAttrs (cfg.key != "") { KEY = cfg.key; }

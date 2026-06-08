@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   pkgs,
   ...
@@ -148,7 +147,6 @@
   custom.services.beszel-agent = {
     enable = true;
     key = "";
-    tokenFile = config.sops.secrets."beszel-agent-token".path;
     extraFilesystems = ["sda" "sdb"];
     gpuPackages = [pkgs.intel-gpu-tools];
     capPerfmon = true;
