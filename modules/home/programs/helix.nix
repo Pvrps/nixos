@@ -44,9 +44,25 @@ in {
             command = "${pkgs.basedpyright}/bin/basedpyright-langserver";
             args = ["--stdio"];
             config = {
-              basedpyright.analysis = {
-                typeCheckingMode = "standard";
-                diagnosticMode = "workspace";
+              python = {
+                pythonPath = ".venv/bin/python";
+              };
+              basedpyright = {
+                analysis = {
+                  typeCheckingMode = "standard";
+                  diagnosticSeverityOverrides = {
+                    reportMissingImports = "warning";
+                    reportMissingModuleSource = "warning";
+                    reportMissingTypeStubs = "warning";
+                    reportOptionalMemberAccess = "warning";
+                    reportOptionalSubscript = "warning";
+                    reportAttributeAccessIssue = "warning";
+                    reportGeneralTypeIssues = "warning";
+                    reportArgumentType = "warning";
+                    reportUninitializedInstanceVariable = "warning";
+                    reportCallIssue = "warning";
+                  };
+                };
               };
             };
           };

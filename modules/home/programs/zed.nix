@@ -29,38 +29,63 @@
     # tries to download its own copy.
     lsp = {
       # Keep the Nix extension's "nil" entry alive so it doesn't error.
-      nil = (sysBin pkgs.nil "nil") // {
-        initialization_options = {
-          nix = {
-            flake = {
-              autoArchive = true;
+      nil =
+        (sysBin pkgs.nil "nil")
+        // {
+          initialization_options = {
+            nix = {
+              flake = {
+                autoArchive = true;
+              };
             };
           };
         };
-      };
-      nixd = (sysBin pkgs.nixd "nixd") // {
-        initialization_options = {
-          nixd = {
-            nixpkgs = {
-              expr = "import <nixpkgs> { }";
-            };
-            formatting = {
-              command = [ "alejandra" ];
-            };
-            flake = {
-              autoArchive = true;
+      nixd =
+        (sysBin pkgs.nixd "nixd")
+        // {
+          initialization_options = {
+            nixd = {
+              nixpkgs = {
+                expr = "import <nixpkgs> { }";
+              };
+              formatting = {
+                command = ["alejandra"];
+              };
+              flake = {
+                autoArchive = true;
+              };
             };
           };
         };
-      };
-      basedpyright = (sysBin pkgs.basedpyright "basedpyright-langserver") // {
-        settings = {
-          basedpyright.analysis = {
-            typeCheckingMode = "standard";
-            diagnosticMode = "workspace";
+      basedpyright =
+        (sysBin pkgs.basedpyright "basedpyright-langserver")
+        // {
+          binary =
+            ((sysBin pkgs.basedpyright "basedpyright-langserver").binary)
+            // {
+              arguments = ["--stdio"];
+            };
+          settings = {
+            python = {
+              pythonPath = ".venv/bin/python";
+            };
+            "basedpyright.analysis" = {
+              typeCheckingMode = "standard";
+              diagnosticSeverityOverrides = {
+                reportMissingImports = "warning";
+                reportMissingModuleSource = "warning";
+                reportMissingTypeStubs = "warning";
+                reportOptionalMemberAccess = "warning";
+                reportOptionalSubscript = "warning";
+                reportAttributeAccessIssue = "warning";
+                reportGeneralTypeIssues = "warning";
+                reportArgumentType = "warning";
+                reportUninitializedInstanceVariable = "warning";
+                reportCallIssue = "warning";
+              };
+            };
           };
         };
-      };
       "typescript-language-server" = sysBin pkgs.typescript-language-server "typescript-language-server";
       "svelte-language-server" = sysBin pkgs.svelte-language-server "svelteserver";
       "bash-language-server" = sysBin pkgs.bash-language-server "bash-language-server";
