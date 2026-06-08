@@ -11,6 +11,25 @@
     };
 
     programs = {
+      lsp.enable = true;
+
+      zed = {
+        enable = true;
+        extensions = [
+          "nix"
+          "java"
+          "svelte"
+          "xml"
+          "dockerfile"
+          "nginx"
+          "graphql"
+          "sql"
+          "jsonnet"
+          "just"
+          "toml"
+        ];
+      };
+
       opencode = {
         enable = true;
         context7 = {

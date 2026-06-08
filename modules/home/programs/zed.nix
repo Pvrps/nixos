@@ -1,0 +1,117 @@
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}: let
+  cfg = config.custom.programs.zed;
+
+  # Helper to build a binary override pointing at a Nix store path.
+  # This prevents Zed from downloading its own copy of an LSP that is
+  # already provided by custom.programs.lsp (i.e. on $PATH).
+  sysBin = pkg: bin: {
+    binary = {
+      path = "${pkg}/bin/${bin}";
+      ignore_system_version = true;
+    };
+  };
+
+  defaultSettings = {
+    auto_update = false;
+    telemetry = {
+      diagnostics = false;
+      metrics = false;
+    };
+    helix_mode = true;
+    format_on_save = "on";
+
+    # Point every LSP at the system-installed binary so Zed never
+    # tries to download its own copy.
+    lsp = {
+      nil = (sysBin pkgs.nil "nil") // {
+        initialization_options = {
+          nix = {
+            flake = {
+              # Suppress the "fetch missing flake inputs?" prompt
+              autoArchive = false;
+            };
+          };
+        };
+      };
+      basedpyright = (sysBin pkgs.basedpyright "basedpyright-langserver") // {
+        settings = {
+          basedpyright.analysis = {
+            typeCheckingMode = "standard";
+            diagnosticMode = "workspace";
+          };
+        };
+      };
+      "typescript-language-server" = sysBin pkgs.typescript-language-server "typescript-language-server";
+      "svelte-language-server" = sysBin pkgs.svelte-language-server "svelteserver";
+      "bash-language-server" = sysBin pkgs.bash-language-server "bash-language-server";
+      marksman = sysBin pkgs.marksman "marksman";
+      taplo = sysBin pkgs.taplo "taplo";
+      "yaml-language-server" = sysBin pkgs.yaml-language-server "yaml-language-server";
+      lemminx = sysBin pkgs.lemminx "lemminx";
+      "dockerfile-language-server" = sysBin pkgs.dockerfile-language-server "docker-langserver";
+      sqls = sysBin pkgs.sqls "sqls";
+      "jq-lsp" = sysBin pkgs.jq-lsp "jq-lsp";
+      nginx = sysBin pkgs.nginx-language-server "nginx-language-server";
+      graphql = sysBin pkgs.graphql-language-service-cli "graphql-lsp";
+      "jsonnet-language-server" = sysBin pkgs.jsonnet-language-server "jsonnet-language-server";
+      vtsls = sysBin pkgs.vtsls "vtsls";
+      "tailwindcss-language-server" = sysBin pkgs.tailwindcss-language-server "tailwindcss-language-server";
+      "package-version-server" = sysBin pkgs.package-version-server "package-version-server";
+    };
+
+    # Justfiles have no standard extension — teach Zed to recognise them
+    file_types = {
+      "Just" = ["justfile" "Justfile" ".justfile"];
+    };
+  };
+in {
+  options.custom.programs.zed = {
+    enable = lib.mkEnableOption "Zed editor";
+
+    extensions = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = "List of Zed extension repository names to install on startup.";
+    };
+
+    userSettings = lib.mkOption {
+      type = lib.types.attrs;
+      default = {};
+      description = "Settings written to Zed's settings.json (merged with module defaults).";
+    };
+
+    userKeymaps = lib.mkOption {
+      type = lib.types.listOf lib.types.attrs;
+      default = [];
+      description = "Configuration written to Zed's keymap.json (list of keybinding objects).";
+    };
+
+    defaultEditor = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to set zed -w as the default editor via $EDITOR/$VISUAL.";
+    };
+  };
+
+  config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = config.custom.programs.lsp.enable;
+        message = "custom.programs.zed.enable requires custom.programs.lsp.enable = true";
+      }
+    ];
+
+    programs.zed-editor = {
+      enable = true;
+      package = pkgs.zed-editor;
+      inherit (cfg) extensions userKeymaps defaultEditor;
+      mutableUserSettings = false;
+      userSettings = lib.mkMerge [defaultSettings cfg.userSettings];
+    };
+  };
+}

@@ -9,40 +9,11 @@ in {
   options.custom.programs.helix.enable = lib.mkEnableOption "Helix editor";
 
   config = lib.mkIf cfg.enable {
-    home.packages = with pkgs; [
-      # --- Language Servers (LSP) ---
-      nil # nix
-      basedpyright # python
-      typescript-language-server # javascript, typescript, jsx, tsx
-      vscode-langservers-extracted # html, css, scss, json, jsonc, json5
-      jsonnet-language-server # jsonnet
-      svelte-language-server # svelte
-      bash-language-server # bash
-      marksman # markdown
-      taplo # toml
-      yaml-language-server # yaml
-      lemminx # xml
-      jdt-language-server # java
-      texlab # latex
-      nginx-language-server # nginx
-      graphql-language-service-cli # graphql
-      dockerfile-language-server # dockerfile
-      docker-compose-language-service # docker-compose
-      sqls # sql
-      jq-lsp # jq
-
-      # --- Formatters & Runtimes ---
-      alejandra # nix
-      ruff # python
-      shfmt # bash
-      rustfmt # rust
-      prettierd # js, ts, html, css, scss, json, markdown
-      sql-formatter # sql
-      python3
-      gawk # awk
-      mermaid-cli # mermaid
-      just # just
-      csvlens # csv
+    assertions = [
+      {
+        assertion = config.custom.programs.lsp.enable;
+        message = "custom.programs.helix.enable requires custom.programs.lsp.enable = true";
+      }
     ];
 
     programs.helix = {
@@ -72,6 +43,12 @@ in {
           basedpyright = {
             command = "${pkgs.basedpyright}/bin/basedpyright-langserver";
             args = ["--stdio"];
+            config = {
+              basedpyright.analysis = {
+                typeCheckingMode = "standard";
+                diagnosticMode = "workspace";
+              };
+            };
           };
         };
 
@@ -84,6 +61,7 @@ in {
           {
             name = "python";
             auto-format = true;
+            language-servers = ["basedpyright" "ruff"];
             formatter = {
               command = "${pkgs.ruff}/bin/ruff";
               args = ["format" "-"];
