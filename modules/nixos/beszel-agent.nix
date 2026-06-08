@@ -46,6 +46,13 @@ in {
     capPerfmon = lib.mkEnableOption "Grant CAP_PERFMON to the agent service (required for intel_gpu_top)";
 
     gpuMonitoring = lib.mkEnableOption "GPU monitoring. Disables PrivateDevices so the agent can access /dev/dri and /dev/nvidia*.";
+
+    intelGpuDevice = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Intel GPU device path (INTEL_GPU_DEVICE). Set when intel_gpu_top can't auto-detect the GPU.";
+      example = "drm:/dev/dri/card0";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -55,7 +62,8 @@ in {
       extraPath = cfg.gpuPackages;
       environment =
         lib.optionalAttrs (cfg.key != "") { KEY = cfg.key; }
-        // lib.optionalAttrs (cfg.tokenFile != null) { TOKEN_FILE = cfg.tokenFile; }
+        //         lib.optionalAttrs (cfg.tokenFile != null) { TOKEN_FILE = cfg.tokenFile; }
+        // lib.optionalAttrs (cfg.intelGpuDevice != null) { INTEL_GPU_DEVICE = cfg.intelGpuDevice; }
         // lib.optionalAttrs (cfg.hubUrl != "") { HUB_URL = cfg.hubUrl; }
         // lib.optionalAttrs (cfg.extraFilesystems != []) {
           EXTRA_FILESYSTEMS = lib.concatStringsSep "," cfg.extraFilesystems;

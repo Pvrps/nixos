@@ -149,5 +149,6 @@
     gpuPackages = [pkgs.intel-gpu-tools];
     capPerfmon = true;
     gpuMonitoring = true;
+    intelGpuDevice = "drm:/dev/dri/card0";
   };
 }
