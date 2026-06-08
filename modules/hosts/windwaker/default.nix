@@ -2,8 +2,7 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   imports = [
     ./_hardware.nix
     ./_disko.nix
@@ -19,8 +18,10 @@
     ./services/asf.nix
     ./services/twitchpointminer.nix
     ./services/dragonwilds.nix
+    ./services/beszel-hub.nix
 
     ../../../modules/nixos/core.nix
+    ../../../modules/nixos/beszel-agent.nix
   ];
 
   programs.nh = {
@@ -59,8 +60,8 @@
         networkConfig = {
           Address = "10.0.10.16/24";
           Gateway = "10.0.10.1";
-          DNS = [ "10.0.10.1" ];
-          VLAN = [ "eno1.120" ];
+          DNS = ["10.0.10.1"];
+          VLAN = ["eno1.120"];
           LinkLocalAddressing = "no";
         };
       };
@@ -82,7 +83,7 @@
     enable = true;
     # Podman manages its own iptables rules for container port exposure
     # podman1/podman2 are the bridge interfaces for quadlet networks (lan_bridge, immich_internal)
-    trustedInterfaces = [ "podman0" "podman1" "podman2" ];
+    trustedInterfaces = ["podman0" "podman1" "podman2"];
   };
 
   services.openssh = {
@@ -108,7 +109,7 @@
     enable = true;
     port = 9090;
     openFirewall = false; # exposed only on the LAN interface below
-    plugins = [ pkgs.cockpit-podman ];
+    plugins = [pkgs.cockpit-podman];
     settings = {
       WebService.Origins = lib.mkForce "https://podman.windwaker.ca wss://podman.windwaker.ca";
       WebService.ProtocolHeader = "X-Forwarded-Proto";
@@ -129,11 +130,11 @@
   # The command path is pinned to the exact cockpit store path to prevent privilege escalation.
   security.sudo.extraRules = [
     {
-      users = [ "podman-admin" ];
+      users = ["podman-admin"];
       commands = [
         {
           command = "${pkgs.cockpit}/bin/cockpit-bridge --privileged";
-          options = [ "NOPASSWD" ];
+          options = ["NOPASSWD"];
         }
       ];
     }
@@ -142,4 +143,12 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   sops.defaultSopsFile = ./_secrets.yaml;
+
+  custom.services.beszel-agent = {
+    enable = true;
+    key = "";
+    extraFilesystems = ["sda" "sdb"];
+    gpuPackages = [pkgs.intel-gpu-tools];
+    capPerfmon = true;
+  };
 }

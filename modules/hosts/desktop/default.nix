@@ -14,6 +14,7 @@
     ../../../modules/nixos/nvidia.nix
     ../../../modules/nixos/gaming.nix
     ../../../modules/nixos/services/sshfs.nix
+    ../../../modules/nixos/beszel-agent.nix
     ../../../modules/nixos/tailscale.nix
     ../../../modules/nixos/secureboot.nix
   ];
@@ -48,4 +49,11 @@
   };
 
   sops.defaultSopsFile = ./_secrets.yaml;
+
+  custom.services.beszel-agent = {
+    enable = true;
+    key = "";
+    hubUrl = "https://beszel.windwaker.ca";
+    gpuPackages = [pkgs.nvidia-smi];
+  };
 }
