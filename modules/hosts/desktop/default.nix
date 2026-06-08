@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   ...
 }: {
   imports = [
@@ -54,6 +53,7 @@
     enable = true;
     key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAbwF0d37nTvhWG52FfpN33nD2gzr3OAGYXkTMAOc83Z";
     hubUrl = "https://beszel.windwaker.ca";
-    gpuPackages = [pkgs.nvidia-smi];
+    # nvidia-smi is provided by the NVIDIA driver (nvidia.nix), auto-detected by beszel
+    # AMD Raphael integrated — amd_sysfs, no extra package needed
   };
 }
