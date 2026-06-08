@@ -58,7 +58,7 @@ in {
         // lib.optionalAttrs (cfg.tokenFile != null) { TOKEN_FILE = cfg.tokenFile; }
         // lib.optionalAttrs (cfg.hubUrl != "") { HUB_URL = cfg.hubUrl; }
         // lib.optionalAttrs (cfg.extraFilesystems != []) {
-          EXTRA_FILESYSTEMS = lib.concatStringsSep " " cfg.extraFilesystems;
+          EXTRA_FILESYSTEMS = lib.concatStringsSep "," cfg.extraFilesystems;
         };
     };
 
@@ -66,6 +66,7 @@ in {
       (lib.mkIf cfg.capPerfmon { AmbientCapabilities = "CAP_PERFMON"; })
       (lib.mkIf cfg.gpuMonitoring {
         PrivateDevices = lib.mkForce false;
+        PrivateUsers = lib.mkForce false;
         ProtectKernelModules = lib.mkForce false;
       })
     ];
