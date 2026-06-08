@@ -70,6 +70,12 @@
         group = "users";
         mode = "0600";
       };
+
+      "beszel-agent-token" = {
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
     };
   };
 }
