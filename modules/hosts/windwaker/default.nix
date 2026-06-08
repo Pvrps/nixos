@@ -37,9 +37,6 @@
     useNetworkd = true;
   };
 
-  # Disable resolved from core.nix — networkd handles DNS directly
-  services.resolved.enable = lib.mkForce false;
-
   systemd.network = {
     enable = true;
 
