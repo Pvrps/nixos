@@ -33,7 +33,7 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    stylix.targets.firefox.profileNames = builtins.attrNames cfg.profiles;
+    stylix.targets.firefox.profileNames = lib.mkIf config.stylix.enable (builtins.attrNames cfg.profiles);
 
     xdg.mimeApps.defaultApplications = {
       "text/html" = "firefox.desktop";
