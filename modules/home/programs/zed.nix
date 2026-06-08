@@ -87,26 +87,82 @@
           };
         };
       "typescript-language-server" = sysBin pkgs.typescript-language-server "typescript-language-server";
-      "svelte-language-server" = sysBin pkgs.svelte-language-server "svelteserver";
+      "svelte-language-server" =
+        (sysBin pkgs.svelte-language-server "svelteserver")
+        // {
+          binary =
+            ((sysBin pkgs.svelte-language-server "svelteserver").binary)
+            // {
+              arguments = ["--stdio"];
+            };
+        };
       "bash-language-server" = sysBin pkgs.bash-language-server "bash-language-server";
       marksman = sysBin pkgs.marksman "marksman";
       taplo = sysBin pkgs.taplo "taplo";
-      "yaml-language-server" = sysBin pkgs.yaml-language-server "yaml-language-server";
+      "yaml-language-server" =
+        (sysBin pkgs.yaml-language-server "yaml-language-server")
+        // {
+          binary =
+            ((sysBin pkgs.yaml-language-server "yaml-language-server").binary)
+            // {
+              arguments = ["--stdio"];
+            };
+        };
       lemminx = sysBin pkgs.lemminx "lemminx";
       "dockerfile-language-server" = sysBin pkgs.dockerfile-language-server "docker-langserver";
       sqls = sysBin pkgs.sqls "sqls";
       "jq-lsp" = sysBin pkgs.jq-lsp "jq-lsp";
       nginx = sysBin pkgs.nginx-language-server "nginx-language-server";
-      graphql = sysBin pkgs.graphql-language-service-cli "graphql-lsp";
+      graphql =
+        (sysBin pkgs.graphql-language-service-cli "graphql-lsp")
+        // {
+          binary =
+            ((sysBin pkgs.graphql-language-service-cli "graphql-lsp").binary)
+            // {
+              arguments = ["server" "--method" "stream"];
+            };
+        };
       "jsonnet-language-server" = sysBin pkgs.jsonnet-language-server "jsonnet-language-server";
-      vtsls = sysBin pkgs.vtsls "vtsls";
+      vtsls =
+        (sysBin pkgs.vtsls "vtsls")
+        // {
+          binary =
+            ((sysBin pkgs.vtsls "vtsls").binary)
+            // {
+              arguments = ["--stdio"];
+            };
+        };
       "tailwindcss-language-server" = sysBin pkgs.tailwindcss-language-server "tailwindcss-language-server";
+      "tailwindcss-intellisense-css" = sysBin pkgs.tailwindcss-language-server "tailwindcss-language-server";
       "package-version-server" = sysBin pkgs.package-version-server "package-version-server";
+      eslint = {
+        settings = {
+          rulesCustomizations = [
+            {
+              rule = "*";
+              severity = "warn";
+            }
+          ];
+        };
+      };
     };
 
     # Justfiles have no standard extension — teach Zed to recognise them
     file_types = {
       "Just" = ["justfile" "Justfile" ".justfile"];
+    };
+
+    # Use Tailwind's built-in CSS mode for CSS files so @theme,
+    # @custom-variant etc. are recognised; disable the default
+    # CSS language server which flags them as unknown.
+    languages = {
+      CSS = {
+        language_servers = [
+          "tailwindcss-intellisense-css"
+          "!vscode-css-language-server"
+          "..."
+        ];
+      };
     };
   };
 in {
