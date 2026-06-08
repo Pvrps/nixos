@@ -72,7 +72,7 @@
       };
 
       "beszel-agent-token" = {
-        owner = "root";
+        owner = "beszel-agent";
         group = "root";
         mode = "0600";
       };
