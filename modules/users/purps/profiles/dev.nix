@@ -27,7 +27,7 @@
       };
       java.enable = true;
       vscode = {
-        enable = true;
+        enable = false;
         javaFormatterConfig = ../files/eclipse-formatter.xml;
         extensions = with pkgs.vscode-extensions; [
           jnoortheen.nix-ide

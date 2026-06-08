@@ -69,7 +69,6 @@ in {
       languages = {
         language-server = {
           nil = {command = "${pkgs.nil}/bin/nil";};
-          rust-analyzer = {command = "${pkgs.rust-analyzer}/bin/rust-analyzer";};
           basedpyright = {
             command = "${pkgs.basedpyright}/bin/basedpyright-langserver";
             args = ["--stdio"];
@@ -81,10 +80,6 @@ in {
             name = "nix";
             auto-format = true;
             formatter = {command = "${pkgs.alejandra}/bin/alejandra";};
-          }
-          {
-            name = "rust";
-            auto-format = true;
           }
           {
             name = "python";
