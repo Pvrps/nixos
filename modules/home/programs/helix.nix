@@ -13,10 +13,6 @@ in {
       # --- Language Servers (LSP) ---
       nil # nix
       basedpyright # python
-      rust-analyzer # rust
-      clang-tools # c, cpp
-      omnisharp-roslyn # c-sharp, msbuild
-      cmake-language-server # cmake
       typescript-language-server # javascript, typescript, jsx, tsx
       vscode-langservers-extracted # html, css, scss, json, jsonc, json5
       jsonnet-language-server # jsonnet
@@ -26,14 +22,9 @@ in {
       taplo # toml
       yaml-language-server # yaml
       lemminx # xml
-      kotlin-language-server # kotlin
       jdt-language-server # java
-      phpactor # php
-      solargraph # ruby
       texlab # latex
       nginx-language-server # nginx
-      svls # verilog
-      ghdl # vhdl
       graphql-language-service-cli # graphql
       dockerfile-language-server # dockerfile
       docker-compose-language-service # docker-compose
@@ -47,12 +38,8 @@ in {
       rustfmt # rust
       prettierd # js, ts, html, css, scss, json, markdown
       sql-formatter # sql
-      php # php-only
       python3
-      dotnet-sdk # c-sharp / msbuild
       gawk # awk
-      nushell # nu
-      powershell # powershell
       mermaid-cli # mermaid
       just # just
       csvlens # csv
