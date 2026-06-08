@@ -6,9 +6,6 @@
 }: let
   cfg = config.custom.programs.zed;
 
-  # Helper to build a binary override pointing at a Nix store path.
-  # This prevents Zed from downloading its own copy of an LSP that is
-  # already provided by custom.programs.lsp (i.e. on $PATH).
   sysBin = pkg: bin: {
     binary = {
       path = "${pkg}/bin/${bin}";
@@ -49,7 +46,7 @@
                 expr = "import <nixpkgs> { }";
               };
               formatting = {
-                command = ["alejandra"];
+                command = ["${pkgs.alejandra}/bin/alejandra"];
               };
               flake = {
                 autoArchive = true;
@@ -109,7 +106,15 @@
             };
         };
       lemminx = sysBin pkgs.lemminx "lemminx";
-      "dockerfile-language-server" = sysBin pkgs.dockerfile-language-server "docker-langserver";
+      "dockerfile-language-server" =
+        (sysBin pkgs.docker-language-server "docker-language-server")
+        // {
+          binary =
+            ((sysBin pkgs.docker-language-server "docker-language-server").binary)
+            // {
+              arguments = ["start" "--stdio"];
+            };
+        };
       sqls = sysBin pkgs.sqls "sqls";
       "jq-lsp" = sysBin pkgs.jq-lsp "jq-lsp";
       nginx = sysBin pkgs.nginx-language-server "nginx-language-server";
@@ -136,16 +141,59 @@
       "tailwindcss-intellisense-css" = sysBin pkgs.tailwindcss-language-server "tailwindcss-language-server";
       "just-lsp" = sysBin pkgs.just-lsp "just-lsp";
       "package-version-server" = sysBin pkgs.package-version-server "package-version-server";
-      eslint = {
-        settings = {
-          rulesCustomizations = [
-            {
-              rule = "*";
-              severity = "warn";
-            }
-          ];
+      "vscode-css-language-server" =
+        (sysBin pkgs.vscode-langservers-extracted "vscode-css-language-server")
+        // {
+          binary =
+            ((sysBin pkgs.vscode-langservers-extracted "vscode-css-language-server").binary)
+            // {
+              arguments = ["--stdio"];
+            };
         };
-      };
+      "vscode-html-language-server" =
+        (sysBin pkgs.vscode-langservers-extracted "vscode-html-language-server")
+        // {
+          binary =
+            ((sysBin pkgs.vscode-langservers-extracted "vscode-html-language-server").binary)
+            // {
+              arguments = ["--stdio"];
+            };
+        };
+      "vscode-json-language-server" =
+        (sysBin pkgs.vscode-langservers-extracted "vscode-json-language-server")
+        // {
+          binary =
+            ((sysBin pkgs.vscode-langservers-extracted "vscode-json-language-server").binary)
+            // {
+              arguments = ["--stdio"];
+            };
+        };
+      "vscode-markdown-language-server" =
+        (sysBin pkgs.vscode-langservers-extracted "vscode-markdown-language-server")
+        // {
+          binary =
+            ((sysBin pkgs.vscode-langservers-extracted "vscode-markdown-language-server").binary)
+            // {
+              arguments = ["--stdio"];
+            };
+        };
+      eslint =
+        (sysBin pkgs.vscode-langservers-extracted "vscode-eslint-language-server")
+        // {
+          binary =
+            ((sysBin pkgs.vscode-langservers-extracted "vscode-eslint-language-server").binary)
+            // {
+              arguments = ["--stdio"];
+            };
+          settings = {
+            rulesCustomizations = [
+              {
+                rule = "*";
+                severity = "warn";
+              }
+            ];
+          };
+        };
     };
 
     # Justfiles have no standard extension — teach Zed to recognise them
@@ -196,13 +244,6 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.custom.programs.lsp.enable;
-        message = "custom.programs.zed.enable requires custom.programs.lsp.enable = true";
-      }
-    ];
-
     programs.zed-editor = {
       enable = true;
       package = pkgs.zed-editor;

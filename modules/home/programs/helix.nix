@@ -9,13 +9,6 @@ in {
   options.custom.programs.helix.enable = lib.mkEnableOption "Helix editor";
 
   config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.custom.programs.lsp.enable;
-        message = "custom.programs.helix.enable requires custom.programs.lsp.enable = true";
-      }
-    ];
-
     programs.helix = {
       enable = true;
       defaultEditor = true;

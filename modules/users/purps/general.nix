@@ -24,7 +24,6 @@
   };
 
   custom.programs = {
-    lsp.enable = true;
     helix.enable = true;
     yazi.enable = true;
     fish = {

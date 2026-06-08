@@ -11,8 +11,6 @@
     };
 
     programs = {
-      lsp.enable = true;
-
       zed = {
         enable = true;
         extensions = [
