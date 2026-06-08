@@ -129,14 +129,21 @@ in {
       ${outputBlocks}
 
       layout {
-          gaps 8
+          gaps 6
           default-column-width { proportion 0.5; }
           focus-ring {
-              width 2
-              active-color "${colors.base0D}"
-              inactive-color "${colors.base03}"
+              off
+          }
+          border {
+              off
+          }
+
+          struts {
+              left -6
+              right -6
           }
       }
+
 
       window-rule {
           geometry-corner-radius ${toString niriCfg.cornerRadius}
@@ -155,16 +162,16 @@ in {
 
           Mod+Left  { focus-column-or-monitor-left; }
           Mod+Right { focus-column-or-monitor-right; }
-          Mod+Up    { focus-workspace-up; }
-          Mod+Down  { focus-workspace-down; }
+          Mod+Up    { focus-window-or-workspace-up; }
+          Mod+Down  { focus-window-or-workspace-down; }
           Mod+Z     { toggle-window-floating; }
           Mod+Ctrl+Left  { focus-monitor-left; }
           Mod+Ctrl+Right { focus-monitor-right; }
 
           Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
           Mod+Shift+Right { move-column-right-or-to-monitor-right; }
-          Mod+Shift+Up    { move-column-to-workspace-up; }
-          Mod+Shift+Down  { move-column-to-workspace-down; }
+          Mod+Shift+Up    { move-window-up-or-to-workspace-up; }
+          Mod+Shift+Down  { move-window-down-or-to-workspace-down; }
             Mod+Ctrl+Shift+Left  { set-column-width "-5%"; }
             Mod+Ctrl+Shift+Right { set-column-width "+5%"; }
             Mod+Ctrl+Shift+Up    { set-window-height "-5%"; }

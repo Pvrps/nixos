@@ -24,6 +24,7 @@ in {
         main = {
           font = "${config.stylix.fonts.monospace.name}:size=${toString config.stylix.fonts.sizes.terminal}";
           dpi-aware = "no";
+          pad = "8x8";
         };
         "colors-dark" = {
           alpha = config.stylix.opacity.terminal;
