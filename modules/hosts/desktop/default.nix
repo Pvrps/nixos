@@ -51,5 +51,6 @@
     key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAbwF0d37nTvhWG52FfpN33nD2gzr3OAGYXkTMAOc83Z";
     tokenFile = config.sops.secrets."beszel-agent-token".path;
     hubUrl = "http://windwaker:8090";
+    gpuMonitoring = true;
   };
 }

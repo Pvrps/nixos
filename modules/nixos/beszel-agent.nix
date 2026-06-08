@@ -44,6 +44,8 @@ in {
     };
 
     capPerfmon = lib.mkEnableOption "Grant CAP_PERFMON to the agent service (required for intel_gpu_top)";
+
+    gpuMonitoring = lib.mkEnableOption "GPU monitoring. Disables PrivateDevices so the agent can access /dev/dri and /dev/nvidia*.";
   };
 
   config = lib.mkIf cfg.enable {
@@ -60,7 +62,12 @@ in {
         };
     };
 
-    systemd.services.beszel-agent.serviceConfig.AmbientCapabilities =
-      lib.mkIf cfg.capPerfmon "CAP_PERFMON";
+    systemd.services.beszel-agent.serviceConfig = lib.mkMerge [
+      (lib.mkIf cfg.capPerfmon { AmbientCapabilities = "CAP_PERFMON"; })
+      (lib.mkIf cfg.gpuMonitoring {
+        PrivateDevices = lib.mkForce false;
+        ProtectKernelModules = lib.mkForce false;
+      })
+    ];
   };
 }

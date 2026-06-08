@@ -148,5 +148,6 @@
     extraFilesystems = ["sda" "sdb"];
     gpuPackages = [pkgs.intel-gpu-tools];
     capPerfmon = true;
+    gpuMonitoring = true;
   };
 }
