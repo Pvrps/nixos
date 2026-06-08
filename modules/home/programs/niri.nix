@@ -80,6 +80,11 @@ in {
         default = [];
         description = "Extra layer-rule blocks to include in the niri config";
       };
+      cornerRadius = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 8;
+        description = "Corner radius applied to all windows via a global geometry-corner-radius window rule (0 = square corners).";
+      };
     };
   };
 
@@ -131,6 +136,11 @@ in {
               active-color "${colors.base0D}"
               inactive-color "${colors.base03}"
           }
+      }
+
+      window-rule {
+          geometry-corner-radius ${toString niriCfg.cornerRadius}
+          clip-to-geometry true
       }
 
       prefer-no-csd

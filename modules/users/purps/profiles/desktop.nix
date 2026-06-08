@@ -77,6 +77,7 @@
       niri = {
         enable = true;
         xwaylandDisplay = ":11";
+        cornerRadius = 0;
         outputs = [
           ''            output "DP-1" {
                             mode "2560x1440@144"

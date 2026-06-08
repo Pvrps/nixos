@@ -21,6 +21,8 @@
     };
     helix_mode = true;
     format_on_save = "on";
+    # Use server-side decorations so Zed doesn't draw its own rounded corners / title bar.
+    window_decorations = "server";
 
     # Point every LSP at the system-installed binary so Zed never
     # tries to download its own copy.
@@ -152,17 +154,30 @@
             configuration = {
               updateBuildConfiguration = "automatic";
               runtimes = [
-                { name = "JavaSE-1.8";  path = "${pkgs.zulu8}"; }
-                { name = "JavaSE-11"; path = "${pkgs.zulu11}"; }
-                { name = "JavaSE-17"; path = "${pkgs.zulu17}"; }
-                { name = "JavaSE-21"; path = "${pkgs.zulu21}"; default = true; }
+                {
+                  name = "JavaSE-1.8";
+                  path = "${pkgs.zulu8}";
+                }
+                {
+                  name = "JavaSE-11";
+                  path = "${pkgs.zulu11}";
+                }
+                {
+                  name = "JavaSE-17";
+                  path = "${pkgs.zulu17}";
+                }
+                {
+                  name = "JavaSE-21";
+                  path = "${pkgs.zulu21}";
+                  default = true;
+                }
               ];
             };
             eclipse = {
               advancedGradleModelSupported = true;
             };
             import = {
-              gradle = { };
+              gradle = {};
             };
           };
         };
@@ -245,6 +260,12 @@ in {
   options.custom.programs.zed = {
     enable = lib.mkEnableOption "Zed editor";
 
+    stylix = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether to apply the active stylix color scheme and fonts to Zed.";
+    };
+
     extensions = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [];
@@ -271,6 +292,10 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    # Stylix has a native Zed target (via tinted-zed) that sets fonts and
+    # generates a base16 theme automatically.  Honour the user's opt-out flag.
+    stylix.targets.zed.enable = cfg.stylix;
+
     programs.zed-editor = {
       enable = true;
       package = pkgs.zed-editor;
