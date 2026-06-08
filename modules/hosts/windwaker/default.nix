@@ -146,7 +146,7 @@
 
   custom.services.beszel-agent = {
     enable = true;
-    key = "";
+    key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAbwF0d37nTvhWG52FfpN33nD2gzr3OAGYXkTMAOc83Z";
     extraFilesystems = ["sda" "sdb"];
     gpuPackages = [pkgs.intel-gpu-tools];
     capPerfmon = true;
