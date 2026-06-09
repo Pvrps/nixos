@@ -76,6 +76,7 @@
       };
     };
     arrpc.enable = true;
+    discord-rpc.enable = true;
     bolt.enable = true;
     prismlauncher.enable = true;
   };
