@@ -73,7 +73,7 @@ in {
             auto-format = true;
             formatter = {
               command = "${pkgs.prettierd}/bin/prettierd";
-              args = ["$FILENAME"];
+              args = ["--stdin-filepath" "file.js"];
             };
           }
           {
@@ -81,7 +81,7 @@ in {
             auto-format = true;
             formatter = {
               command = "${pkgs.prettierd}/bin/prettierd";
-              args = ["$FILENAME"];
+              args = ["--stdin-filepath" "file.ts"];
             };
           }
           {
@@ -89,7 +89,7 @@ in {
             auto-format = true;
             formatter = {
               command = "${pkgs.prettierd}/bin/prettierd";
-              args = ["$FILENAME"];
+              args = ["--stdin-filepath" "file.jsx"];
             };
           }
           {
@@ -97,7 +97,7 @@ in {
             auto-format = true;
             formatter = {
               command = "${pkgs.prettierd}/bin/prettierd";
-              args = ["$FILENAME"];
+              args = ["--stdin-filepath" "file.tsx"];
             };
           }
           {
@@ -105,7 +105,7 @@ in {
             auto-format = true;
             formatter = {
               command = "${pkgs.prettierd}/bin/prettierd";
-              args = ["$FILENAME"];
+              args = ["--stdin-filepath" "file.json"];
             };
           }
           {
@@ -113,7 +113,7 @@ in {
             auto-format = true;
             formatter = {
               command = "${pkgs.prettierd}/bin/prettierd";
-              args = ["$FILENAME"];
+              args = ["--stdin-filepath" "file.html"];
             };
           }
           {
@@ -121,7 +121,7 @@ in {
             auto-format = true;
             formatter = {
               command = "${pkgs.prettierd}/bin/prettierd";
-              args = ["$FILENAME"];
+              args = ["--stdin-filepath" "file.css"];
             };
           }
           {
@@ -129,7 +129,7 @@ in {
             auto-format = true;
             formatter = {
               command = "${pkgs.prettierd}/bin/prettierd";
-              args = ["$FILENAME"];
+              args = ["--stdin-filepath" "file.scss"];
             };
           }
           {
@@ -137,7 +137,7 @@ in {
             auto-format = true;
             formatter = {
               command = "${pkgs.prettierd}/bin/prettierd";
-              args = ["$FILENAME"];
+              args = ["--stdin-filepath" "file.md"];
             };
           }
           {
