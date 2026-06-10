@@ -4,11 +4,11 @@
     discord = {
       enable = true;
       plugins = {
-        ClearURLs.enable = true;
+        clearUrls.enable = true;
         dearrow.enable = true;
         imageZoom.enable = true;
-        OnePingPerDM.enable = true;
-        PinDMs = {
+        onePingPerDm.enable = true;
+        pinDms = {
           enable = true;
           canCollapseDmSection = true;
           pinOrder = 1;
@@ -61,8 +61,8 @@
         youtubeAdblock.enable = true;
         streamingCodecDisabler = {
           enable = false;
-          disableVP8Codec = false;
-          disableVP9Codec = false;
+          disableVp8Codec = false;
+          disableVp9Codec = false;
           disableAv1Codec = false;
         };
         fakeNitro = {
