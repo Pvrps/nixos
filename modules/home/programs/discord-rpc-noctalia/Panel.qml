@@ -29,9 +29,8 @@ Item {
 
     property string view: "list"
 
-    property string cf_name:          ""
     property string cf_appId:         ""
-    property string cf_activityName:  ""
+    property string cf_name:          ""
     property string cf_details:       ""
     property string cf_state:         ""
     property string cf_streamUrl:     ""
@@ -61,7 +60,7 @@ Item {
     function resetCreateForm() {
         cf_name         = ""
         cf_appId        = ""
-        cf_activityName = ""
+        cf_name = ""
         cf_details      = ""
         cf_state        = ""
         cf_streamUrl    = ""
@@ -111,7 +110,6 @@ Item {
                         var name = names[i].trim()
                         profilesModel.append({
                             profileName:  name,
-                            activityName: name,
                             iconUrl:      ""
                         })
                         root.readProfileIcon(name)
@@ -267,9 +265,8 @@ Item {
                 try {
                     var p = JSON.parse(text)
                     var assets = p.assets || {}
-                    root.cf_name = name
+                    root.cf_name = p.activity_name || name
                     root.cf_appId = String(p.application_id || "")
-                    root.cf_activityName = p.name || ""
                     root.cf_details = p.details || ""
                     root.cf_state = p.state || ""
                     root.cf_streamUrl = p.url || ""
@@ -313,17 +310,15 @@ Item {
 
     function submitCreate() {
         root.errorMsg = ""
-        if (cf_name.trim() === "") { root.errorMsg = "Profile name is required."; return }
+        if (cf_name.trim() === "") { root.errorMsg = "Name is required."; return }
         if (cf_appId.trim() === "") { root.errorMsg = "Application ID is required."; return }
-        if (cf_activityName.trim() === "") { root.errorMsg = "Activity name is required."; return }
 
         var isUpdate = root.editingProfile !== ""
         root.busy = true
 
         var payload = {
-            name:            isUpdate ? root.editingProfile : cf_name.trim(),
+            activity_name:   cf_name.trim(),
             application_id:  cf_appId.trim(),
-            activity_name:   cf_activityName.trim(),
             details:         cf_details.trim(),
             state:           cf_state.trim(),
             url:             cf_streamUrl.trim(),
@@ -336,7 +331,7 @@ Item {
         var json = JSON.stringify(payload)
 
         if (isUpdate) {
-            updateProc.command = ["drpc", "update", "--json", json]
+            updateProc.command = ["drpc", "update", "--json", json, "--profile", root.editingProfile]
         } else {
             updateProc.command = ["drpc", "create", "--json", json]
         }
@@ -519,7 +514,6 @@ Item {
                             delegate: Item {
                                 id: cardItem
                                 required property string profileName
-                                required property string activityName
                                 required property string iconUrl
                                 required property int    index
 
@@ -620,7 +614,7 @@ Item {
                                             NText {
                                                 Layout.fillWidth: true
                                                 Layout.minimumWidth: 0
-                                                text:        isActive ? "active" : (activityName || cardItem.profileName)
+                                                text:        isActive ? "active" : cardItem.profileName
                                                 color:       isActive ? Color.mPrimary : Color.mOnSurfaceVariant
                                                 pointSize:   Style.fontSizeS
                                                 elide:       Text.ElideRight
@@ -637,13 +631,6 @@ Item {
                                             icon:    "trash"
                                             enabled: !root.busy && !cardItem.isConfirmingDelete
                                             onClicked: root.deleteProfile(cardItem.profileName)
-                                        }
-
-                                        NIcon {
-                                            visible:  isActive
-                                            icon:     "circle-check-filled"
-                                            color:    Color.mPrimary
-                                            applyUiScale: true
                                         }
 
                                         NButton {
@@ -729,33 +716,10 @@ Item {
 
                             NTextInput {
                                 Layout.fillWidth: true
-                                visible: root.editingProfile === ""
-                                label: "Profile name"
-                                description: "Unique identifier, e.g. \"gaming\""
+                                label: "Activity name"
+                                description: "Shown as the game / app title in Discord"
                                 text: root.cf_name
                                 onTextChanged: root.cf_name = text
-                            }
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                visible: root.editingProfile !== ""
-                                spacing: Style.marginS
-
-                                NText {
-                                    text:       "Profile"
-                                    color:      Color.mOnSurfaceVariant
-                                    pointSize:  Style.fontSizeXS
-                                    font.weight: Font.Medium
-                                }
-
-                                Item { Layout.fillWidth: true }
-
-                                NText {
-                                    text:       root.cf_name
-                                    color:      Color.mOnSurface
-                                    pointSize:  Style.fontSizeM
-                                    font.weight: Font.Medium
-                                }
                             }
 
                             NTextInput {
@@ -764,14 +728,6 @@ Item {
                                 description: "From discord.com/developers/applications"
                                 text: root.cf_appId
                                 onTextChanged: root.cf_appId = text
-                            }
-
-                            NTextInput {
-                                Layout.fillWidth: true
-                                label: "Activity name"
-                                description: "Shown as the game / app title in Discord"
-                                text: root.cf_activityName
-                                onTextChanged: root.cf_activityName = text
                             }
 
                             Rectangle {

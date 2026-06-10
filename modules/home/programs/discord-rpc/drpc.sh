@@ -20,7 +20,6 @@ SERVICE="discord-rpc.service"
 die() { echo "error: $*" >&2; exit 1; }
 
 profile_names() {
-  # Returns bare profile names (no path, no .json extension), one per line
   for f in "${PROFILES_DIR}"/*.json; do
     [[ -f "$f" ]] && basename "$f" .json
   done
@@ -39,7 +38,6 @@ service_active() {
 cmd_enable() {
   local profile=""
 
-  # Parse --profile flag
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --profile) profile="$2"; shift 2 ;;
@@ -47,26 +45,20 @@ cmd_enable() {
     esac
   done
 
-  # If no --profile flag, show interactive list
   if [[ -z "${profile}" ]]; then
     mapfile -t names < <(profile_names)
-
     if [[ ${#names[@]} -eq 0 ]]; then
       echo "No profiles found. Run 'drpc create' to make one."
       exit 1
     fi
-
     echo "Available profiles:"
     local i=1
     for name in "${names[@]}"; do
       echo "  ${i}) ${name}"
       ((i++))
     done
-
     printf "\nSelect a profile (number or name): "
     read -r selection
-
-    # Accept either a number or a name
     if [[ "${selection}" =~ ^[0-9]+$ ]]; then
       local idx=$(( selection - 1 ))
       if [[ ${idx} -lt 0 || ${idx} -ge ${#names[@]} ]]; then
@@ -78,11 +70,9 @@ cmd_enable() {
     fi
   fi
 
-  # Validate the profile exists
   [[ -f "${PROFILES_DIR}/${profile}.json" ]] \
     || die "Profile '${profile}' not found in ${PROFILES_DIR}/"
 
-  # Write state file and (re)start service
   mkdir -p "$(dirname "${STATE_FILE}")"
   echo "${profile}" > "${STATE_FILE}"
 
@@ -93,7 +83,6 @@ cmd_enable() {
 # ── disable ────────────────────────────────────────────────────────────────────
 
 cmd_disable() {
-  # --no-block returns immediately; systemd handles stop asynchronously
   systemctl --user stop --no-block "${SERVICE}" 2>/dev/null
   echo "Discord RPC disabled."
   rm -f "${STATE_FILE}"
@@ -101,170 +90,27 @@ cmd_disable() {
 
 # ── create ─────────────────────────────────────────────────────────────────────
 
-cmd_create() {
-  # JSON mode (used by Noctalia GUI):
-  #   drpc create --json '{"name":"...","application_id":"...","activity_name":"...",...}'
-  #
-  # Accepted JSON keys:
-  #   name (required), application_id (required), activity_name (required),
-  #   details, state, url (stream URL), type,
-  #   large_image, large_image_text, small_image, small_image_text,
-  #   button1_label, button1_url, button2_label, button2_url
-
-  if [[ "${1:-}" == "--json" ]]; then
-    local json_input="${2:-}"
-    [[ -n "${json_input}" ]] || die "--json requires a JSON string argument"
-
-    local name app_id activity_name details="" state="" stream_url=""
-    local large_image="" large_image_text="" small_image="" small_image_text=""
-    local btn1_label="" btn1_url="" btn2_label="" btn2_url=""
-
-    name=$(printf '%s' "${json_input}"           | jq -r '.name // empty')
-    app_id=$(printf '%s' "${json_input}"         | jq -r '.application_id // empty')
-    activity_name=$(printf '%s' "${json_input}"  | jq -r '.activity_name // empty')
-    details=$(printf '%s' "${json_input}"        | jq -r '.details // ""')
-    state=$(printf '%s' "${json_input}"          | jq -r '.state // ""')
-    stream_url=$(printf '%s' "${json_input}"     | jq -r '.url // ""')
-    large_image=$(printf '%s' "${json_input}"    | jq -r '.large_image // ""')
-    large_image_text=$(printf '%s' "${json_input}" | jq -r '.large_image_text // ""')
-    small_image=$(printf '%s' "${json_input}"    | jq -r '.small_image // ""')
-    small_image_text=$(printf '%s' "${json_input}" | jq -r '.small_image_text // ""')
-    btn1_label=$(printf '%s' "${json_input}"     | jq -r '.button1_label // ""')
-    btn1_url=$(printf '%s' "${json_input}"       | jq -r '.button1_url // ""')
-    btn2_label=$(printf '%s' "${json_input}"     | jq -r '.button2_label // ""')
-    btn2_url=$(printf '%s' "${json_input}"       | jq -r '.button2_url // ""')
-
-    [[ -n "${name}" ]]          || die ".name is required in JSON"
-    [[ -n "${app_id}" ]]        || die ".application_id is required in JSON"
-    [[ -n "${activity_name}" ]] || die ".activity_name is required in JSON"
-
-    _write_profile_json "${name}" "${app_id}" "${activity_name}" \
-      "${details}" "${state}" "${stream_url}" \
-      "${large_image}" "${large_image_text}" \
-      "${small_image}" "${small_image_text}" \
-      "${btn1_label}" "${btn1_url}" "${btn2_label}" "${btn2_url}"
-    return
-  fi
-
-  # Non-interactive mode (legacy, kept for compatibility):
-  #   drpc create --non-interactive \
-  #     --name <n> --app-id <id> --activity-name <n> --details <d> --state <s> \
-  #     --stream-url <u> --large-image <k> --large-image-text <t> \
-  #     --small-image <k> --small-image-text <t> \
-  #     --button1-label <l> --button1-url <u> \
-  #     --button2-label <l> --button2-url <u>
-
-  if [[ "${1:-}" == "--non-interactive" ]]; then
-    shift
-    local name="" app_id="" activity_name="" details="" state="" stream_url=""
-    local large_image="" large_image_text="" small_image="" small_image_text=""
-    local btn1_label="" btn1_url="" btn2_label="" btn2_url=""
-
-    while [[ $# -gt 0 ]]; do
-      case "$1" in
-        --name)              name="$2";             shift 2 ;;
-        --app-id)            app_id="$2";           shift 2 ;;
-        --activity-name)     activity_name="$2";    shift 2 ;;
-        --details)           details="$2";          shift 2 ;;
-        --state)             state="$2";            shift 2 ;;
-        --stream-url)        stream_url="$2";       shift 2 ;;
-        --large-image)       large_image="$2";      shift 2 ;;
-        --large-image-text)  large_image_text="$2"; shift 2 ;;
-        --small-image)       small_image="$2";      shift 2 ;;
-        --small-image-text)  small_image_text="$2"; shift 2 ;;
-        --button1-label)     btn1_label="$2";       shift 2 ;;
-        --button1-url)       btn1_url="$2";         shift 2 ;;
-        --button2-label)     btn2_label="$2";       shift 2 ;;
-        --button2-url)       btn2_url="$2";         shift 2 ;;
-        *) die "Unknown argument: $1" ;;
-      esac
-    done
-
-    [[ -n "${name}" ]]    || die "--name is required"
-    [[ -n "${app_id}" ]]  || die "--app-id is required"
-    [[ -n "${activity_name}" ]] || die "--activity-name is required"
-
-    _write_profile_json "${name}" "${app_id}" "${activity_name}" \
-      "${details}" "${state}" "${stream_url}" \
-      "${large_image}" "${large_image_text}" \
-      "${small_image}" "${small_image_text}" \
-      "${btn1_label}" "${btn1_url}" "${btn2_label}" "${btn2_url}"
-    return
-  fi
-
-  # ── Interactive wizard ──────────────────────────────────────────────────────
-  local name app_id activity_name details="" state="" stream_url=""
-  local large_image="" large_image_text="" small_image="" small_image_text=""
-  local btn1_label="" btn1_url="" btn2_label="" btn2_url=""
-
-  _prompt_required() {
-    local var_name="$1" prompt_text="$2"
-    local value=""
-    while [[ -z "${value}" ]]; do
-      printf "%s: " "${prompt_text}"
-      read -r value
-      [[ -z "${value}" ]] && echo "  (required — cannot be empty)"
-    done
-    printf -v "${var_name}" '%s' "${value}"
-  }
-
-  _prompt_optional() {
-    local var_name="$1" prompt_text="$2"
-    printf "%s (optional, Enter to skip): " "${prompt_text}"
-    read -r "${var_name?}"
-  }
-
-  echo "=== Create Discord RPC Profile ==="
-  _prompt_required name          "Profile name (used as filename, e.g. 'streaming')"
-  _prompt_required app_id        "Discord Application ID"
-  _prompt_required activity_name "Activity name (shown as game/app title)"
-  _prompt_optional details       "Details (first line under title)"
-  _prompt_optional state         "State (second line)"
-  _prompt_optional stream_url    "Stream URL (Twitch/YouTube — leave blank for PLAYING type)"
-  echo ""
-  echo "--- Images (asset keys from Discord Developer Portal) ---"
-  _prompt_optional large_image       "Large image key"
-  _prompt_optional large_image_text  "Large image tooltip text"
-  _prompt_optional small_image       "Small image key"
-  _prompt_optional small_image_text  "Small image tooltip text"
-  echo ""
-  echo "--- Buttons (optional, max 2) ---"
-  _prompt_optional btn1_label "Button 1 label"
-  _prompt_optional btn1_url   "Button 1 URL"
-  _prompt_optional btn2_label "Button 2 label"
-  _prompt_optional btn2_url   "Button 2 URL"
-
-  _write_profile_json "${name}" "${app_id}" "${activity_name}" \
-    "${details}" "${state}" "${stream_url}" \
-    "${large_image}" "${large_image_text}" \
-    "${small_image}" "${small_image_text}" \
-    "${btn1_label}" "${btn1_url}" "${btn2_label}" "${btn2_url}"
-}
-
 _write_profile_json() {
   local name="$1" app_id="$2" activity_name="$3" details="$4" state="$5"
   local stream_url="$6" large_image="$7" large_image_text="$8"
   local small_image="$9" small_image_text="${10}"
   local btn1_label="${11}" btn1_url="${12}" btn2_label="${13}" btn2_url="${14}"
 
-  # Validate name is safe for filename
-  [[ "${name}" =~ ^[a-zA-Z0-9_-]+$ ]] \
-    || die "Profile name must only contain letters, numbers, underscores, hyphens."
+  local safe_name
+  safe_name=$(echo "${name}" | tr ' ' '_' | tr -cd 'a-zA-Z0-9_.-')
 
-  local dest="${PROFILES_DIR}/${name}.json"
+  local dest="${PROFILES_DIR}/${safe_name}.json"
   [[ -f "${dest}" ]] && die "Profile '${name}' already exists: ${dest}"
 
   mkdir -p "${PROFILES_DIR}"
 
-  # Determine activity type: 1=Streaming if stream_url provided, 0=Playing otherwise
   local type=0
   [[ -n "${stream_url}" ]] && type=1
 
-  # Build JSON with jq, omitting empty fields
   local json
   json=$(jq -n \
     --arg application_id "${app_id}" \
-    --arg name            "${activity_name}" \
+    --arg activity_name   "${activity_name}" \
     --arg details         "${details}" \
     --arg state           "${state}" \
     --argjson type        "${type}" \
@@ -280,7 +126,7 @@ _write_profile_json() {
     '
     {
       application_id: $application_id,
-      name: $name,
+      activity_name: $activity_name,
       type: $type
     }
     | if $details    != "" then . + {details: $details}    else . end
@@ -319,11 +165,10 @@ _update_profile_json() {
   local small_image="$9" small_image_text="${10}"
   local btn1_label="${11}" btn1_url="${12}" btn2_label="${13}" btn2_url="${14}"
 
-  [[ "${name}" =~ ^[a-zA-Z0-9_-]+$ ]] \
-    || die "Profile name must only contain letters, numbers, underscores, hyphens."
+  local safe_name
+  safe_name=$(echo "${name}" | tr ' ' '_' | tr -cd 'a-zA-Z0-9_.-')
 
-  local dest="${PROFILES_DIR}/${name}.json"
-
+  local dest="${PROFILES_DIR}/${safe_name}.json"
   mkdir -p "${PROFILES_DIR}"
 
   local type=0
@@ -332,7 +177,7 @@ _update_profile_json() {
   local json
   json=$(jq -n \
     --arg application_id "${app_id}" \
-    --arg name            "${activity_name}" \
+    --arg activity_name   "${activity_name}" \
     --arg details         "${details}" \
     --arg state           "${state}" \
     --argjson type        "${type}" \
@@ -348,7 +193,7 @@ _update_profile_json() {
     '
     {
       application_id: $application_id,
-      name: $name,
+      activity_name: $activity_name,
       type: $type
     }
     | if $details    != "" then . + {details: $details}    else . end
@@ -381,41 +226,176 @@ _update_profile_json() {
   echo "Profile updated: ${dest}"
 }
 
+cmd_create() {
+  if [[ "${1:-}" == "--json" ]]; then
+    local json_input="${2:-}"
+    [[ -n "${json_input}" ]] || die "--json requires a JSON string argument"
+
+    local name app_id details="" state="" stream_url=""
+    local large_image="" large_image_text="" small_image="" small_image_text=""
+    local btn1_label="" btn1_url="" btn2_label="" btn2_url=""
+
+    name=$(printf '%s' "${json_input}"           | jq -r '.activity_name // empty')
+    app_id=$(printf '%s' "${json_input}"         | jq -r '.application_id // empty')
+    details=$(printf '%s' "${json_input}"        | jq -r '.details // ""')
+    state=$(printf '%s' "${json_input}"          | jq -r '.state // ""')
+    stream_url=$(printf '%s' "${json_input}"     | jq -r '.url // ""')
+    large_image=$(printf '%s' "${json_input}"    | jq -r '.large_image // ""')
+    large_image_text=$(printf '%s' "${json_input}" | jq -r '.large_image_text // ""')
+    small_image=$(printf '%s' "${json_input}"    | jq -r '.small_image // ""')
+    small_image_text=$(printf '%s' "${json_input}" | jq -r '.small_image_text // ""')
+    btn1_label=$(printf '%s' "${json_input}"     | jq -r '.button1_label // ""')
+    btn1_url=$(printf '%s' "${json_input}"       | jq -r '.button1_url // ""')
+    btn2_label=$(printf '%s' "${json_input}"     | jq -r '.button2_label // ""')
+    btn2_url=$(printf '%s' "${json_input}"       | jq -r '.button2_url // ""')
+
+    [[ -n "${name}" ]]   || die ".activity_name is required in JSON"
+    [[ -n "${app_id}" ]] || die ".application_id is required in JSON"
+
+    _write_profile_json "${name}" "${app_id}" "${name}" \
+      "${details}" "${state}" "${stream_url}" \
+      "${large_image}" "${large_image_text}" \
+      "${small_image}" "${small_image_text}" \
+      "${btn1_label}" "${btn1_url}" "${btn2_label}" "${btn2_url}"
+    return
+  fi
+
+  if [[ "${1:-}" == "--non-interactive" ]]; then
+    shift
+    local name="" app_id="" activity_name="" details="" state="" stream_url=""
+    local large_image="" large_image_text="" small_image="" small_image_text=""
+    local btn1_label="" btn1_url="" btn2_label="" btn2_url=""
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --name)              name="$2";             shift 2 ;;
+        --activity-name)     activity_name="$2";    shift 2 ;;
+        --app-id)            app_id="$2";           shift 2 ;;
+        --details)           details="$2";          shift 2 ;;
+        --state)             state="$2";            shift 2 ;;
+        --stream-url)        stream_url="$2";       shift 2 ;;
+        --large-image)       large_image="$2";      shift 2 ;;
+        --large-image-text)  large_image_text="$2"; shift 2 ;;
+        --small-image)       small_image="$2";      shift 2 ;;
+        --small-image-text)  small_image_text="$2"; shift 2 ;;
+        --button1-label)     btn1_label="$2";       shift 2 ;;
+        --button1-url)       btn1_url="$2";         shift 2 ;;
+        --button2-label)     btn2_label="$2";       shift 2 ;;
+        --button2-url)       btn2_url="$2";         shift 2 ;;
+        *) die "Unknown argument: $1" ;;
+      esac
+    done
+
+    [[ -n "${name}" ]]    || die "--name is required"
+    [[ -n "${app_id}" ]]  || die "--app-id is required"
+    [[ -z "${activity_name}" ]] && activity_name="${name}"
+
+    _write_profile_json "${name}" "${app_id}" "${activity_name}" \
+      "${details}" "${state}" "${stream_url}" \
+      "${large_image}" "${large_image_text}" \
+      "${small_image}" "${small_image_text}" \
+      "${btn1_label}" "${btn1_url}" "${btn2_label}" "${btn2_url}"
+    return
+  fi
+
+  # ── Interactive wizard ──────────────────────────────────────────────────────
+  local name app_id activity_name details="" state="" stream_url=""
+  local large_image="" large_image_text="" small_image="" small_image_text=""
+  local btn1_label="" btn1_url="" btn2_label="" btn2_url=""
+
+  _prompt_required() {
+    local var_name="$1" prompt_text="$2"
+    local value=""
+    while [[ -z "${value}" ]]; do
+      printf "%s: " "${prompt_text}"
+      read -r value
+      [[ -z "${value}" ]] && echo "  (required — cannot be empty)"
+    done
+    printf -v "${var_name}" '%s' "${value}"
+  }
+
+  _prompt_optional() {
+    local var_name="$1" prompt_text="$2"
+    printf "%s (optional, Enter to skip): " "${prompt_text}"
+    read -r "${var_name?}"
+  }
+
+  echo "=== Create Discord RPC Profile ==="
+  _prompt_required name          "Profile name (used as filename, e.g. 'streaming')"
+  _prompt_required app_id        "Discord Application ID"
+  activity_name="${name}"
+  _prompt_optional details       "Details (first line under activity)"
+  _prompt_optional state         "State (second line)"
+  _prompt_optional stream_url    "Stream URL (Twitch/YouTube — leave blank for PLAYING type)"
+  echo ""
+  echo "--- Images (asset keys from Discord Developer Portal) ---"
+  _prompt_optional large_image       "Large image key"
+  _prompt_optional large_image_text  "Large image tooltip text"
+  _prompt_optional small_image       "Small image key"
+  _prompt_optional small_image_text  "Small image tooltip text"
+  echo ""
+  echo "--- Buttons (optional, max 2) ---"
+  _prompt_optional btn1_label "Button 1 label"
+  _prompt_optional btn1_url   "Button 1 URL"
+  _prompt_optional btn2_label "Button 2 label"
+  _prompt_optional btn2_url   "Button 2 URL"
+
+  _write_profile_json "${name}" "${app_id}" "${activity_name}" \
+    "${details}" "${state}" "${stream_url}" \
+    "${large_image}" "${large_image_text}" \
+    "${small_image}" "${small_image_text}" \
+    "${btn1_label}" "${btn1_url}" "${btn2_label}" "${btn2_url}"
+}
+
 # ── update ─────────────────────────────────────────────────────────────────────
 
 cmd_update() {
-  if [[ "${1:-}" != "--json" ]]; then
-    echo "Usage: drpc update --json '<json>'"
-    echo ""
-    echo "Accepts the same JSON keys as 'drpc create --json'."
-    exit 1
-  fi
+  local json_input="" profile=""
 
-  local json_input="${2:-}"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --json)    json_input="$2"; shift 2 ;;
+      --profile) profile="$2";    shift 2 ;;
+      *) die "Unknown argument: $1" ;;
+    esac
+  done
+
   [[ -n "${json_input}" ]] || die "--json requires a JSON string argument"
 
   local name app_id activity_name details="" state="" stream_url=""
   local large_image="" large_image_text="" small_image="" small_image_text=""
   local btn1_label="" btn1_url="" btn2_label="" btn2_url=""
 
-  name=$(printf '%s' "${json_input}"           | jq -r '.name // empty')
-  app_id=$(printf '%s' "${json_input}"         | jq -r '.application_id // empty')
-  activity_name=$(printf '%s' "${json_input}"  | jq -r '.activity_name // empty')
-  details=$(printf '%s' "${json_input}"        | jq -r '.details // ""')
-  state=$(printf '%s' "${json_input}"          | jq -r '.state // ""')
-  stream_url=$(printf '%s' "${json_input}"     | jq -r '.url // ""')
-  large_image=$(printf '%s' "${json_input}"    | jq -r '.large_image // ""')
+  activity_name=$(printf '%s' "${json_input}"    | jq -r '.activity_name // empty')
+  app_id=$(printf '%s' "${json_input}"           | jq -r '.application_id // empty')
+  details=$(printf '%s' "${json_input}"          | jq -r '.details // ""')
+  state=$(printf '%s' "${json_input}"            | jq -r '.state // ""')
+  stream_url=$(printf '%s' "${json_input}"       | jq -r '.url // ""')
+  large_image=$(printf '%s' "${json_input}"      | jq -r '.large_image // ""')
   large_image_text=$(printf '%s' "${json_input}" | jq -r '.large_image_text // ""')
-  small_image=$(printf '%s' "${json_input}"    | jq -r '.small_image // ""')
+  small_image=$(printf '%s' "${json_input}"      | jq -r '.small_image // ""')
   small_image_text=$(printf '%s' "${json_input}" | jq -r '.small_image_text // ""')
-  btn1_label=$(printf '%s' "${json_input}"     | jq -r '.button1_label // ""')
-  btn1_url=$(printf '%s' "${json_input}"       | jq -r '.button1_url // ""')
-  btn2_label=$(printf '%s' "${json_input}"     | jq -r '.button2_label // ""')
-  btn2_url=$(printf '%s' "${json_input}"       | jq -r '.button2_url // ""')
+  btn1_label=$(printf '%s' "${json_input}"       | jq -r '.button1_label // ""')
+  btn1_url=$(printf '%s' "${json_input}"         | jq -r '.button1_url // ""')
+  btn2_label=$(printf '%s' "${json_input}"       | jq -r '.button2_label // ""')
+  btn2_url=$(printf '%s' "${json_input}"         | jq -r '.button2_url // ""')
 
-  [[ -n "${name}" ]]          || die ".name is required in JSON"
-  [[ -n "${app_id}" ]]        || die ".application_id is required in JSON"
-  [[ -n "${activity_name}" ]] || die ".activity_name is required in JSON"
+  name="${activity_name}"
+
+  [[ -n "${name}" ]]   || die ".activity_name is required in JSON"
+  [[ -n "${app_id}" ]] || die ".application_id is required in JSON"
+
+  # Handle rename: if --profile is given and differs from activity_name, move the old file
+  if [[ -n "${profile}" && "${profile}" != "${name}" ]]; then
+    local old_safe
+    old_safe=$(echo "${profile}" | tr ' ' '_' | tr -cd 'a-zA-Z0-9_.-')
+    local old_dest="${PROFILES_DIR}/${old_safe}.json"
+    [[ -f "${old_dest}" ]] || die "Profile '${profile}' not found."
+    local new_safe
+    new_safe=$(echo "${name}" | tr ' ' '_' | tr -cd 'a-zA-Z0-9_.-')
+    rm -f "${PROFILES_DIR}/${new_safe}.json"
+    mv "${old_dest}" "${PROFILES_DIR}/${new_safe}.json"
+  fi
 
   _update_profile_json "${name}" "${app_id}" "${activity_name}" \
     "${details}" "${state}" "${stream_url}" \
@@ -618,7 +598,7 @@ Usage:
   drpc disable                     Stop RPC daemon, clear Discord status
   drpc create                      Interactive wizard to create a new profile
   drpc create --json '<json>'      Create profile from JSON object (GUI-friendly)
-  drpc update --json '<json>'      Update an existing profile (GUI-friendly)
+  drpc update --profile <name> --json '<json>'  Update/rename profile (GUI-friendly)
   drpc edit --profile <name>       Open profile JSON in $EDITOR
   drpc image --profile <name>      Print the icon URL for a profile
   drpc show --profile <name>       Print the profile JSON

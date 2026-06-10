@@ -95,6 +95,10 @@ async def send_set_activity(ws, profile: dict):
     for k, v in profile.items():
         if k == "application_id":
             continue
+        if k == "activity_name":
+            if v not in (None, ""):
+                activity["name"] = v
+            continue
         if v not in (None, "", []):
             activity[k] = v
 
