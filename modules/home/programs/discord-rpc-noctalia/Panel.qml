@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
@@ -9,10 +10,8 @@ import qs.Services.UI
 Item {
     id: root
 
-    // ── Plugin API ────────────────────────────────────────────────────────────
     property var pluginApi: null
 
-    // ── SmartPanel integration ────────────────────────────────────────────────
     readonly property var  geometryPlaceholder: panelContainer
     readonly property bool allowAttach: true
 
@@ -21,19 +20,15 @@ Item {
 
     anchors.fill: parent
 
-    // ── State ─────────────────────────────────────────────────────────────────
     property bool   rpcActive:     false
     property string activeProfile: ""
-    property bool   busy:          false   // command running
+    property bool   busy:          false
     property string errorMsg:      ""
 
-    // Profiles list model — filled by scanProfiles()
     ListModel { id: profilesModel }
 
-    // ── View state: "list" | "create" ─────────────────────────────────────────
     property string view: "list"
 
-    // Create-form fields
     property string cf_name:          ""
     property string cf_appId:         ""
     property string cf_activityName:  ""
@@ -41,51 +36,12 @@ Item {
     property string cf_state:         ""
     property string cf_streamUrl:     ""
 
-    // ── Refresh on open ───────────────────────────────────────────────────────
     Component.onCompleted: refresh()
 
     function refresh() {
         root.errorMsg = ""
-
-        // systemctl status
-        statusProc.running = true
-
-        // Read active profile — fresh process each time (static Process doesn't re-run)
-        var rp = Qt.createQmlObject(`
-            import QtQuick; import Quickshell.Io
-            Process {
-                command: ["bash", "-c", "cat \\"$HOME/.local/share/discord-rpc/current\\" 2>/dev/null; true"]
-                stdout: StdioCollector {}
-                running: true
-            }`, root, "ProfileRead")
-        rp.exited.connect(function() {
-            root.activeProfile = String(rp.stdout.text || "").trim()
-            rp.destroy()
-        })
-
-        // Scan profiles directory — fresh process each time
-        var sp = Qt.createQmlObject(`
-            import QtQuick; import Quickshell.Io
-            Process {
-                command: ["bash", "-c",
-                    "for f in \\"$HOME/.config/discord-rpc/profiles\\"/*.json; do " +
-                    "[ -f \\"$f\\" ] && basename \\"$f\\" .json; done 2>/dev/null; true"]
-                stdout: StdioCollector {}
-                running: true
-            }`, root, "ProfileScan")
-        sp.exited.connect(function() {
-            var text = String(sp.stdout.text || "").trim()
-            profilesModel.clear()
-            if (text !== "") {
-                var names = text.split("\n").filter(function(n) { return n !== "" })
-                for (var i = 0; i < names.length; i++)
-                    profilesModel.append({ profileName: names[i].trim() })
-                Logger.i("DiscordRPC", "Profiles found:", names.length)
-            } else {
-                Logger.i("DiscordRPC", "No profiles found")
-            }
-            sp.destroy()
-        })
+        activeReadProc.running = true
+        scanProc.running = true
     }
 
     function resetCreateForm() {
@@ -98,33 +54,99 @@ Item {
         root.errorMsg   = ""
     }
 
-    // ── Processes ─────────────────────────────────────────────────────────────
-
-    // systemctl --user is-active discord-rpc.service
+    // ── Read active profile ────────────────────────────────────────────
     Process {
-        id: statusProc
-        command: ["systemctl", "--user", "is-active", "--quiet", "discord-rpc.service"]
-        onExited: (code) => { root.rpcActive = (code === 0) }
-    }
-
-    // drpc enable --profile <name>
-    Process {
-        id: enableProc
-        property string targetProfile: ""
-        command: ["drpc", "enable", "--profile", targetProfile]
-        onExited: (code) => {
-            root.busy = false
-            if (code === 0) {
-                ToastService.showNotice("Discord RPC enabled: " + targetProfile)
-                root.refresh()
-            } else {
-                root.errorMsg = "Failed to enable profile '" + targetProfile + "'."
-                ToastService.showError(root.errorMsg)
+        id: activeReadProc
+        command: ["bash", "-c", "cat \"$HOME/.local/share/discord-rpc/current\" 2>/dev/null; true"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.activeProfile = String(this.text || "").trim()
+                activeReadProc.running = false
             }
         }
     }
 
-    // drpc disable
+    // ── Scan profiles ───────────────────────────────────────────────
+    Process {
+        id: scanProc
+        command: ["bash", "-c",
+            "for f in \"$HOME/.config/discord-rpc/profiles\"/*.json; do " +
+            "[ -f \"$f\" ] && basename \"$f\" .json; done; true"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var text = String(this.text || "").trim()
+                profilesModel.clear()
+                if (text !== "") {
+                    var names = text.split("\n").filter(function(l) { return l !== "" })
+                    for (var i = 0; i < names.length; i++) {
+                        var name = names[i].trim()
+                        profilesModel.append({
+                            profileName:  name,
+                            activityName: name,
+                            iconUrl:      ""
+                        })
+                        root.readProfileIcon(name)
+                    }
+                    Logger.i("DiscordRPC", "Profiles found:", profilesModel.count)
+                } else {
+                    Logger.i("DiscordRPC", "No profiles found")
+                }
+                scanProc.running = false
+            }
+        }
+    }
+
+    function readProfileIcon(name) {
+        if (!name) return
+        var rp = Qt.createQmlObject(`
+            import QtQuick; import Quickshell.Io
+            Process {
+                command: ["drpc", "image", "--profile", "` + name + `"]
+                stdout: StdioCollector {}
+                running: true
+            }`, root, "IconReader")
+        rp.exited.connect(function() {
+            var text = String(rp.stdout.text || "").trim()
+            if (text !== "") {
+                for (var i = 0; i < profilesModel.count; i++) {
+                    if (profilesModel.get(i).profileName === name) {
+                        profilesModel.setProperty(i, "iconUrl", text)
+                        break
+                    }
+                }
+            }
+            rp.destroy()
+        })
+    }
+
+    // ── Activate profile — fresh process per call ──────────────────────
+    function activateProfile(name) {
+        if (root.busy || !name) return
+        root.busy = true
+        root.errorMsg = ""
+
+        var ep = Qt.createQmlObject(`
+            import QtQuick; import Quickshell.Io
+            Process {
+                command: ["bash", "-c",
+                    "drpc enable --profile \\"$1\\" 2>/dev/null; true", "--", "` + name + `"]
+                running: true
+            }`, root, "EnableProc")
+        ep.exited.connect(function(code) {
+            root.busy = false
+            if (code === 0) {
+                ToastService.showNotice("Discord RPC enabled: " + name)
+                root.refresh()
+            } else {
+                var msg = "Failed to enable profile '" + name + "'."
+                root.errorMsg = msg
+                ToastService.showError(msg)
+            }
+            ep.destroy()
+        })
+    }
+
+    // ── Disable RPC ────────────────────────────────────────────────────
     Process {
         id: disableProc
         command: ["drpc", "disable"]
@@ -140,35 +162,6 @@ Item {
         }
     }
 
-    // drpc create --json '<...>'
-    Process {
-        id: createProc
-        property string jsonArg: ""
-        command: ["drpc", "create", "--json", jsonArg]
-        onExited: (code) => {
-            root.busy = false
-            if (code === 0) {
-                ToastService.showNotice("Profile created.")
-                root.view = "list"
-                root.resetCreateForm()
-                root.refresh()
-            } else {
-                root.errorMsg = "Failed to create profile. Check that the name is unique and only uses letters, numbers, _ or -."
-                ToastService.showError("Profile creation failed.")
-            }
-        }
-    }
-
-    // ── Helper actions ────────────────────────────────────────────────────────
-
-    function activateProfile(name) {
-        if (root.busy) return
-        root.busy = true
-        root.errorMsg = ""
-        enableProc.targetProfile = name
-        enableProc.running = true
-    }
-
     function disableRpc() {
         if (root.busy) return
         root.busy = true
@@ -176,40 +169,56 @@ Item {
         disableProc.running = true
     }
 
+    // ── Create profile — fresh process per call ────────────────────────
     function submitCreate() {
         root.errorMsg = ""
         if (cf_name.trim() === "") { root.errorMsg = "Profile name is required."; return }
         if (cf_appId.trim() === "") { root.errorMsg = "Application ID is required."; return }
         if (cf_activityName.trim() === "") { root.errorMsg = "Activity name is required."; return }
 
-        const obj = {
-            name:          cf_name.trim(),
-            application_id: cf_appId.trim(),
-            activity_name: cf_activityName.trim(),
-            details:       cf_details.trim(),
-            state:         cf_state.trim(),
-            url:           cf_streamUrl.trim()
-        }
         root.busy = true
-        createProc.jsonArg = JSON.stringify(obj)
-        createProc.running = true
+        var json = JSON.stringify({
+            name:           cf_name.trim(),
+            application_id:  cf_appId.trim(),
+            activity_name:   cf_activityName.trim(),
+            details:        cf_details.trim(),
+            state:          cf_state.trim(),
+            url:            cf_streamUrl.trim()
+        })
+
+        var cp = Qt.createQmlObject(`
+            import QtQuick; import Quickshell.Io
+            Process {
+                command: ["drpc", "create", "--json",
+                    "` + json.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + `"]
+                running: true
+            }`, root, "CreateProc")
+        cp.exited.connect(function(code) {
+            root.busy = false
+            if (code === 0) {
+                ToastService.showNotice("Profile created.")
+                root.view = "list"
+                root.resetCreateForm()
+                root.refresh()
+            } else {
+                root.errorMsg = "Failed to create profile."
+                ToastService.showError(root.errorMsg)
+            }
+            cp.destroy()
+        })
     }
 
-    // ── UI ────────────────────────────────────────────────────────────────────
-
+    // ── UI ─────────────────────────────────────────────────────────────
     Rectangle {
         id: panelContainer
         anchors.fill: parent
         color: "transparent"
 
         ColumnLayout {
-            anchors {
-                fill: parent
-                margins: Style.marginL
-            }
+            anchors { fill: parent; margins: Style.marginL }
             spacing: Style.marginL
 
-            // ── Header ────────────────────────────────────────────────────────
+            // Header
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Style.marginM
@@ -228,14 +237,13 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                // Status badge
                 Rectangle {
                     implicitWidth:  statusRow.implicitWidth + Style.marginS * 2
                     implicitHeight: statusRow.implicitHeight + Style.marginXS * 2
                     radius: Style.radiusS
-                    color:  root.rpcActive
-                                ? Qt.rgba(87/255, 242/255, 135/255, 0.15)
-                                : Qt.rgba(Color.mOutline.r, Color.mOutline.g, Color.mOutline.b, 0.15)
+                    color: root.rpcActive
+                        ? Qt.rgba(87/255, 242/255, 135/255, 0.15)
+                        : Qt.rgba(Color.mOutline.r, Color.mOutline.g, Color.mOutline.b, 0.15)
 
                     RowLayout {
                         id: statusRow
@@ -243,9 +251,7 @@ Item {
                         spacing: Style.marginXS
 
                         Rectangle {
-                            width:  8
-                            height: 8
-                            radius: 4
+                            width:  8; height: 8; radius: 4
                             color:  root.rpcActive ? "#57f287" : Color.mOutline
                         }
 
@@ -269,28 +275,26 @@ Item {
                 }
             }
 
-            // Active profile label when RPC is running
+            // Currently active banner
             Rectangle {
                 Layout.fillWidth: true
                 visible: root.rpcActive && root.activeProfile !== ""
-                implicitHeight: activeRow.implicitHeight + Style.marginS * 2
+                implicitHeight: activeBanner.implicitHeight + Style.marginS * 2
                 color:  Qt.rgba(Color.mPrimary.r, Color.mPrimary.g, Color.mPrimary.b, 0.08)
                 radius: Style.radiusM
                 border.color: Qt.rgba(Color.mPrimary.r, Color.mPrimary.g, Color.mPrimary.b, 0.3)
                 border.width: 1
 
                 RowLayout {
-                    id: activeRow
+                    id: activeBanner
                     anchors {
                         verticalCenter: parent.verticalCenter
-                        left: parent.left
-                        right: parent.right
+                        left: parent.left; right: parent.right
                         margins: Style.marginM
                     }
                     spacing: Style.marginS
 
                     NIcon { icon: "device-gamepad-2"; color: Color.mPrimary; applyUiScale: true }
-
                     NText {
                         text: "Currently broadcasting: " + root.activeProfile
                         color: Color.mPrimary
@@ -298,7 +302,6 @@ Item {
                         font.weight: Font.Medium
                         Layout.fillWidth: true
                     }
-
                     NButton {
                         text: "Disable"
                         enabled: !root.busy
@@ -307,29 +310,29 @@ Item {
                 }
             }
 
-            // Error message
+            // Error
             Rectangle {
                 Layout.fillWidth: true
                 visible: root.errorMsg !== ""
-                implicitHeight: errorText.implicitHeight + Style.marginS * 2
+                implicitHeight: errText.implicitHeight + Style.marginS * 2
                 color:  Qt.rgba(Color.mError.r, Color.mError.g, Color.mError.b, 0.1)
                 radius: Style.radiusM
 
                 NText {
-                    id: errorText
+                    id: errText
                     anchors {
                         verticalCenter: parent.verticalCenter
                         left: parent.left; right: parent.right
                         margins: Style.marginM
                     }
-                    text:      root.errorMsg
-                    color:     Color.mError
+                    text: root.errorMsg
+                    color: Color.mError
                     pointSize: Style.fontSizeS
-                    wrapMode:  Text.WordWrap
+                    wrapMode: Text.WordWrap
                 }
             }
 
-            // ── View switcher: profile list or create form ────────────────────
+            // View switcher
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Style.marginS
@@ -345,10 +348,7 @@ Item {
                 NButton {
                     visible: root.view === "list"
                     text:    "New Profile"
-                    onClicked: {
-                        root.resetCreateForm()
-                        root.view = "create"
-                    }
+                    onClicked: { root.resetCreateForm(); root.view = "create" }
                 }
 
                 NButton {
@@ -358,19 +358,19 @@ Item {
                 }
             }
 
-            // ── Profile list ──────────────────────────────────────────────────
+            // Profile list
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 visible: root.view === "list"
-                color:   Color.mSurfaceVariant
-                radius:  Style.radiusL
+                color:   "transparent"
 
-                // Empty state
                 ColumnLayout {
-                    anchors.centerIn: parent
+                    anchors.fill: parent
                     visible: profilesModel.count === 0
                     spacing: Style.marginM
+
+                    Item { Layout.fillHeight: true }
 
                     NIcon {
                         Layout.alignment: Qt.AlignHCenter
@@ -392,18 +392,19 @@ Item {
                         color:     Color.mOnSurfaceVariant
                         pointSize: Style.fontSizeS
                     }
+
+                    Item { Layout.fillHeight: true }
                 }
 
-                // Profile cards
                 NScrollView {
-                    id: profileScrollView
+                    id: scroll
                     anchors.fill: parent
                     visible: profilesModel.count > 0
                     horizontalPolicy: ScrollBar.AlwaysOff
                     verticalPolicy: ScrollBar.AsNeeded
 
                     ColumnLayout {
-                        width: profileScrollView.availableWidth
+                        width: scroll.availableWidth
                         spacing: Style.marginS
 
                         Item { Layout.preferredHeight: Style.marginS }
@@ -411,92 +412,87 @@ Item {
                         Repeater {
                             model: profilesModel
 
-                            delegate: Rectangle {
+                            delegate: NBox {
                                 required property string profileName
+                                required property string activityName
+                                required property string iconUrl
                                 required property int    index
 
                                 readonly property bool isActive:
                                     root.rpcActive && profileName === root.activeProfile
 
                                 Layout.fillWidth: true
-                                Layout.leftMargin:  Style.marginM
-                                Layout.rightMargin: Style.marginM
-                                implicitHeight: cardRow.implicitHeight + Style.marginM * 2
+                                Layout.preferredHeight: 72
+                                color: isActive
+                                    ? Qt.rgba(Color.mPrimary.r, Color.mPrimary.g, Color.mPrimary.b, 0.08)
+                                    : Color.mSurface
 
-                                color:  cardMouse.containsMouse ? Color.mHover : Color.mSurface
-                                radius: Style.radiusM
-                                border.color: isActive ? Color.mPrimary : "transparent"
-                                border.width: isActive ? 2 : 0
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: Style.radiusM
+                                    color: "transparent"
+                                    border.color: isActive ? Color.mPrimary : "transparent"
+                                    border.width: isActive ? 2 : 0
+                                    clip: true
 
-                                Behavior on color { ColorAnimation { duration: 120 } }
+                                    RowLayout {
+                                        anchors {
+                                            verticalCenter: parent.verticalCenter
+                                            left: parent.left; right: parent.right
+                                            margins: Style.marginM
+                                        }
+                                        spacing: Style.marginM
 
-                                RowLayout {
-                                    id: cardRow
-                                    anchors {
-                                        verticalCenter: parent.verticalCenter
-                                        left: parent.left
-                                        right: parent.right
-                                        margins: Style.marginM
-                                    }
-                                    spacing: Style.marginM
+                                        NImageRounded {
+                                            Layout.preferredWidth:  48
+                                            Layout.preferredHeight: 48
+                                            radius: 10
+                                            imagePath: iconUrl
+                                            fallbackIcon: "brand-discord"
+                                            fallbackIconSize: Style.fontSizeXL
+                                        }
 
-                                    // Icon bubble
-                                    Rectangle {
-                                        width:  36
-                                        height: 36
-                                        radius: 18
-                                        color: isActive
-                                            ? Qt.rgba(Color.mPrimary.r, Color.mPrimary.g, Color.mPrimary.b, 0.2)
-                                            : Color.mSurfaceVariant
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            Layout.minimumWidth: 0
+                                            spacing: 2
+
+                                            NText {
+                                                Layout.fillWidth: true
+                                                Layout.minimumWidth: 0
+                                                text:        profileName
+                                                color:       Color.mOnSurface
+                                                pointSize:   Style.fontSizeM
+                                                font.weight: Font.Medium
+                                                elide:       Text.ElideRight
+                                            }
+
+                                            NText {
+                                                Layout.fillWidth: true
+                                                Layout.minimumWidth: 0
+                                                text:        isActive ? "active" : (activityName || profileName)
+                                                color:       isActive ? Color.mPrimary : Color.mOnSurfaceVariant
+                                                pointSize:   Style.fontSizeS
+                                                elide:       Text.ElideRight
+                                                visible:     true
+                                            }
+                                        }
 
                                         NIcon {
-                                            anchors.centerIn: parent
-                                            icon:  isActive ? "device-gamepad-2" : "brand-discord"
-                                            color: isActive ? Color.mPrimary : Color.mOnSurfaceVariant
+                                            visible:  isActive
+                                            icon:     "circle-check-filled"
+                                            color:    Color.mPrimary
                                             applyUiScale: true
                                         }
-                                    }
 
-                                    // Name + active label
-                                    ColumnLayout {
-                                        Layout.fillWidth: true
-                                        spacing: 2
-
-                                        NText {
-                                            text:        profileName
-                                            color:       Color.mOnSurface
-                                            pointSize:   Style.fontSizeM
-                                            font.weight: Font.Medium
-                                        }
-
-                                        NText {
-                                            visible:   isActive
-                                            text:      "active"
-                                            color:     Color.mPrimary
-                                            pointSize: Style.fontSizeXS
+                                        NButton {
+                                            visible:  !isActive
+                                            text:     "Activate"
+                                            enabled:  !root.busy
+                                            outlined: true
+                                            onClicked: root.activateProfile(profileName)
                                         }
                                     }
-
-                                    NIcon {
-                                        visible:  isActive
-                                        icon:     "circle-check-filled"
-                                        color:    Color.mPrimary
-                                        applyUiScale: true
-                                    }
-
-                                    NButton {
-                                        visible:  !isActive
-                                        text:     "Activate"
-                                        enabled:  !root.busy
-                                        outlined: true
-                                        onClicked: root.activateProfile(profileName)
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: cardMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
                                 }
                             }
                         }
@@ -506,7 +502,7 @@ Item {
                 }
             }
 
-            // ── Create Profile form ───────────────────────────────────────────
+            // Create form
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -516,23 +512,26 @@ Item {
 
                 NScrollView {
                     anchors.fill: parent
+                    horizontalPolicy: ScrollBar.AlwaysOff
+                    verticalPolicy: ScrollBar.AsNeeded
 
                     ColumnLayout {
-                        width: parent.width - Style.marginL * 2
-                        x: Style.marginL
+                        width: parent.availableWidth
                         spacing: Style.marginM
 
-                        // Required fields label
+                        Item { Layout.preferredHeight: Style.marginM }
+
                         NText {
                             text:      "Required"
                             color:     Color.mOnSurfaceVariant
                             pointSize: Style.fontSizeXS
                             font.weight: Font.Medium
-                            Layout.topMargin: Style.marginM
                         }
 
                         NTextInput {
                             Layout.fillWidth: true
+                            Layout.leftMargin: Style.marginM
+                            Layout.rightMargin: Style.marginM
                             label: "Profile name"
                             description: "Unique identifier, e.g. \"gaming\" (letters, numbers, _ -)"
                             text: root.cf_name
@@ -541,6 +540,8 @@ Item {
 
                         NTextInput {
                             Layout.fillWidth: true
+                            Layout.leftMargin: Style.marginM
+                            Layout.rightMargin: Style.marginM
                             label: "Discord Application ID"
                             description: "From discord.com/developers/applications"
                             text: root.cf_appId
@@ -549,30 +550,35 @@ Item {
 
                         NTextInput {
                             Layout.fillWidth: true
+                            Layout.leftMargin: Style.marginM
+                            Layout.rightMargin: Style.marginM
                             label: "Activity name"
                             description: "Shown as the game / app title in Discord"
                             text: root.cf_activityName
                             onTextChanged: root.cf_activityName = text
                         }
 
-                        // Divider
                         Rectangle {
                             Layout.fillWidth: true
+                            Layout.leftMargin: Style.marginM
+                            Layout.rightMargin: Style.marginM
                             height: 1
                             color: Color.mOutline
                             opacity: 0.4
                         }
 
-                        // Optional fields label
                         NText {
                             text:      "Optional"
                             color:     Color.mOnSurfaceVariant
                             pointSize: Style.fontSizeXS
                             font.weight: Font.Medium
+                            Layout.topMargin: Style.marginM
                         }
 
                         NTextInput {
                             Layout.fillWidth: true
+                            Layout.leftMargin: Style.marginM
+                            Layout.rightMargin: Style.marginM
                             label: "Details"
                             description: "First line under the activity title"
                             text: root.cf_details
@@ -581,6 +587,8 @@ Item {
 
                         NTextInput {
                             Layout.fillWidth: true
+                            Layout.leftMargin: Style.marginM
+                            Layout.rightMargin: Style.marginM
                             label: "State"
                             description: "Second line under the activity title"
                             text: root.cf_state
@@ -589,17 +597,19 @@ Item {
 
                         NTextInput {
                             Layout.fillWidth: true
+                            Layout.leftMargin: Style.marginM
+                            Layout.rightMargin: Style.marginM
                             label: "Stream URL"
                             description: "Twitch / YouTube URL — sets activity type to Streaming"
                             text: root.cf_streamUrl
                             onTextChanged: root.cf_streamUrl = text
                         }
 
-                        // Submit
                         RowLayout {
                             Layout.fillWidth: true
-                            Layout.topMargin:    Style.marginS
+                            Layout.topMargin: Style.marginS
                             Layout.bottomMargin: Style.marginM
+                            Layout.rightMargin: Style.marginM
 
                             Item { Layout.fillWidth: true }
 

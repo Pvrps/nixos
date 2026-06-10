@@ -415,6 +415,26 @@ cmd_remove() {
   echo "Profile removed: ${profile}"
 }
 
+# ── image ────────────────────────────────────────────────────────────────────
+
+cmd_image() {
+  local profile=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --profile) profile="$2"; shift 2 ;;
+      *) die "Unknown argument: $1" ;;
+    esac
+  done
+
+  [[ -n "${profile}" ]] || die "--profile is required"
+
+  local dest="${PROFILES_DIR}/${profile}.json"
+  [[ -f "${dest}" ]] || die "Profile '${profile}' not found in ${PROFILES_DIR}/"
+
+  jq -r '.assets.large_image // .assets.small_image // ""' "${dest}"
+}
+
 # ── list ───────────────────────────────────────────────────────────────────────
 
 cmd_list() {
@@ -459,6 +479,7 @@ case "${1:-}" in
   disable) shift; cmd_disable "$@" ;;
   create)  shift; cmd_create  "$@" ;;
   edit)    shift; cmd_edit    "$@" ;;
+  image)   shift; cmd_image   "$@" ;;
   list)    shift; cmd_list    "$@" ;;
   remove)  shift; cmd_remove  "$@" ;;
   status)  shift; cmd_status  "$@" ;;
@@ -472,6 +493,7 @@ Usage:
   drpc create                      Interactive wizard to create a new profile
   drpc create --json '<json>'      Create profile from JSON object (GUI-friendly)
   drpc edit --profile <name>       Open profile JSON in $EDITOR
+  drpc image --profile <name>      Print the icon URL for a profile
   drpc list                        List all profiles
   drpc remove --profile <name>     Delete a profile (with confirmation)
   drpc status                      Show active profile and service state
