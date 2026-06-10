@@ -78,13 +78,19 @@ in {
             center = [
               {id = "Workspace";}
             ];
-            right = [
-              {id = "Tray";}
-              {id = "NotificationHistory";}
-              {id = "Battery";}
-              {id = "Volume";}
-              {id = "ControlCenter";}
-            ];
+            right =
+              [
+                {id = "Tray";}
+                {id = "NotificationHistory";}
+                {id = "Battery";}
+                {id = "Volume";}
+                {id = "ControlCenter";}
+              ]
+              # sourceUrl = noctalia mainSourceUrl → composite key is bare "discord-rpc"
+              # → stable widget ID "plugin:discord-rpc" with no hash fragility.
+              ++ lib.optionals config.custom.programs.discord-rpc-noctalia.enable [
+                {id = "plugin:discord-rpc";}
+              ];
           };
         };
       };

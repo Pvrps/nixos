@@ -77,6 +77,7 @@
     };
     arrpc.enable = true;
     discord-rpc.enable = true;
+    discord-rpc-noctalia.enable = true;
     bolt.enable = true;
     prismlauncher.enable = true;
   };

@@ -106,7 +106,51 @@ cmd_disable() {
 # ── create ─────────────────────────────────────────────────────────────────────
 
 cmd_create() {
-  # Non-interactive mode (used by Noctalia GUI):
+  # JSON mode (used by Noctalia GUI):
+  #   drpc create --json '{"name":"...","application_id":"...","activity_name":"...",...}'
+  #
+  # Accepted JSON keys:
+  #   name (required), application_id (required), activity_name (required),
+  #   details, state, url (stream URL), type,
+  #   large_image, large_image_text, small_image, small_image_text,
+  #   button1_label, button1_url, button2_label, button2_url
+
+  if [[ "${1:-}" == "--json" ]]; then
+    local json_input="${2:-}"
+    [[ -n "${json_input}" ]] || die "--json requires a JSON string argument"
+
+    local name app_id activity_name details="" state="" stream_url=""
+    local large_image="" large_image_text="" small_image="" small_image_text=""
+    local btn1_label="" btn1_url="" btn2_label="" btn2_url=""
+
+    name=$(printf '%s' "${json_input}"           | jq -r '.name // empty')
+    app_id=$(printf '%s' "${json_input}"         | jq -r '.application_id // empty')
+    activity_name=$(printf '%s' "${json_input}"  | jq -r '.activity_name // empty')
+    details=$(printf '%s' "${json_input}"        | jq -r '.details // ""')
+    state=$(printf '%s' "${json_input}"          | jq -r '.state // ""')
+    stream_url=$(printf '%s' "${json_input}"     | jq -r '.url // ""')
+    large_image=$(printf '%s' "${json_input}"    | jq -r '.large_image // ""')
+    large_image_text=$(printf '%s' "${json_input}" | jq -r '.large_image_text // ""')
+    small_image=$(printf '%s' "${json_input}"    | jq -r '.small_image // ""')
+    small_image_text=$(printf '%s' "${json_input}" | jq -r '.small_image_text // ""')
+    btn1_label=$(printf '%s' "${json_input}"     | jq -r '.button1_label // ""')
+    btn1_url=$(printf '%s' "${json_input}"       | jq -r '.button1_url // ""')
+    btn2_label=$(printf '%s' "${json_input}"     | jq -r '.button2_label // ""')
+    btn2_url=$(printf '%s' "${json_input}"       | jq -r '.button2_url // ""')
+
+    [[ -n "${name}" ]]          || die ".name is required in JSON"
+    [[ -n "${app_id}" ]]        || die ".application_id is required in JSON"
+    [[ -n "${activity_name}" ]] || die ".activity_name is required in JSON"
+
+    _write_profile_json "${name}" "${app_id}" "${activity_name}" \
+      "${details}" "${state}" "${stream_url}" \
+      "${large_image}" "${large_image_text}" \
+      "${small_image}" "${small_image_text}" \
+      "${btn1_label}" "${btn1_url}" "${btn2_label}" "${btn2_url}"
+    return
+  fi
+
+  # Non-interactive mode (legacy, kept for compatibility):
   #   drpc create --non-interactive \
   #     --name <n> --app-id <id> --activity-name <n> --details <d> --state <s> \
   #     --stream-url <u> --large-image <k> --large-image-text <t> \
@@ -426,6 +470,7 @@ Usage:
   drpc enable [--profile <name>]   Activate a profile (interactive if no --profile given)
   drpc disable                     Stop RPC daemon, clear Discord status
   drpc create                      Interactive wizard to create a new profile
+  drpc create --json '<json>'      Create profile from JSON object (GUI-friendly)
   drpc edit --profile <name>       Open profile JSON in $EDITOR
   drpc list                        List all profiles
   drpc remove --profile <name>     Delete a profile (with confirmation)

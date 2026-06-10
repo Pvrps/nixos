@@ -1,0 +1,20 @@
+{
+  "id": "discord-rpc",
+  "name": "Discord RPC",
+  "version": "1.0.0",
+  "minNoctaliaVersion": "3.6.0",
+  "author": "purps",
+  "license": "MIT",
+  "repository": "local",
+  "description": "Manage Discord Rich Presence profiles from a bar widget and panel.",
+  "entryPoints": {
+    "barWidget": "BarWidget.qml",
+    "panel": "Panel.qml"
+  },
+  "dependencies": {
+    "plugins": []
+  },
+  "metadata": {
+    "defaultSettings": {}
+  }
+}
