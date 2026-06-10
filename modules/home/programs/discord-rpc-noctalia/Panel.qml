@@ -40,8 +40,15 @@ Item {
 
     function refresh() {
         root.errorMsg = ""
-        activeReadProc.running = true
-        scanProc.running = true
+        // Toggle running to force restart on static Process objects
+        activeReadProc.running = false
+        statusProc.running = false
+        scanProc.running = false
+        Qt.callLater(function() {
+            activeReadProc.running = true
+            statusProc.running = true
+            scanProc.running = true
+        })
     }
 
     function resetCreateForm() {
@@ -63,6 +70,16 @@ Item {
                 root.activeProfile = String(this.text || "").trim()
                 activeReadProc.running = false
             }
+        }
+    }
+
+    // ── systemctl is-active check ──────────────────────────────────────
+    Process {
+        id: statusProc
+        command: ["systemctl", "--user", "is-active", "--quiet", "discord-rpc.service"]
+        onExited: (code) => {
+            root.rpcActive = (code === 0)
+            running = false
         }
     }
 
@@ -135,6 +152,11 @@ Item {
         ep.exited.connect(function(code) {
             root.busy = false
             if (code === 0) {
+                root.rpcActive = true
+                if (pluginApi?.barWidget) {
+                    pluginApi.barWidget.rpcActive = true
+                    pluginApi.barWidget.activeProfile = name
+                }
                 ToastService.showNotice("Discord RPC enabled: " + name)
                 root.refresh()
             } else {
@@ -149,10 +171,16 @@ Item {
     // ── Disable RPC ────────────────────────────────────────────────────
     Process {
         id: disableProc
-        command: ["drpc", "disable"]
+        command: ["bash", "-c", "drpc disable 2>/dev/null"]
         onExited: (code) => {
             root.busy = false
+            running = false
             if (code === 0) {
+                root.rpcActive = false
+                if (pluginApi?.barWidget) {
+                    pluginApi.barWidget.rpcActive = false
+                    pluginApi.barWidget.activeProfile = ""
+                }
                 ToastService.showNotice("Discord RPC disabled.")
                 root.refresh()
             } else {
@@ -166,7 +194,8 @@ Item {
         if (root.busy) return
         root.busy = true
         root.errorMsg = ""
-        disableProc.running = true
+        disableProc.running = false
+        Qt.callLater(function() { disableProc.running = true })
     }
 
     // ── Create profile — fresh process per call ────────────────────────
@@ -275,41 +304,6 @@ Item {
                 }
             }
 
-            // Currently active banner
-            Rectangle {
-                Layout.fillWidth: true
-                visible: root.rpcActive && root.activeProfile !== ""
-                implicitHeight: activeBanner.implicitHeight + Style.marginS * 2
-                color:  Qt.rgba(Color.mPrimary.r, Color.mPrimary.g, Color.mPrimary.b, 0.08)
-                radius: Style.radiusM
-                border.color: Qt.rgba(Color.mPrimary.r, Color.mPrimary.g, Color.mPrimary.b, 0.3)
-                border.width: 1
-
-                RowLayout {
-                    id: activeBanner
-                    anchors {
-                        verticalCenter: parent.verticalCenter
-                        left: parent.left; right: parent.right
-                        margins: Style.marginM
-                    }
-                    spacing: Style.marginS
-
-                    NIcon { icon: "device-gamepad-2"; color: Color.mPrimary; applyUiScale: true }
-                    NText {
-                        text: "Currently broadcasting: " + root.activeProfile
-                        color: Color.mPrimary
-                        pointSize: Style.fontSizeS
-                        font.weight: Font.Medium
-                        Layout.fillWidth: true
-                    }
-                    NButton {
-                        text: "Disable"
-                        enabled: !root.busy
-                        onClicked: root.disableRpc()
-                    }
-                }
-            }
-
             // Error
             Rectangle {
                 Layout.fillWidth: true
@@ -348,12 +342,14 @@ Item {
                 NButton {
                     visible: root.view === "list"
                     text:    "New Profile"
+                    enabled: !root.busy
                     onClicked: { root.resetCreateForm(); root.view = "create" }
                 }
 
                 NButton {
                     visible: root.view === "create"
                     text:    "Cancel"
+                    enabled: !root.busy
                     onClicked: root.view = "list"
                 }
             }
@@ -486,9 +482,17 @@ Item {
                                         }
 
                                         NButton {
+                                            visible:  isActive
+                                            text:     "Disable"
+                                            enabled:  !root.busy
+                                            outlined: true
+                                            onClicked: root.disableRpc()
+                                        }
+
+                                        NButton {
                                             visible:  !isActive
                                             text:     "Activate"
-                                            enabled:  !root.busy
+                                            enabled:  !root.busy && (!root.rpcActive || root.activeProfile === "")
                                             outlined: true
                                             onClicked: root.activateProfile(profileName)
                                         }

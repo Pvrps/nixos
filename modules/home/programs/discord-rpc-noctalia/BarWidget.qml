@@ -37,9 +37,9 @@ Item {
     implicitWidth:  contentWidth
     implicitHeight: contentHeight
 
-    // ── Status poll (every 10 s) ──────────────────────────────────────────────
+    // ── Status poll (every 1 s, fallback when panel isn't open) ────────
     Timer {
-        interval: 10000
+        interval: 1000
         running:  true
         repeat:   true
         triggeredOnStart: true
@@ -55,6 +55,7 @@ Item {
         command: ["systemctl", "--user", "is-active", "--quiet", "discord-rpc.service"]
         onExited: (code) => {
             root.rpcActive = (code === 0)
+            running = false
         }
     }
 
@@ -63,11 +64,11 @@ Item {
         id: profileProc
         command: ["bash", "-c",
                   "cat \"$HOME/.local/share/discord-rpc/current\" 2>/dev/null; true"]
-        stdout: SplitParser {
-            onRead: (line) => { root.activeProfile = line.trim() }
-        }
-        onExited: (code) => {
-            if (code !== 0) root.activeProfile = ""
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.activeProfile = String(this.text || "").trim()
+                profileProc.running = false
+            }
         }
     }
 

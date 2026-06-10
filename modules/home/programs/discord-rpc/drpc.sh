@@ -93,13 +93,9 @@ cmd_enable() {
 # ── disable ────────────────────────────────────────────────────────────────────
 
 cmd_disable() {
-  if service_active; then
-    systemctl --user stop "${SERVICE}"
-    echo "Discord RPC disabled."
-  else
-    echo "Discord RPC is not active."
-  fi
-  # Clear the state file so drpc status reflects this
+  # --no-block returns immediately; systemd handles stop asynchronously
+  systemctl --user stop --no-block "${SERVICE}" 2>/dev/null
+  echo "Discord RPC disabled."
   rm -f "${STATE_FILE}"
 }
 

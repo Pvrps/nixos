@@ -35,17 +35,45 @@ def read_current_profile() -> str | None:
         return None
 
 
-_shutdown = False
-_ws_ref = None
+_shutdown_event: asyncio.Event | None = None
+_ws_ref: "websockets.WebSocketClientProtocol | None" = None
 
 
-def _handle_signal(sig, frame):
-    global _shutdown
-    _shutdown = True
+async def _recv_loop(ws: "websockets.WebSocketClientProtocol") -> None:
+    """Read messages from the WebSocket until shutdown or disconnect."""
+    assert _shutdown_event is not None
 
+    while not _shutdown_event.is_set():
+        recv_task = asyncio.create_task(ws.recv())
+        ping_task = asyncio.create_task(asyncio.sleep(PING_INTERVAL))
+        shutdown_task = asyncio.create_task(_shutdown_event.wait())
 
-signal.signal(signal.SIGTERM, _handle_signal)
-signal.signal(signal.SIGINT, _handle_signal)
+        done, pending = await asyncio.wait(
+            [recv_task, ping_task, shutdown_task],
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+
+        for t in pending:
+            t.cancel()
+
+        if _shutdown_event.is_set():
+            return
+
+        if ping_task in done:
+            try:
+                await ws.ping()
+            except Exception:
+                return
+            continue
+
+        # recv_task completed
+        try:
+            recv_task.result()
+        except websockets.exceptions.ConnectionClosed:
+            print("[drpc-daemon] Connection closed by server.", file=sys.stderr)
+            return
+
+        # recv succeeded, loop back to wait for next message
 
 
 async def try_connect(app_id: str):
@@ -99,7 +127,12 @@ async def send_clear_activity(ws):
 
 
 async def run():
-    global _shutdown, _ws_ref
+    global _shutdown_event, _ws_ref
+
+    _shutdown_event = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        loop.add_signal_handler(sig, _shutdown_event.set)
 
     try:
         import websockets
@@ -125,11 +158,11 @@ async def run():
 
     print(f"[drpc-daemon] Starting with profile: {profile_name}", file=sys.stderr)
 
-    while not _shutdown:
+    while not _shutdown_event.is_set():
         try:
             ws = await try_connect(app_id)
             if ws is None:
-                if _shutdown:
+                if _shutdown_event.is_set():
                     break
                 print(f"[drpc-daemon] No arRPC WebSocket available. "
                       f"Retrying in {RECONNECT_DELAY}s...", file=sys.stderr)
@@ -146,26 +179,19 @@ async def run():
 
             await send_set_activity(ws, profile)
 
-            while not _shutdown:
-                try:
-                    await asyncio.wait_for(ws.recv(), timeout=PING_INTERVAL)
-                except asyncio.TimeoutError:
-                    await ws.ping()
-                except websockets.exceptions.ConnectionClosed:
-                    print("[drpc-daemon] Connection closed by server.", file=sys.stderr)
-                    break
+            await _recv_loop(ws)
 
             await send_clear_activity(ws)
             await asyncio.sleep(0.2)
 
         except OSError as e:
-            if _shutdown:
+            if _shutdown_event.is_set():
                 break
             print(f"[drpc-daemon] Connection failed: {e}. "
                   f"Retrying in {RECONNECT_DELAY}s...", file=sys.stderr)
             await asyncio.sleep(RECONNECT_DELAY)
         except Exception as e:
-            if _shutdown:
+            if _shutdown_event.is_set():
                 break
             print(f"[drpc-daemon] Error: {e}. "
                   f"Retrying in {RECONNECT_DELAY}s...", file=sys.stderr)
