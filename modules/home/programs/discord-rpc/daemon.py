@@ -1,31 +1,14 @@
-#!/usr/bin/env python3
-"""
-drpc-daemon: holds a WebSocket connection to the arRPC bridge (ws://127.0.0.1:1337)
-and sends the active profile's activity JSON to Discord.
-
-The arRPC bridge (Vencord's WebRichPresence plugin) receives messages of the form:
-  { "activity": { ...fields... }, "socketId": "drpc" }
-and dispatches them via Discord's internal FluxDispatcher, which allows setting
-ActivityType.STREAMING (type=1) — something the external IPC socket cannot do.
-
-State files:
-  ~/.local/share/discord-rpc/current   — active profile name (written by `drpc enable`)
-  ~/.config/discord-rpc/profiles/      — profile JSON files
-
-The daemon runs as a systemd user service. It is started by `drpc enable` and
-stopped by `drpc disable`. When stopped, it sends a null activity to clear status.
-"""
-
 import asyncio
 import json
 import os
+import secrets
 import signal
 import sys
 from pathlib import Path
 
-BRIDGE_URL = "ws://127.0.0.1:1337"
-PING_INTERVAL = 15  # seconds between keepalive pings
-RECONNECT_DELAY = 5  # seconds before reconnect on error
+BRIDGE_PORT_RANGE = range(6463, 6473)
+PING_INTERVAL = 15
+RECONNECT_DELAY = 5
 
 STATE_FILE = Path.home() / ".local/share/discord-rpc/current"
 PROFILES_DIR = Path.home() / ".config/discord-rpc/profiles"
@@ -52,17 +35,6 @@ def read_current_profile() -> str | None:
         return None
 
 
-def build_payload(profile: dict) -> dict:
-    """Build the arRPC bridge message from a profile dict."""
-    activity = {k: v for k, v in profile.items() if v not in (None, "", [])}
-    return {"activity": activity, "socketId": "drpc"}
-
-
-def build_clear_payload() -> dict:
-    return {"activity": None, "socketId": "drpc"}
-
-
-# Global flag — set by SIGTERM/SIGINT to trigger clean shutdown
 _shutdown = False
 _ws_ref = None
 
@@ -76,10 +48,59 @@ signal.signal(signal.SIGTERM, _handle_signal)
 signal.signal(signal.SIGINT, _handle_signal)
 
 
+async def try_connect(app_id: str):
+    import websockets
+
+    for port in BRIDGE_PORT_RANGE:
+        uri = f"ws://127.0.0.1:{port}?client_id={app_id}&v=1&encoding=json"
+        try:
+            ws = await websockets.connect(uri, ping_interval=None, close_timeout=3)
+            print(f"[drpc-daemon] Connected to arRPC on port {port}", file=sys.stderr)
+            return ws
+        except OSError:
+            continue
+    return None
+
+
+async def send_set_activity(ws, profile: dict):
+    activity = {}
+    for k, v in profile.items():
+        if k == "application_id":
+            continue
+        if v not in (None, "", []):
+            activity[k] = v
+
+    payload = {
+        "cmd": "SET_ACTIVITY",
+        "args": {
+            "pid": os.getpid(),
+            "activity": activity,
+        },
+        "nonce": secrets.token_hex(16),
+    }
+    await ws.send(json.dumps(payload))
+    print(f"[drpc-daemon] Activity sent.", file=sys.stderr)
+
+
+async def send_clear_activity(ws):
+    payload = {
+        "cmd": "SET_ACTIVITY",
+        "args": {
+            "pid": os.getpid(),
+            "activity": None,
+        },
+        "nonce": secrets.token_hex(16),
+    }
+    try:
+        await ws.send(json.dumps(payload))
+        print(f"[drpc-daemon] Activity cleared.", file=sys.stderr)
+    except Exception:
+        pass
+
+
 async def run():
     global _shutdown, _ws_ref
 
-    # Import here so the module-level import error is clear
     try:
         import websockets
     except ImportError:
@@ -96,50 +117,58 @@ async def run():
         print(f"[drpc-daemon] Profile '{profile_name}' not found. Exiting.", file=sys.stderr)
         sys.exit(1)
 
-    payload = build_payload(profile)
+    app_id = profile.get("application_id", "")
+    if not app_id or app_id == "0":
+        print(f"[drpc-daemon] WARNING: application_id is '{app_id}'. "
+              f"Create a Discord app at https://discord.com/developers/applications "
+              f"to get a valid ID.", file=sys.stderr)
+
     print(f"[drpc-daemon] Starting with profile: {profile_name}", file=sys.stderr)
 
     while not _shutdown:
         try:
-            async with websockets.connect(
-                BRIDGE_URL,
-                ping_interval=None,  # we handle pings manually
-                close_timeout=3,
-            ) as ws:
-                _ws_ref = ws
-                print(f"[drpc-daemon] Connected to arRPC bridge.", file=sys.stderr)
+            ws = await try_connect(app_id)
+            if ws is None:
+                if _shutdown:
+                    break
+                print(f"[drpc-daemon] No arRPC WebSocket available. "
+                      f"Retrying in {RECONNECT_DELAY}s...", file=sys.stderr)
+                await asyncio.sleep(RECONNECT_DELAY)
+                continue
 
-                # Send the activity
-                await ws.send(json.dumps(payload))
-                print(f"[drpc-daemon] Activity sent.", file=sys.stderr)
+            _ws_ref = ws
 
-                # Keep alive loop
-                while not _shutdown:
-                    try:
-                        await asyncio.wait_for(ws.recv(), timeout=PING_INTERVAL)
-                    except asyncio.TimeoutError:
-                        # Send ping to keep connection alive
-                        await ws.ping()
-                    except websockets.exceptions.ConnectionClosed:
-                        print("[drpc-daemon] Connection closed by server.", file=sys.stderr)
-                        break
+            try:
+                await asyncio.wait_for(ws.recv(), timeout=5)
+                print(f"[drpc-daemon] Received READY from arRPC.", file=sys.stderr)
+            except asyncio.TimeoutError:
+                print(f"[drpc-daemon] Timed out waiting for READY, proceeding anyway.", file=sys.stderr)
 
-                # Send null activity before closing
+            await send_set_activity(ws, profile)
+
+            while not _shutdown:
                 try:
-                    await ws.send(json.dumps(build_clear_payload()))
-                    await asyncio.sleep(0.2)
-                except Exception:
-                    pass
+                    await asyncio.wait_for(ws.recv(), timeout=PING_INTERVAL)
+                except asyncio.TimeoutError:
+                    await ws.ping()
+                except websockets.exceptions.ConnectionClosed:
+                    print("[drpc-daemon] Connection closed by server.", file=sys.stderr)
+                    break
+
+            await send_clear_activity(ws)
+            await asyncio.sleep(0.2)
 
         except OSError as e:
             if _shutdown:
                 break
-            print(f"[drpc-daemon] Connection failed: {e}. Retrying in {RECONNECT_DELAY}s...", file=sys.stderr)
+            print(f"[drpc-daemon] Connection failed: {e}. "
+                  f"Retrying in {RECONNECT_DELAY}s...", file=sys.stderr)
             await asyncio.sleep(RECONNECT_DELAY)
         except Exception as e:
             if _shutdown:
                 break
-            print(f"[drpc-daemon] Error: {e}. Retrying in {RECONNECT_DELAY}s...", file=sys.stderr)
+            print(f"[drpc-daemon] Error: {e}. "
+                  f"Retrying in {RECONNECT_DELAY}s...", file=sys.stderr)
             await asyncio.sleep(RECONNECT_DELAY)
 
     print("[drpc-daemon] Exiting.", file=sys.stderr)

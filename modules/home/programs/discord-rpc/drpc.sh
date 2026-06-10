@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # drpc — Discord RPC profile manager
 # Commands:
-#   drpc enable [--profile <name>]   activate a profile (interactive if no --profile)
-#   drpc disable                     stop the RPC daemon, clear Discord status
+#   drpc enable [--profile <name>]     activate a profile (interactive if no --profile)
+#   drpc disable                       stop the RPC daemon, clear Discord status
 #   drpc create [--non-interactive <flags>]  create a new profile (wizard or flags)
-#   drpc list                        list available profiles
-#   drpc status                      show active profile and service state
+#   drpc edit --profile <name>         open profile JSON in $EDITOR
+#   drpc list                          list available profiles
+#   drpc remove --profile <name>       delete a profile (with confirmation)
+#   drpc status                        show active profile and service state
 
 set -euo pipefail
 
@@ -19,11 +21,9 @@ die() { echo "error: $*" >&2; exit 1; }
 
 profile_names() {
   # Returns bare profile names (no path, no .json extension), one per line
-  if compgen -G "${PROFILES_DIR}/*.json" > /dev/null 2>&1; then
-    for f in "${PROFILES_DIR}"/*.json; do
-      basename "$f" .json
-    done
-  fi
+  for f in "${PROFILES_DIR}"/*.json; do
+    [[ -f "$f" ]] && basename "$f" .json
+  done
 }
 
 active_profile() {
@@ -273,6 +273,104 @@ _write_profile_json() {
   echo "Profile created: ${dest}"
 }
 
+# ── edit ───────────────────────────────────────────────────────────────────────
+
+cmd_edit() {
+  local profile=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --profile) profile="$2"; shift 2 ;;
+      *) die "Unknown argument: $1" ;;
+    esac
+  done
+
+  if [[ -z "${profile}" ]]; then
+    mapfile -t names < <(profile_names)
+    if [[ ${#names[@]} -eq 0 ]]; then
+      echo "No profiles found. Run 'drpc create' to make one."
+      exit 1
+    fi
+    echo "Available profiles:"
+    local i=1
+    for name in "${names[@]}"; do
+      echo "  ${i}) ${name}"
+      ((i++))
+    done
+    printf "\nSelect a profile (number or name): "
+    read -r selection
+    if [[ "${selection}" =~ ^[0-9]+$ ]]; then
+      local idx=$(( selection - 1 ))
+      if [[ ${idx} -lt 0 || ${idx} -ge ${#names[@]} ]]; then
+        die "Invalid selection: ${selection}"
+      fi
+      profile="${names[${idx}]}"
+    else
+      profile="${selection}"
+    fi
+  fi
+
+  local dest="${PROFILES_DIR}/${profile}.json"
+  [[ -f "${dest}" ]] || die "Profile '${profile}' not found in ${PROFILES_DIR}/"
+
+  ${EDITOR:-${VISUAL:-nano}} "${dest}"
+}
+
+# ── remove ─────────────────────────────────────────────────────────────────────
+
+cmd_remove() {
+  local profile=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --profile) profile="$2"; shift 2 ;;
+      *) die "Unknown argument: $1" ;;
+    esac
+  done
+
+  if [[ -z "${profile}" ]]; then
+    mapfile -t names < <(profile_names)
+    if [[ ${#names[@]} -eq 0 ]]; then
+      echo "No profiles found."
+      exit 1
+    fi
+    echo "Available profiles:"
+    local i=1
+    for name in "${names[@]}"; do
+      echo "  ${i}) ${name}"
+      ((i++))
+    done
+    printf "\nSelect a profile to remove (number or name): "
+    read -r selection
+    if [[ "${selection}" =~ ^[0-9]+$ ]]; then
+      local idx=$(( selection - 1 ))
+      if [[ ${idx} -lt 0 || ${idx} -ge ${#names[@]} ]]; then
+        die "Invalid selection: ${selection}"
+      fi
+      profile="${names[${idx}]}"
+    else
+      profile="${selection}"
+    fi
+  fi
+
+  local dest="${PROFILES_DIR}/${profile}.json"
+  [[ -f "${dest}" ]] || die "Profile '${profile}' not found in ${PROFILES_DIR}/"
+
+  local active
+  active=$(active_profile)
+  if [[ "${profile}" == "${active}" ]] && service_active; then
+    echo "Profile '${profile}' is currently active. Run 'drpc disable' first."
+    exit 1
+  fi
+
+  printf "Remove profile '%s'? [y/N] " "${profile}"
+  read -r confirm
+  [[ "${confirm}" =~ ^[Yy]$ ]] || die "Cancelled."
+
+  rm "${dest}"
+  echo "Profile removed: ${profile}"
+}
+
 # ── list ───────────────────────────────────────────────────────────────────────
 
 cmd_list() {
@@ -316,7 +414,9 @@ case "${1:-}" in
   enable)  shift; cmd_enable  "$@" ;;
   disable) shift; cmd_disable "$@" ;;
   create)  shift; cmd_create  "$@" ;;
+  edit)    shift; cmd_edit    "$@" ;;
   list)    shift; cmd_list    "$@" ;;
+  remove)  shift; cmd_remove  "$@" ;;
   status)  shift; cmd_status  "$@" ;;
   *)
     cat <<'EOF'
@@ -326,7 +426,9 @@ Usage:
   drpc enable [--profile <name>]   Activate a profile (interactive if no --profile given)
   drpc disable                     Stop RPC daemon, clear Discord status
   drpc create                      Interactive wizard to create a new profile
+  drpc edit --profile <name>       Open profile JSON in $EDITOR
   drpc list                        List all profiles
+  drpc remove --profile <name>     Delete a profile (with confirmation)
   drpc status                      Show active profile and service state
 
 Profiles are stored in ~/.config/discord-rpc/profiles/<name>.json
