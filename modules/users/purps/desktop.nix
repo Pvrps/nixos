@@ -10,6 +10,8 @@
     ./profiles/hardware.nix
   ];
 
+  custom.scripts.capture.ocr.enable = true;
+
   custom.programs.ssh = {
     windwakerPurpsKeyPath = osConfig.sops.secrets."windwaker-purps-key".path;
     windwakerRootKeyPath = osConfig.sops.secrets."windwaker-root-key".path;
