@@ -35,6 +35,13 @@ Item {
     property string cf_details:       ""
     property string cf_state:         ""
     property string cf_streamUrl:     ""
+    property string cf_largeImage:    ""
+    property string cf_largeText:     ""
+    property string cf_smallImage:    ""
+    property string cf_smallText:     ""
+
+    property string editingProfile:   ""
+    property string confirmDeleteName: ""
 
     Component.onCompleted: refresh()
 
@@ -58,6 +65,11 @@ Item {
         cf_details      = ""
         cf_state        = ""
         cf_streamUrl    = ""
+        cf_largeImage   = ""
+        cf_largeText    = ""
+        cf_smallImage   = ""
+        cf_smallText    = ""
+        editingProfile  = ""
         root.errorMsg   = ""
     }
 
@@ -198,43 +210,138 @@ Item {
         Qt.callLater(function() { disableProc.running = true })
     }
 
-    // ── Create profile — fresh process per call ────────────────────────
+    // ── Delete profile ──────────────────────────────────────────────────
+    Process {
+        id: deleteProc
+        command: [""]
+        onExited: (code) => {
+            running = false
+            root.busy = false
+            root.confirmDeleteName = ""
+            if (code === 0) {
+                ToastService.showNotice("Profile deleted.")
+                root.refresh()
+            } else {
+                root.errorMsg = "Failed to delete profile."
+                ToastService.showError(root.errorMsg)
+            }
+        }
+    }
+
+    function deleteProfile(name) {
+        root.confirmDeleteName = name
+    }
+
+    function cancelDelete() {
+        root.confirmDeleteName = ""
+    }
+
+    function executeDelete() {
+        var name = root.confirmDeleteName
+        if (!name) return
+        root.busy = true
+        root.errorMsg = ""
+        deleteProc.command = ["bash", "-c",
+            "rm -f \"$HOME/.config/discord-rpc/profiles/" + name + ".json\"; " +
+            "rm -f \"$HOME/.local/share/discord-rpc/current\""]
+        deleteProc.running = false
+        Qt.callLater(function() { deleteProc.running = true })
+    }
+
+    // ── Edit profile ────────────────────────────────────────────────────
+    function editProfile(name) {
+        if (root.busy || !name) return
+        root.busy = true
+        root.errorMsg = ""
+
+        var rp = Qt.createQmlObject(`
+            import QtQuick; import Quickshell.Io
+            Process {
+                command: ["drpc", "show", "--profile", "` + name + `"]
+                stdout: StdioCollector {}
+                running: true
+            }`, root, "ReadProfileProc")
+        rp.exited.connect(function(code) {
+            if (code === 0) {
+                var text = String(rp.stdout.text || "").trim()
+                try {
+                    var p = JSON.parse(text)
+                    var assets = p.assets || {}
+                    root.cf_name = name
+                    root.cf_appId = String(p.application_id || "")
+                    root.cf_activityName = p.name || ""
+                    root.cf_details = p.details || ""
+                    root.cf_state = p.state || ""
+                    root.cf_streamUrl = p.url || ""
+                    root.cf_largeImage = assets.large_image || ""
+                    root.cf_largeText = assets.large_text || ""
+                    root.cf_smallImage = assets.small_image || ""
+                    root.cf_smallText = assets.small_text || ""
+                    root.editingProfile = name
+                    root.view = "edit"
+                } catch (e) {
+                    root.errorMsg = "Failed to parse profile: " + e
+                    ToastService.showError(root.errorMsg)
+                }
+            } else {
+                root.errorMsg = "Failed to read profile."
+                ToastService.showError(root.errorMsg)
+            }
+            root.busy = false
+            rp.destroy()
+        })
+    }
+
+    // ── Create / Update profile ─────────────────────────────────────
+    Process {
+        id: updateProc
+        command: [""]
+        onExited: (code) => {
+            running = false
+            root.busy = false
+            if (code === 0) {
+                ToastService.showNotice(root.editingProfile !== "" ? "Profile updated." : "Profile created.")
+                root.view = "list"
+                root.resetCreateForm()
+                root.refresh()
+            } else {
+                root.errorMsg = "Failed to save profile."
+                ToastService.showError(root.errorMsg)
+            }
+        }
+    }
+
     function submitCreate() {
         root.errorMsg = ""
         if (cf_name.trim() === "") { root.errorMsg = "Profile name is required."; return }
         if (cf_appId.trim() === "") { root.errorMsg = "Application ID is required."; return }
         if (cf_activityName.trim() === "") { root.errorMsg = "Activity name is required."; return }
 
+        var isUpdate = root.editingProfile !== ""
         root.busy = true
-        var json = JSON.stringify({
-            name:           cf_name.trim(),
+
+        var payload = {
+            name:            isUpdate ? root.editingProfile : cf_name.trim(),
             application_id:  cf_appId.trim(),
             activity_name:   cf_activityName.trim(),
-            details:        cf_details.trim(),
-            state:          cf_state.trim(),
-            url:            cf_streamUrl.trim()
-        })
+            details:         cf_details.trim(),
+            state:           cf_state.trim(),
+            url:             cf_streamUrl.trim(),
+            large_image:     cf_largeImage.trim(),
+            large_image_text: cf_largeText.trim(),
+            small_image:     cf_smallImage.trim(),
+            small_image_text: cf_smallText.trim()
+        }
 
-        var cp = Qt.createQmlObject(`
-            import QtQuick; import Quickshell.Io
-            Process {
-                command: ["drpc", "create", "--json",
-                    "` + json.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + `"]
-                running: true
-            }`, root, "CreateProc")
-        cp.exited.connect(function(code) {
-            root.busy = false
-            if (code === 0) {
-                ToastService.showNotice("Profile created.")
-                root.view = "list"
-                root.resetCreateForm()
-                root.refresh()
-            } else {
-                root.errorMsg = "Failed to create profile."
-                ToastService.showError(root.errorMsg)
-            }
-            cp.destroy()
-        })
+        var json = JSON.stringify(payload)
+
+        if (isUpdate) {
+            updateProc.command = ["drpc", "update", "--json", json]
+        } else {
+            updateProc.command = ["drpc", "create", "--json", json]
+        }
+        updateProc.running = false
+        Qt.callLater(function() { updateProc.running = true })
     }
 
     // ── UI ─────────────────────────────────────────────────────────────
@@ -332,7 +439,8 @@ Item {
                 spacing: Style.marginS
 
                 NText {
-                    text:       root.view === "list" ? "Profiles" : "New Profile"
+                    text:       root.view === "list" ? "Profiles"
+                                : (root.view === "edit" ? "Edit Profile" : "New Profile")
                     pointSize:  Style.fontSizeM
                     font.weight: Font.DemiBold
                     color:      Color.mOnSurface
@@ -347,10 +455,10 @@ Item {
                 }
 
                 NButton {
-                    visible: root.view === "create"
+                    visible: root.view !== "list"
                     text:    "Cancel"
                     enabled: !root.busy
-                    onClicked: root.view = "list"
+                    onClicked: { root.resetCreateForm(); root.view = "list" }
                 }
             }
 
@@ -408,7 +516,8 @@ Item {
                         Repeater {
                             model: profilesModel
 
-                            delegate: NBox {
+                            delegate: Item {
+                                id: cardItem
                                 required property string profileName
                                 required property string activityName
                                 required property string iconUrl
@@ -417,19 +526,63 @@ Item {
                                 readonly property bool isActive:
                                     root.rpcActive && profileName === root.activeProfile
 
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 72
-                                color: isActive
-                                    ? Qt.rgba(Color.mPrimary.r, Color.mPrimary.g, Color.mPrimary.b, 0.08)
-                                    : Color.mSurface
+                                readonly property bool isConfirmingDelete:
+                                    root.confirmDeleteName === profileName
 
-                                Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 64
+
+                                NBox {
                                     anchors.fill: parent
-                                    radius: Style.radiusM
-                                    color: "transparent"
-                                    border.color: isActive ? Color.mPrimary : "transparent"
-                                    border.width: isActive ? 2 : 0
-                                    clip: true
+                                    color: isActive
+                                        ? Qt.rgba(Color.mPrimary.r, Color.mPrimary.g, Color.mPrimary.b, 0.08)
+                                        : Color.mSurface
+
+                                    // Active left bar
+                                    Rectangle {
+                                        anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                                        width: isActive ? 3 : 0
+                                        color: Color.mPrimary
+                                        radius: 1.5
+
+                                        Behavior on width { NumberAnimation { duration: 150 } }
+                                    }
+
+                                    // Delete confirmation row
+                                    RowLayout {
+                                        anchors {
+                                            verticalCenter: parent.verticalCenter
+                                            left: parent.left; right: parent.right
+                                            margins: Style.marginM
+                                        }
+                                        visible: isConfirmingDelete
+                                        spacing: Style.marginM
+
+                                        NIcon {
+                                            icon:  "trash"
+                                            color: Color.mError
+                                            applyUiScale: true
+                                        }
+
+                                        NText {
+                                            text: "Delete \"" + cardItem.profileName + "\"?"
+                                            color: Color.mOnSurface
+                                            font.weight: Font.Medium
+                                            pointSize: Style.fontSizeS
+                                            Layout.fillWidth: true
+                                        }
+
+                                        NButton {
+                                            text: "Cancel"
+                                            onClicked: root.cancelDelete()
+                                        }
+
+                                        NButton {
+                                            text: "Delete"
+                                            outlined: true
+                                            onClicked: root.executeDelete()
+                                        }
+                                    }
 
                                     RowLayout {
                                         anchors {
@@ -437,15 +590,16 @@ Item {
                                             left: parent.left; right: parent.right
                                             margins: Style.marginM
                                         }
+                                        visible: !isConfirmingDelete
                                         spacing: Style.marginM
 
                                         NImageRounded {
-                                            Layout.preferredWidth:  48
-                                            Layout.preferredHeight: 48
-                                            radius: 10
-                                            imagePath: iconUrl
+                                            Layout.preferredWidth:  40
+                                            Layout.preferredHeight: 40
+                                            radius: 8
+                                            imagePath: cardItem.iconUrl
                                             fallbackIcon: "brand-discord"
-                                            fallbackIconSize: Style.fontSizeXL
+                                            fallbackIconSize: Style.fontSizeL
                                         }
 
                                         ColumnLayout {
@@ -456,7 +610,7 @@ Item {
                                             NText {
                                                 Layout.fillWidth: true
                                                 Layout.minimumWidth: 0
-                                                text:        profileName
+                                                text:        cardItem.profileName
                                                 color:       Color.mOnSurface
                                                 pointSize:   Style.fontSizeM
                                                 font.weight: Font.Medium
@@ -466,12 +620,23 @@ Item {
                                             NText {
                                                 Layout.fillWidth: true
                                                 Layout.minimumWidth: 0
-                                                text:        isActive ? "active" : (activityName || profileName)
+                                                text:        isActive ? "active" : (activityName || cardItem.profileName)
                                                 color:       isActive ? Color.mPrimary : Color.mOnSurfaceVariant
                                                 pointSize:   Style.fontSizeS
                                                 elide:       Text.ElideRight
-                                                visible:     true
                                             }
+                                        }
+
+                                        NIconButton {
+                                            icon:    "edit"
+                                            enabled: !root.busy && !isActive && !cardItem.isConfirmingDelete
+                                            onClicked: root.editProfile(cardItem.profileName)
+                                        }
+
+                                        NIconButton {
+                                            icon:    "trash"
+                                            enabled: !root.busy && !cardItem.isConfirmingDelete
+                                            onClicked: root.deleteProfile(cardItem.profileName)
                                         }
 
                                         NIcon {
@@ -494,7 +659,7 @@ Item {
                                             text:     "Activate"
                                             enabled:  !root.busy && (!root.rpcActive || root.activeProfile === "")
                                             outlined: true
-                                            onClicked: root.activateProfile(profileName)
+                                            onClicked: root.activateProfile(cardItem.profileName)
                                         }
                                     }
                                 }
@@ -506,122 +671,218 @@ Item {
                 }
             }
 
-            // Create form
-            Rectangle {
+            // Create / Edit form
+            NBox {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                visible: root.view === "create"
-                color:   Color.mSurfaceVariant
-                radius:  Style.radiusL
+                visible: root.view === "create" || root.view === "edit"
+                color: Color.mSurface
 
-                NScrollView {
-                    anchors.fill: parent
-                    horizontalPolicy: ScrollBar.AlwaysOff
-                    verticalPolicy: ScrollBar.AsNeeded
+                ColumnLayout {
+                    anchors { fill: parent; margins: Style.marginL }
+                    spacing: Style.marginM
 
-                    ColumnLayout {
-                        width: parent.availableWidth
+                    // Form header
+                    RowLayout {
+                        Layout.fillWidth: true
                         spacing: Style.marginM
 
-                        Item { Layout.preferredHeight: Style.marginM }
-
-                        NText {
-                            text:      "Required"
-                            color:     Color.mOnSurfaceVariant
-                            pointSize: Style.fontSizeXS
-                            font.weight: Font.Medium
-                        }
-
-                        NTextInput {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Style.marginM
-                            Layout.rightMargin: Style.marginM
-                            label: "Profile name"
-                            description: "Unique identifier, e.g. \"gaming\" (letters, numbers, _ -)"
-                            text: root.cf_name
-                            onTextChanged: root.cf_name = text
-                        }
-
-                        NTextInput {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Style.marginM
-                            Layout.rightMargin: Style.marginM
-                            label: "Discord Application ID"
-                            description: "From discord.com/developers/applications"
-                            text: root.cf_appId
-                            onTextChanged: root.cf_appId = text
-                        }
-
-                        NTextInput {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Style.marginM
-                            Layout.rightMargin: Style.marginM
-                            label: "Activity name"
-                            description: "Shown as the game / app title in Discord"
-                            text: root.cf_activityName
-                            onTextChanged: root.cf_activityName = text
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Style.marginM
-                            Layout.rightMargin: Style.marginM
-                            height: 1
-                            color: Color.mOutline
-                            opacity: 0.4
+                        NIcon {
+                            icon:  root.editingProfile !== "" ? "edit" : "plus"
+                            color: Color.mPrimary
+                            applyUiScale: true
                         }
 
                         NText {
-                            text:      "Optional"
-                            color:     Color.mOnSurfaceVariant
-                            pointSize: Style.fontSizeXS
-                            font.weight: Font.Medium
-                            Layout.topMargin: Style.marginM
+                            text:       root.editingProfile !== "" ? "Edit Profile" : "New Profile"
+                            pointSize:  Style.fontSizeM
+                            font.weight: Font.DemiBold
+                            color:      Color.mOnSurface
+                            Layout.fillWidth: true
                         }
 
-                        NTextInput {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Style.marginM
-                            Layout.rightMargin: Style.marginM
-                            label: "Details"
-                            description: "First line under the activity title"
-                            text: root.cf_details
-                            onTextChanged: root.cf_details = text
+                        NText {
+                            text:       root.editingProfile !== "" ? root.editingProfile : ""
+                            color:      Color.mOnSurfaceVariant
+                            pointSize:  Style.fontSizeS
+                            visible:    root.editingProfile !== ""
                         }
+                    }
 
-                        NTextInput {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Style.marginM
-                            Layout.rightMargin: Style.marginM
-                            label: "State"
-                            description: "Second line under the activity title"
-                            text: root.cf_state
-                            onTextChanged: root.cf_state = text
-                        }
+                    NScrollView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        horizontalPolicy: ScrollBar.AlwaysOff
+                        verticalPolicy: ScrollBar.AsNeeded
 
-                        NTextInput {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: Style.marginM
-                            Layout.rightMargin: Style.marginM
-                            label: "Stream URL"
-                            description: "Twitch / YouTube URL — sets activity type to Streaming"
-                            text: root.cf_streamUrl
-                            onTextChanged: root.cf_streamUrl = text
-                        }
+                        ColumnLayout {
+                            width: parent.availableWidth
+                            spacing: Style.marginM
 
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.topMargin: Style.marginS
-                            Layout.bottomMargin: Style.marginM
-                            Layout.rightMargin: Style.marginM
-
-                            Item { Layout.fillWidth: true }
-
-                            NButton {
-                                text:      "Create Profile"
-                                enabled:   !root.busy
-                                onClicked: root.submitCreate()
+                            NText {
+                                text:       "Required"
+                                color:      Color.mOnSurfaceVariant
+                                pointSize:  Style.fontSizeXS
+                                font.weight: Font.Medium
+                                Layout.topMargin: Style.marginS
                             }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                visible: root.editingProfile === ""
+                                label: "Profile name"
+                                description: "Unique identifier, e.g. \"gaming\""
+                                text: root.cf_name
+                                onTextChanged: root.cf_name = text
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                visible: root.editingProfile !== ""
+                                spacing: Style.marginS
+
+                                NText {
+                                    text:       "Profile"
+                                    color:      Color.mOnSurfaceVariant
+                                    pointSize:  Style.fontSizeXS
+                                    font.weight: Font.Medium
+                                }
+
+                                Item { Layout.fillWidth: true }
+
+                                NText {
+                                    text:       root.cf_name
+                                    color:      Color.mOnSurface
+                                    pointSize:  Style.fontSizeM
+                                    font.weight: Font.Medium
+                                }
+                            }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                label: "Discord Application ID"
+                                description: "From discord.com/developers/applications"
+                                text: root.cf_appId
+                                onTextChanged: root.cf_appId = text
+                            }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                label: "Activity name"
+                                description: "Shown as the game / app title in Discord"
+                                text: root.cf_activityName
+                                onTextChanged: root.cf_activityName = text
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 1
+                                color: Color.mOutline
+                                opacity: 0.3
+                                Layout.topMargin: Style.marginS
+                            }
+
+                            NText {
+                                text:       "Optional"
+                                color:      Color.mOnSurfaceVariant
+                                pointSize:  Style.fontSizeXS
+                                font.weight: Font.Medium
+                                Layout.topMargin: Style.marginS
+                            }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                label: "Details"
+                                description: "First line under the activity title"
+                                text: root.cf_details
+                                onTextChanged: root.cf_details = text
+                            }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                label: "State"
+                                description: "Second line under the activity title"
+                                text: root.cf_state
+                                onTextChanged: root.cf_state = text
+                            }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                label: "Stream URL"
+                                description: "Twitch / YouTube — sets activity type to Streaming"
+                                text: root.cf_streamUrl
+                                onTextChanged: root.cf_streamUrl = text
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 1
+                                color: Color.mOutline
+                                opacity: 0.3
+                                Layout.topMargin: Style.marginS
+                            }
+
+                            NText {
+                                text:       "Images"
+                                color:      Color.mOnSurfaceVariant
+                                pointSize:  Style.fontSizeXS
+                                font.weight: Font.Medium
+                                Layout.topMargin: Style.marginS
+                            }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                label: "Large Image Key"
+                                description: "Image key from your Discord app's rich presence art assets"
+                                text: root.cf_largeImage
+                                onTextChanged: root.cf_largeImage = text
+                            }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                label: "Large Image Hover Text"
+                                description: "Tooltip shown when hovering the large image"
+                                text: root.cf_largeText
+                                onTextChanged: root.cf_largeText = text
+                            }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                label: "Small Image Key"
+                                description: "Small corner image key"
+                                text: root.cf_smallImage
+                                onTextChanged: root.cf_smallImage = text
+                            }
+
+                            NTextInput {
+                                Layout.fillWidth: true
+                                label: "Small Image Hover Text"
+                                description: "Tooltip shown when hovering the small image"
+                                text: root.cf_smallText
+                                onTextChanged: root.cf_smallText = text
+                            }
+
+                            Item { Layout.preferredHeight: Style.marginS }
+                        }
+                    }
+
+                    // Bottom buttons
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Style.marginM
+
+                        NButton {
+                            text:     "Cancel"
+                            enabled:  !root.busy
+                            onClicked: { root.resetCreateForm(); root.view = "list" }
+                        }
+
+                        Item { Layout.fillWidth: true }
+
+                        NButton {
+                            text:      root.editingProfile !== "" ? "Update Profile" : "Create Profile"
+                            enabled:   !root.busy
+                            onClicked: root.submitCreate()
                         }
                     }
                 }

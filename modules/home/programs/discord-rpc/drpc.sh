@@ -313,6 +313,117 @@ _write_profile_json() {
   echo "Profile created: ${dest}"
 }
 
+_update_profile_json() {
+  local name="$1" app_id="$2" activity_name="$3" details="$4" state="$5"
+  local stream_url="$6" large_image="$7" large_image_text="$8"
+  local small_image="$9" small_image_text="${10}"
+  local btn1_label="${11}" btn1_url="${12}" btn2_label="${13}" btn2_url="${14}"
+
+  [[ "${name}" =~ ^[a-zA-Z0-9_-]+$ ]] \
+    || die "Profile name must only contain letters, numbers, underscores, hyphens."
+
+  local dest="${PROFILES_DIR}/${name}.json"
+
+  mkdir -p "${PROFILES_DIR}"
+
+  local type=0
+  [[ -n "${stream_url}" ]] && type=1
+
+  local json
+  json=$(jq -n \
+    --arg application_id "${app_id}" \
+    --arg name            "${activity_name}" \
+    --arg details         "${details}" \
+    --arg state           "${state}" \
+    --argjson type        "${type}" \
+    --arg url             "${stream_url}" \
+    --arg large_image     "${large_image}" \
+    --arg large_text      "${large_image_text}" \
+    --arg small_image     "${small_image}" \
+    --arg small_text      "${small_image_text}" \
+    --arg btn1_label      "${btn1_label}" \
+    --arg btn1_url        "${btn1_url}" \
+    --arg btn2_label      "${btn2_label}" \
+    --arg btn2_url        "${btn2_url}" \
+    '
+    {
+      application_id: $application_id,
+      name: $name,
+      type: $type
+    }
+    | if $details    != "" then . + {details: $details}    else . end
+    | if $state      != "" then . + {state: $state}        else . end
+    | if $url        != "" then . + {url: $url}            else . end
+    | if ($large_image != "" or $small_image != "") then
+        . + {
+          assets: (
+            {}
+            | if $large_image != "" then . + {large_image: $large_image} else . end
+            | if $large_text  != "" then . + {large_text: $large_text}   else . end
+            | if $small_image != "" then . + {small_image: $small_image} else . end
+            | if $small_text  != "" then . + {small_text: $small_text}   else . end
+          )
+        }
+      else . end
+    | if ($btn1_label != "" and $btn1_url != "") then
+        . + {
+          buttons: (
+            [{label: $btn1_label, url: $btn1_url}]
+            + if ($btn2_label != "" and $btn2_url != "") then
+                [{label: $btn2_label, url: $btn2_url}]
+              else [] end
+          )
+        }
+      else . end
+    ')
+
+  echo "${json}" > "${dest}"
+  echo "Profile updated: ${dest}"
+}
+
+# ── update ─────────────────────────────────────────────────────────────────────
+
+cmd_update() {
+  if [[ "${1:-}" != "--json" ]]; then
+    echo "Usage: drpc update --json '<json>'"
+    echo ""
+    echo "Accepts the same JSON keys as 'drpc create --json'."
+    exit 1
+  fi
+
+  local json_input="${2:-}"
+  [[ -n "${json_input}" ]] || die "--json requires a JSON string argument"
+
+  local name app_id activity_name details="" state="" stream_url=""
+  local large_image="" large_image_text="" small_image="" small_image_text=""
+  local btn1_label="" btn1_url="" btn2_label="" btn2_url=""
+
+  name=$(printf '%s' "${json_input}"           | jq -r '.name // empty')
+  app_id=$(printf '%s' "${json_input}"         | jq -r '.application_id // empty')
+  activity_name=$(printf '%s' "${json_input}"  | jq -r '.activity_name // empty')
+  details=$(printf '%s' "${json_input}"        | jq -r '.details // ""')
+  state=$(printf '%s' "${json_input}"          | jq -r '.state // ""')
+  stream_url=$(printf '%s' "${json_input}"     | jq -r '.url // ""')
+  large_image=$(printf '%s' "${json_input}"    | jq -r '.large_image // ""')
+  large_image_text=$(printf '%s' "${json_input}" | jq -r '.large_image_text // ""')
+  small_image=$(printf '%s' "${json_input}"    | jq -r '.small_image // ""')
+  small_image_text=$(printf '%s' "${json_input}" | jq -r '.small_image_text // ""')
+  btn1_label=$(printf '%s' "${json_input}"     | jq -r '.button1_label // ""')
+  btn1_url=$(printf '%s' "${json_input}"       | jq -r '.button1_url // ""')
+  btn2_label=$(printf '%s' "${json_input}"     | jq -r '.button2_label // ""')
+  btn2_url=$(printf '%s' "${json_input}"       | jq -r '.button2_url // ""')
+
+  [[ -n "${name}" ]]          || die ".name is required in JSON"
+  [[ -n "${app_id}" ]]        || die ".application_id is required in JSON"
+  [[ -n "${activity_name}" ]] || die ".activity_name is required in JSON"
+
+  _update_profile_json "${name}" "${app_id}" "${activity_name}" \
+    "${details}" "${state}" "${stream_url}" \
+    "${large_image}" "${large_image_text}" \
+    "${small_image}" "${small_image_text}" \
+    "${btn1_label}" "${btn1_url}" "${btn2_label}" "${btn2_url}"
+}
+
 # ── edit ───────────────────────────────────────────────────────────────────────
 
 cmd_edit() {
@@ -411,6 +522,23 @@ cmd_remove() {
   echo "Profile removed: ${profile}"
 }
 
+# ── show ─────────────────────────────────────────────────────────────────────
+
+cmd_show() {
+  local profile=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --profile) profile="$2"; shift 2 ;;
+      *) die "Unknown argument: $1" ;;
+    esac
+  done
+  [[ -z "${profile}" ]] && die "Usage: drpc show --profile <name>"
+
+  local src="${PROFILES_DIR}/${profile}.json"
+  [[ -f "${src}" ]] || die "Profile '${profile}' not found."
+  cat "${src}"
+}
+
 # ── image ────────────────────────────────────────────────────────────────────
 
 cmd_image() {
@@ -474,10 +602,12 @@ case "${1:-}" in
   enable)  shift; cmd_enable  "$@" ;;
   disable) shift; cmd_disable "$@" ;;
   create)  shift; cmd_create  "$@" ;;
+  update)  shift; cmd_update  "$@" ;;
   edit)    shift; cmd_edit    "$@" ;;
   image)   shift; cmd_image   "$@" ;;
   list)    shift; cmd_list    "$@" ;;
   remove)  shift; cmd_remove  "$@" ;;
+  show)    shift; cmd_show    "$@" ;;
   status)  shift; cmd_status  "$@" ;;
   *)
     cat <<'EOF'
@@ -488,8 +618,10 @@ Usage:
   drpc disable                     Stop RPC daemon, clear Discord status
   drpc create                      Interactive wizard to create a new profile
   drpc create --json '<json>'      Create profile from JSON object (GUI-friendly)
+  drpc update --json '<json>'      Update an existing profile (GUI-friendly)
   drpc edit --profile <name>       Open profile JSON in $EDITOR
   drpc image --profile <name>      Print the icon URL for a profile
+  drpc show --profile <name>       Print the profile JSON
   drpc list                        List all profiles
   drpc remove --profile <name>     Delete a profile (with confirmation)
   drpc status                      Show active profile and service state
