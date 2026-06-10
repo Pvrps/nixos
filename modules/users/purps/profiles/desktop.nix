@@ -87,7 +87,7 @@
               }
               mouse {
                   accel-profile "flat"
-                  accel-speed 0.15
+                  accel-speed 0
               }
               touchpad {
                   tap
