@@ -44,10 +44,16 @@
       light = "Papirus-Light";
     };
 
+    # cursor = {
+    #   name = "phinger-cursors-dark";
+    #   package = pkgs.phinger-cursors;
+    #   size = 32;
+    # };
+
     cursor = {
-      name = "phinger-cursors-dark";
-      package = pkgs.phinger-cursors;
-      size = 32;
+      package = pkgs.bibata-cursors;
+      name = "Bibata-Modern-Classic";
+      size = 24;
     };
 
     fonts = {
@@ -71,12 +77,6 @@
         name = "Twitter Color Emoji";
       };
     };
-
-    # cursor = {
-    #   package = pkgs.bibata-cursors;
-    #   name = "Bibata-Modern-Ice";
-    #   size = 24;
-    # };
 
     # fonts = {
     #   serif = {

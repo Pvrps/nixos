@@ -1,4 +1,5 @@
 {
+  pkgs,
   lib,
   config,
   ...
@@ -41,9 +42,26 @@ in {
     #   fully software-rendered Java2D painting, which correctly repaints after
     #   every layout change.  RuneLite's in-game rendering uses LWJGL directly
     #   and is unaffected by either flag.
+    # Xcursor theme env vars + filesystem access inside the Flatpak sandbox:
+    #
+    # Java AWT's Cursor.getPredefinedCursor(CROSSHAIR_CURSOR) calls
+    # XCreateFontCursor() which returns an ugly core-font bitmap on its own.
+    # However, XWayland intercepts the resulting XDefineCursor(), maps the
+    # shape (XC_crosshair) back to the cursor name "crosshair", and loads
+    # the themed cursor via libXcursor — *if* the theme files are reachable.
+    #
+    # Without these overrides the sandbox can't follow the symlinks that
+    # home-manager puts in ~/.icons/Bibata-Modern-Classic → /nix/store/…,
+    # so XWayland falls back to the un-themed core font cursor.
     xdg.dataFile."flatpak/overrides/com.adamcake.Bolt".text = ''
       [Environment]
       JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2
+      XCURSOR_THEME=${config.stylix.cursor.name}
+      XCURSOR_SIZE=${toString config.stylix.cursor.size}
+      XCURSOR_PATH=${config.stylix.cursor.package}/share/icons
+
+      [Context]
+      filesystems=${config.stylix.cursor.package}/share/icons/${config.stylix.cursor.name}:ro
     '';
 
     custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
