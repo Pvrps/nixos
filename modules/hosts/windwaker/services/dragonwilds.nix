@@ -3,7 +3,7 @@
   ...
 }:
 let
-  dockerVolumeDir = "/mnt/general/docker";
+  dockerVolumeDir = "/mnt/docker";
 in
 {
   sops.secrets."dragonwilds-env".sopsFile = ./_secrets.yaml;

@@ -2,7 +2,7 @@
   ...
 }:
 let
-  dockerVolumeDir = "/mnt/general/docker";
+  dockerVolumeDir = "/mnt/docker";
 in
 {
   virtualisation.quadlet.containers = {

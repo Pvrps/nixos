@@ -48,20 +48,12 @@
   };
 
   # USB SSD partitions — existing data, not managed by disko
-  # 250G /mnt/general (docker volumes: compose files, .env files, app configs)
-  # 681G /mnt/media    (media library: immich library + postgres)
-  # Docker depends on both — containers bind-mount from both partitions
+  # Podman depends on both — containers bind-mount from both partitions
   fileSystems = {
     "/persist".neededForBoot = true;
 
-    "/mnt/general" = {
+    "/mnt" = {
       device = "/dev/disk/by-uuid/3b95b690-13a1-4052-bc81-ade5b51f2de1";
-      fsType = "ext4";
-      options = ["nofail" "x-systemd.device-timeout=10"];
-    };
-
-    "/mnt/media" = {
-      device = "/dev/disk/by-uuid/c9af4659-a55a-4977-b83b-ae02bb4841c7";
       fsType = "ext4";
       options = ["nofail" "x-systemd.device-timeout=10"];
     };
