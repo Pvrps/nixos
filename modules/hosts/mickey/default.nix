@@ -22,6 +22,8 @@
   networking.hostName = "mickey";
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [22 5600];
 
+  systemd.timers.fwupd-refresh.enable = false;
+
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   #custom.secureboot.enable = true;
