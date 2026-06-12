@@ -48,7 +48,7 @@
 
   custom.services.beszel-agent = {
     enable = true;
-    key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAbwF0d37nTvhWG52FfpN33nD2gzr3OAGYXkTMAOc83Z";
+    key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQAj+3OR1B8cBF0GrVs1jmTuy5snr6zoRaK67v+j42D";
     tokenFile = config.sops.secrets."beszel-agent-token".path;
     hubUrl = "http://windwaker:8090";
     gpuMonitoring = true;
