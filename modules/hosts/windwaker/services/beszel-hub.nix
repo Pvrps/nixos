@@ -19,6 +19,7 @@ in
         "${dockerVolumeDir}/beszel/data:/beszel_data"
       ];
     };
+    unitConfig.RequiresMountsFor = ["/mnt/docker"];
     serviceConfig = {
       Restart = "always";
       RestartSec = "10";

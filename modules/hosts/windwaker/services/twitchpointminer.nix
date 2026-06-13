@@ -22,6 +22,7 @@ in
           "${dockerVolumeDir}/twitch-points-miner-purps/run.py:/usr/src/app/run.py:ro"
         ];
       };
+      unitConfig.RequiresMountsFor = ["/mnt/docker"];
       serviceConfig = {
         Restart = "always";
         RestartSec = "10";
@@ -44,6 +45,7 @@ in
           "${dockerVolumeDir}/twitch-points-miner-inori/run.py:/usr/src/app/run.py:ro"
         ];
       };
+      unitConfig.RequiresMountsFor = ["/mnt/docker"];
       serviceConfig = {
         Restart = "always";
         RestartSec = "10";

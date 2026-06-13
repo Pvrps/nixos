@@ -19,6 +19,7 @@ in
         "/run/podman/podman.sock:/var/run/docker.sock:ro"
       ];
     };
+    unitConfig.RequiresMountsFor = ["/mnt/docker"];
     serviceConfig = {
       Restart = "always";
       RestartSec = "10";

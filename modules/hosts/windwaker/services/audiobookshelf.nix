@@ -21,6 +21,9 @@ in
         "${dockerVolumeDir}/audiobookshelf/metadata:/metadata"
       ];
     };
+    # /mnt is nofail; without this, podman creates empty bind-source dirs
+    # on the tmpfs root if the USB disk is absent at boot.
+    unitConfig.RequiresMountsFor = ["/mnt/docker"];
     serviceConfig = {
       Restart = "always";
       RestartSec = "10";

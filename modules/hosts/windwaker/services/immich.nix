@@ -31,6 +31,7 @@ in {
             "redis.service"
             "database.service"
           ];
+          RequiresMountsFor = ["/mnt/docker"];
         };
         serviceConfig = {
           Restart = "always";
@@ -77,6 +78,7 @@ in {
             "${dockerVolumeDir}/immich/postgres:/var/lib/postgresql/data"
           ];
         };
+        unitConfig.RequiresMountsFor = ["/mnt/docker"];
         serviceConfig = {
           Restart = "always";
           RestartSec = "10";

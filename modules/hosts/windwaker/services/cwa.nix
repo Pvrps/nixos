@@ -30,6 +30,7 @@ in
         "${dockerVolumeDir}/calibre_web_automated/plugins:/config/.config/calibre/plugins"
       ];
     };
+    unitConfig.RequiresMountsFor = ["/mnt/docker"];
     serviceConfig = {
       Restart = "always";
       RestartSec = "10";

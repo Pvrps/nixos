@@ -42,6 +42,7 @@ in {
           };
           volumes = ["${dockerVolumeDir}/cloudflared:/etc/cloudflared"];
         };
+        unitConfig.RequiresMountsFor = ["/mnt/docker"];
         serviceConfig = {
           Restart = "always";
           RestartSec = "10";
@@ -66,6 +67,7 @@ in {
         unitConfig = {
           After = ["cloudflared-tunnel.service"];
           Requires = ["cloudflared-tunnel.service"];
+          RequiresMountsFor = ["/mnt/docker"];
         };
         serviceConfig = {
           Restart = "always";
@@ -96,6 +98,7 @@ in {
             "${dockerVolumeDir}/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
           ];
         };
+        unitConfig.RequiresMountsFor = ["/mnt/docker"];
         serviceConfig = {
           Restart = "always";
           RestartSec = "10";

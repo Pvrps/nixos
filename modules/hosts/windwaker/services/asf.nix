@@ -15,6 +15,7 @@ in
         "${dockerVolumeDir}/archi_steam_farm/config:/app/logs"
       ];
     };
+    unitConfig.RequiresMountsFor = ["/mnt/docker"];
     serviceConfig = {
       Restart = "always";
       RestartSec = "10";

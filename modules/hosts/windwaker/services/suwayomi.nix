@@ -19,6 +19,7 @@ in
         "${dockerVolumeDir}/suwayomi/data:/home/suwayomi/.local/share/Tachidesk"
       ];
     };
+    unitConfig.RequiresMountsFor = ["/mnt/docker"];
     serviceConfig = {
       Restart = "always";
       RestartSec = "10";

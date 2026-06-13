@@ -37,6 +37,7 @@ in
           "${dockerVolumeDir}/tailscale-rustdesk:/var/lib/tailscale"
         ];
       };
+      unitConfig.RequiresMountsFor = ["/mnt/docker"];
       serviceConfig = {
         Restart = "always";
         RestartSec = "10";
@@ -63,6 +64,7 @@ in
       unitConfig = {
         After = [ "tailscale-rustdesk.service" ];
         Requires = [ "tailscale-rustdesk.service" ];
+        RequiresMountsFor = ["/mnt/docker"];
       };
       serviceConfig = {
         Restart = "always";
@@ -92,6 +94,7 @@ in
           "tailscale-rustdesk.service"
           "hbbs.service"
         ];
+        RequiresMountsFor = ["/mnt/docker"];
       };
       serviceConfig = {
         Restart = "always";

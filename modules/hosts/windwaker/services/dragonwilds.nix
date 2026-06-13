@@ -29,6 +29,7 @@ in
         "${dockerVolumeDir}/runescape-dragonwilds/server-files:/home/steam/server-files"
       ];
     };
+    unitConfig.RequiresMountsFor = ["/mnt/docker"];
     serviceConfig = {
       Restart = "always";
       RestartSec = "10";
