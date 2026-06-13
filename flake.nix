@@ -48,9 +48,7 @@
       };
     };
 
-    nix-flatpak = {
-      url = "github:gmodena/nix-flatpak/?ref=latest";
-    };
+    nix-flatpak.url = "github:gmodena/nix-flatpak/v0.7.0";
 
     llm-agents = {
       url = "github:numtide/llm-agents.nix";
@@ -62,7 +60,13 @@
       flake = false;
     };
 
-    impermanence.url = "github:nix-community/impermanence";
+    impermanence = {
+      url = "github:nix-community/impermanence";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
 
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
