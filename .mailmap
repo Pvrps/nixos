@@ -1,0 +1,3 @@
+# Historical flake-update commits were authored as the bot name with a
+# personal email; map them to the canonical bot identity for git log/shortlog.
+github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com> github-actions[bot] <github@purps.ca>
