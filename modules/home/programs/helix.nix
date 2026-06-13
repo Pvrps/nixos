@@ -157,10 +157,6 @@ in {
             name = "just";
             auto-format = true;
             language-servers = ["just-lsp"];
-            formatter = {
-              command = "${pkgs.just}/bin/just";
-              args = ["--fmt" "--unstable"];
-            };
           }
           {
             name = "odin";
