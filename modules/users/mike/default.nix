@@ -142,6 +142,11 @@
         name = "mike";
         isDefault = true;
         path = "mike";
+        settings = {
+          # Use the N150 iGPU for hardware video decode (see mickey host config)
+          "media.ffmpeg.vaapi.enabled" = true;
+          "media.hardware-video-decoding.force-enabled" = true;
+        };
       };
       extensionSettings = {
         "uBlock0@raymondhill.net" = {

@@ -26,6 +26,13 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  # Hardware video decode on the N150 iGPU (intel-media-driver = iHD VAAPI).
+  # Offloads browser video decode from the 4 E-cores to the GPU.
+  hardware.graphics = {
+    enable = true;
+    extraPackages = [pkgs.intel-media-driver];
+  };
+
   #custom.secureboot.enable = true;
 
   # Enable Services
