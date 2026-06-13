@@ -17,7 +17,10 @@
     src = pkgs.fetchFromGitHub {
       owner = "OpenAsar";
       repo = "arrpc";
-      rev = "refs/pull/143/head";
+      # Pinned to the exact commit matching the hash below. refs/pull/143/head
+      # has since moved — using the mutable ref would cause a hash mismatch on
+      # the next fetch. Update rev+hash together when bumping.
+      rev = "95cf61d2e24ca63111bcf0d45d8338d94743cd31";
       hash = "sha256-TBVrQN/QoBRKZOgN8Yr0gP0Fn0M+BeojoL3RpKOo5NU=";
     };
 
