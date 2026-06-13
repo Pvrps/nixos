@@ -143,6 +143,12 @@
               quadlet-nix.nixosModules.quadlet
               {
                 home-manager = {
+                  # Reuse the system nixpkgs instance instead of evaluating a
+                  # private one per user (inherits allowUnfree from core.nix).
+                  # Trade-off: stylix's nixpkgs.overlays (recolored NixOS logo,
+                  # gtksourceview syntax theme) are ignored — all other stylix
+                  # theming is file-based and unaffected.
+                  useGlobalPkgs = true;
                   useUserPackages = true;
                   backupFileExtension = "backup";
                   extraSpecialArgs = {inherit inputs;};
