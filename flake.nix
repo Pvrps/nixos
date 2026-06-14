@@ -162,9 +162,9 @@
             ];
           };
       in {
-        nixosConfigurations.desktop = mkHost {
-          host = "desktop";
-          users.purps = import ./modules/users/purps/desktop.nix;
+        nixosConfigurations.navi = mkHost {
+          host = "navi";
+          users.purps = import ./modules/users/purps/navi.nix;
         };
 
         nixosConfigurations.mickey = mkHost {

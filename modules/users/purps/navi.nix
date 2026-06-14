@@ -2,7 +2,7 @@
   imports = [
     ./general.nix
     ./stylix.nix
-    ./profiles/desktop.nix
+    ./profiles/navi.nix
     ./profiles/browsers.nix
     ./profiles/dev.nix
     ./profiles/gaming.nix

@@ -19,7 +19,7 @@
     enable = true;
   };
 
-  networking.hostName = "desktop";
+  networking.hostName = "navi";
 
   custom = {
     gaming = {

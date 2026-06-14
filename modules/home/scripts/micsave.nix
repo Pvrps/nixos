@@ -61,8 +61,6 @@
 
         echo ""
         echo "✓ Changes committed!"
-        echo ""
-        echo "To apply: sudo nixos-rebuild switch --flake .#desktop"
 
         $NOTIFY "MicSave" "Preset changes committed to git"
       else

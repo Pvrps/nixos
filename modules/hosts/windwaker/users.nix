@@ -17,7 +17,7 @@
         shell = pkgs.fish;
         hashedPasswordFile = config.sops.secrets."purps-password".path;
         openssh.authorizedKeys.keys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKXahrPYpFxiNEPA+IFJYRnn6DwABTtHy0H26HkoWbEw purps@desktop"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKXahrPYpFxiNEPA+IFJYRnn6DwABTtHy0H26HkoWbEw purps@navi"
         ];
       };
 
@@ -32,7 +32,7 @@
       root = {
         hashedPassword = "!"; # password login disabled; SSH key only
         openssh.authorizedKeys.keys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1ja+8eNXLnaCJ418HETeJKE9MbGWxCkuISufkbVMmh purps@desktop"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1ja+8eNXLnaCJ418HETeJKE9MbGWxCkuISufkbVMmh purps@navi"
         ];
       };
     };
