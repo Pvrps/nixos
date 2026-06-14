@@ -1,4 +1,10 @@
 {
+  home.persistence."/persist".directories = [
+    ".cache/nvidia"
+    ".cache/mesa_shader_cache"
+    ".cache/radv_builtin_shaders"
+  ];
+
   custom = {
     scripts.micsave = {
       enable = true;

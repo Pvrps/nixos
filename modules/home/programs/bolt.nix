@@ -64,6 +64,8 @@ in {
       filesystems=${config.stylix.cursor.package}/share/icons/${config.stylix.cursor.name}:ro
     '';
 
+    home.persistence."/persist".directories = [".runelite"];
+
     custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
       window-rule {
           match app-id=r#"^com\.adamcake\.Bolt$"#

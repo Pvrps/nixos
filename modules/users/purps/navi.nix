@@ -2,13 +2,24 @@
   imports = [
     ./general.nix
     ./stylix.nix
-    ./profiles/navi.nix
+    ./profiles/desktop.nix
     ./profiles/browsers.nix
     ./profiles/dev.nix
     ./profiles/gaming.nix
     ./profiles/media.nix
     ./profiles/hardware.nix
   ];
+
+  home.persistence."/persist" = {
+    directories = [
+      ".putty"
+      "Downloads"
+      "Pictures"
+      "Videos"
+      "Development"
+      "Documents"
+    ];
+  };
 
   custom.scripts.capture.ocr.enable = true;
 

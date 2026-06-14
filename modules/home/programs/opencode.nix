@@ -65,6 +65,11 @@ in {
       '';
     };
   in {
+    home.persistence."/persist" = {
+      directories = [".claude"];
+      files = [".claude.json"];
+    };
+
     assertions = [
       {
         assertion = !context7.enable || context7.apiKeyPath != "";

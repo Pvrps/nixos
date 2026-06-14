@@ -12,24 +12,7 @@
         ".var"
         ".ssh"
         ".gnupg"
-        ".claude"
-        ".steam"
-        ".vscode"
-        ".putty"
         ".pki"
-        ".runelite"
-        ".cache/nvidia"
-        ".cache/noctalia"
-        ".cache/mesa_shader_cache"
-        ".cache/radv_builtin_shaders"
-        "Downloads"
-        "Pictures"
-        "Videos"
-        "Development"
-        "Documents"
-      ];
-      files = [
-        ".claude.json"
       ];
     };
 

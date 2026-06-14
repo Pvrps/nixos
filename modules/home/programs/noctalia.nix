@@ -123,6 +123,8 @@ in {
       };
     };
 
+    home.persistence."/persist".directories = [".cache/noctalia"];
+
     custom.programs.niri = {
       startupCommands = [
         ''"bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell; else dms run --session; fi"''

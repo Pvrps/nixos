@@ -40,6 +40,8 @@ in {
       };
     };
 
+    home.persistence."/persist".directories = [".steam"];
+
     custom.programs.niri.startupCommands = [
       ''"bash" "-c" "nm-online -q --timeout=30 || true; STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 steam -system-composer -silent > /dev/null 2>&1"''
     ];
