@@ -1,5 +1,6 @@
 {osConfig, ...}: {
   custom.scripts."2m4b".enable = true;
+  custom.scripts.abd.enable = true;
 
   custom.programs = {
     chatterino.enable = true;
