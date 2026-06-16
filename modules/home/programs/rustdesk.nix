@@ -23,6 +23,13 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = hasServer;
+        message = "custom.programs.rustdesk requires both serverFile and keyFile to be set; otherwise the client is installed but never configured.";
+      }
+    ];
+
     home.packages = [
       pkgs.rustdesk-flutter
     ];

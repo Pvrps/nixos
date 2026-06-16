@@ -212,6 +212,8 @@
 
         formatter = inputs.treefmt-nix.lib.mkWrapper pkgs {
           projectRootFile = "flake.nix";
+          # sops-encrypted secrets are managed by sops, not the formatter.
+          settings.global.excludes = ["*_secrets.yaml"];
           programs = {
             alejandra.enable = true;
             statix.enable = true;
