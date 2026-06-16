@@ -1,20 +1,14 @@
-_: let
+{lib, ...}: let
   dockerVolumeDir = "/mnt/docker";
 in {
-  virtualisation.quadlet.containers.archi-steam-farm = {
-    autoStart = true;
+  virtualisation.quadlet.containers.archi-steam-farm = lib.custom.mkContainer {
+    tz = null;
     containerConfig = {
       image = "justarchi/archisteamfarm:latest";
-      networks = ["lan_bridge"];
       volumes = [
         "${dockerVolumeDir}/archi_steam_farm/config:/app/config"
         "${dockerVolumeDir}/archi_steam_farm/config:/app/logs"
       ];
-    };
-    unitConfig.RequiresMountsFor = ["/mnt/docker"];
-    serviceConfig = {
-      Restart = "always";
-      RestartSec = "10";
     };
   };
 }

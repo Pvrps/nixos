@@ -5,6 +5,7 @@
   ...
 }: let
   cfg = config.custom.programs.foot;
+  palette = lib.custom.mkTerminalPalette config.lib.stylix.colors;
 in {
   options.custom.programs.foot = {
     enable = lib.mkEnableOption "Foot terminal emulator";
@@ -16,12 +17,7 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.custom.system.wayland.enable;
-        message = "foot module requires a Wayland compositor to be enabled (e.g. custom.programs.niri.enable = true).";
-      }
-    ];
+    assertions = [(lib.custom.mkRequireWayland config "foot")];
 
     stylix.targets.foot.enable = false;
 
@@ -33,26 +29,26 @@ in {
           dpi-aware = "no";
           pad = config.custom.programs.foot.pad;
         };
-        "colors-dark" = {
+        "colors-dark" = lib.mkIf config.stylix.enable {
           alpha = config.stylix.opacity.terminal;
           foreground = config.lib.stylix.colors.base05;
           background = config.lib.stylix.colors.base00;
-          regular0 = config.lib.stylix.colors.base00;
-          regular1 = config.lib.stylix.colors.base08;
-          regular2 = config.lib.stylix.colors.base0B;
-          regular3 = config.lib.stylix.colors.base0A;
-          regular4 = config.lib.stylix.colors.base0D;
-          regular5 = config.lib.stylix.colors.base0E;
-          regular6 = config.lib.stylix.colors.base0C;
-          regular7 = config.lib.stylix.colors.base05;
-          bright0 = config.lib.stylix.colors.base03;
-          bright1 = config.lib.stylix.colors.base08;
-          bright2 = config.lib.stylix.colors.base0B;
-          bright3 = config.lib.stylix.colors.base0A;
-          bright4 = config.lib.stylix.colors.base0D;
-          bright5 = config.lib.stylix.colors.base0E;
-          bright6 = config.lib.stylix.colors.base0C;
-          bright7 = config.lib.stylix.colors.base07;
+          regular0 = palette.normal.black;
+          regular1 = palette.normal.red;
+          regular2 = palette.normal.green;
+          regular3 = palette.normal.yellow;
+          regular4 = palette.normal.blue;
+          regular5 = palette.normal.magenta;
+          regular6 = palette.normal.cyan;
+          regular7 = palette.normal.white;
+          bright0 = palette.bright.black;
+          bright1 = palette.bright.red;
+          bright2 = palette.bright.green;
+          bright3 = palette.bright.yellow;
+          bright4 = palette.bright.blue;
+          bright5 = palette.bright.magenta;
+          bright6 = palette.bright.cyan;
+          bright7 = palette.bright.white;
           "16" = config.lib.stylix.colors.base09;
           "17" = config.lib.stylix.colors.base0F;
           "18" = config.lib.stylix.colors.base01;

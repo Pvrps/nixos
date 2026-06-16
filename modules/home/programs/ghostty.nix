@@ -5,16 +5,30 @@
   ...
 }: let
   cfg = config.custom.programs.ghostty;
+  palette = lib.custom.mkTerminalPalette config.lib.stylix.colors;
+  ansi = [
+    palette.normal.black
+    palette.normal.red
+    palette.normal.green
+    palette.normal.yellow
+    palette.normal.blue
+    palette.normal.magenta
+    palette.normal.cyan
+    palette.normal.white
+    palette.bright.black
+    palette.bright.red
+    palette.bright.green
+    palette.bright.yellow
+    palette.bright.blue
+    palette.bright.magenta
+    palette.bright.cyan
+    palette.bright.white
+  ];
 in {
   options.custom.programs.ghostty.enable = lib.mkEnableOption "Ghostty terminal emulator";
 
   config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.custom.system.wayland.enable;
-        message = "Ghostty module requires a Wayland compositor to be enabled.";
-      }
-    ];
+    assertions = [(lib.custom.mkRequireWayland config "ghostty")];
 
     stylix.targets.ghostty.enable = false;
 
@@ -32,24 +46,7 @@ in {
         background = "#${config.lib.stylix.colors.base00}";
         foreground = "#${config.lib.stylix.colors.base05}";
 
-        palette = [
-          "0=#${config.lib.stylix.colors.base00}"
-          "1=#${config.lib.stylix.colors.base08}"
-          "2=#${config.lib.stylix.colors.base0B}"
-          "3=#${config.lib.stylix.colors.base0A}"
-          "4=#${config.lib.stylix.colors.base0D}"
-          "5=#${config.lib.stylix.colors.base0E}"
-          "6=#${config.lib.stylix.colors.base0C}"
-          "7=#${config.lib.stylix.colors.base05}"
-          "8=#${config.lib.stylix.colors.base03}"
-          "9=#${config.lib.stylix.colors.base08}"
-          "10=#${config.lib.stylix.colors.base0B}"
-          "11=#${config.lib.stylix.colors.base0A}"
-          "12=#${config.lib.stylix.colors.base0D}"
-          "13=#${config.lib.stylix.colors.base0E}"
-          "14=#${config.lib.stylix.colors.base0C}"
-          "15=#${config.lib.stylix.colors.base07}"
-        ];
+        palette = lib.imap0 (i: c: "${toString i}=#${c}") ansi;
 
         window-decoration = false;
         window-padding-x = 4;

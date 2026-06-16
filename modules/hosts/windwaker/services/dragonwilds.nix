@@ -1,13 +1,16 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   dockerVolumeDir = "/mnt/docker";
 in {
   sops.secrets."dragonwilds-env".sopsFile = ./_secrets.yaml;
 
-  virtualisation.quadlet.containers.runescape-dragonwilds = {
-    autoStart = true;
+  virtualisation.quadlet.containers.runescape-dragonwilds = lib.custom.mkContainer {
+    tz = null;
     containerConfig = {
       image = "indifferentbroccoli/runescape-dragonwilds-server-docker:latest";
-      networks = ["lan_bridge"];
       publishPorts = ["55180:55180/udp"];
       environmentFiles = [config.sops.secrets."dragonwilds-env".path];
       environments = {
@@ -23,11 +26,6 @@ in {
       volumes = [
         "${dockerVolumeDir}/runescape-dragonwilds/server-files:/home/steam/server-files"
       ];
-    };
-    unitConfig.RequiresMountsFor = ["/mnt/docker"];
-    serviceConfig = {
-      Restart = "always";
-      RestartSec = "10";
     };
   };
 }
