@@ -1,8 +1,9 @@
 {osConfig, ...}: {
   imports = [
     ./general.nix
-    ./stylix.nix
   ];
+
+  custom.theme.enable = true;
 
   custom.profiles = {
     desktop = {

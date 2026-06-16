@@ -1,8 +1,13 @@
 {osConfig, ...}: {
   imports = [
     ./general.nix
-    ./stylix.nix
   ];
+
+  custom.theme = {
+    enable = true;
+    foregroundContrast = "high";
+    kdeTargets = true;
+  };
 
   custom.profiles = {
     desktop = {
