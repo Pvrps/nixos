@@ -1,6 +1,9 @@
 {pkgs, ...}: let
   sddm-astronaut = pkgs.sddm-astronaut.override {
-    embeddedTheme = "pixel_sakura";
+    # Available themes: astronaut, black_hole, cyberpunk, hyprland_kath,
+    # jake_the_dog, japanese_aesthetic, pixel_sakura, pixel_sakura_static,
+    # post-apocalyptic_hacker, purple_leaves
+    embeddedTheme = "hyprland_kath";
   };
 in {
   fonts.packages = [pkgs.geist-font];
