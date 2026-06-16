@@ -79,11 +79,11 @@ in {
 
     home.persistence."/persist".directories = [".steam"];
 
-    custom.programs.niri.startupCommands = [
+    custom.programs.niri.startupCommands = lib.mkIf config.custom.programs.niri.enable [
       ''"bash" "-c" "nm-online -q --timeout=30 || true; STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 ${steamBin} -system-composer -silent > /dev/null 2>&1"''
     ];
 
-    custom.programs.niri.windowRulesConfig = ''
+    custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
       window-rule {
           match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
           open-floating true

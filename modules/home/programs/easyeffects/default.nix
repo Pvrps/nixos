@@ -29,7 +29,7 @@ in {
 
     home.packages = [pkgs.easyeffects];
 
-    custom.programs.niri.startupCommands = [
+    custom.programs.niri.startupCommands = lib.mkIf config.custom.programs.niri.enable [
       ''"bash" "-c" "for i in {1..20}; do ${pkgs.pulseaudio}/bin/pactl list short sources | grep -q 'easyeffects_source' && { ${pkgs.pulseaudio}/bin/pactl set-default-source easyeffects_source; break; }; sleep 0.5; done"''
     ];
 

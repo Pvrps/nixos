@@ -125,7 +125,7 @@ in {
 
     home.persistence."/persist".directories = [".cache/noctalia"];
 
-    custom.programs.niri = {
+    custom.programs.niri = lib.mkIf config.custom.programs.niri.enable {
       startupCommands = [
         ''"bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell; else dms run --session; fi"''
         ''"blueman-applet"''
