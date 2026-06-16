@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  sddm-astronaut = pkgs.sddm-astronaut.override {
+    embeddedTheme = "pixel_sakura_static";
+  };
+in {
   fonts.packages = [pkgs.geist-font];
 
   services = {
@@ -6,6 +10,8 @@
       enable = true;
       wayland.enable = true;
       settings.Users.HideUsers = "purps";
+      theme = "sddm-astronaut-theme";
+      extraPackages = [sddm-astronaut];
     };
     desktopManager.plasma6.enable = true;
     upower.enable = true;
