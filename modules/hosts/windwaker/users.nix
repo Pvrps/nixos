@@ -15,7 +15,7 @@
         # wheel: sudo for anything requiring root
         extraGroups = ["wheel" "docker" "networkmanager" "video" "audio" "input"];
         shell = pkgs.fish;
-        hashedPasswordFile = config.sops.secrets."purps-password".path;
+        hashedPasswordFile = "!";
         openssh.authorizedKeys.keys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKXahrPYpFxiNEPA+IFJYRnn6DwABTtHy0H26HkoWbEw purps@navi"
         ];
@@ -24,16 +24,13 @@
       podman-admin = {
         isNormalUser = true;
         uid = 1001;
-        extraGroups = [ "docker" "podman" ];
+        extraGroups = ["docker" "podman"];
         shell = pkgs.bash;
         hashedPasswordFile = config.sops.secrets."podman-admin-password".path;
       };
 
       root = {
-        hashedPassword = "!"; # password login disabled; SSH key only
-        openssh.authorizedKeys.keys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1ja+8eNXLnaCJ418HETeJKE9MbGWxCkuISufkbVMmh purps@navi"
-        ];
+        hashedPassword = "!";
       };
     };
   };
@@ -56,7 +53,6 @@
         group = "users";
         mode = "0600";
       };
-
     };
   };
 }

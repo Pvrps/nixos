@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{pkgs, config, ...}: {
   stylix = {
     enable = true;
 
@@ -10,8 +10,8 @@
       base04 = "75797f"; # gray4      (Dark FG)
 
       # Foreground: Switched to 'fg2' (brighter) for high contrast
-      base05 = "c5c9c7"; # fg         (Default Text - easier on the eyes for bulk reading)
-      base06 = "f2f1ef"; # fg2        (Brighter Text / Highlights)
+      base05 = "f2f1ef"; # fg2        (Default Text - high contrast)
+      base06 = "c5c9c7"; # fg         (Dimmer Text / Comments)
       base07 = "ffffff"; # pearlWhite (Lightest Text / Maximum Contrast)
 
       # The Saturated Palette (Vibrant / Poppy)
@@ -55,6 +55,9 @@
       name = "Bibata-Modern-Classic";
       size = 24;
     };
+
+    targets.kde.enable = false;
+    targets.qt.platform = "kde";
 
     fonts = {
       serif = {

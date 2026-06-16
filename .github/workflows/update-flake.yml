@@ -40,7 +40,7 @@ jobs:
 
       - name: Dry Build Systems
         run: |
-          for host in navi mickey windwaker; do
+          for host in navi ciela mickey windwaker; do
             nix build ".#nixosConfigurations.$host.config.system.build.toplevel" --dry-run
           done
 

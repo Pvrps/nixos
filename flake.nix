@@ -106,6 +106,11 @@
       url = "github:Guekka/xdg-desktop-portal-termfilepickers";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    sls-steam = {
+      url = "github:AceSLS/SLSsteam";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -120,6 +125,7 @@
     lanzaboote,
     nix-index-database,
     quadlet-nix,
+    sls-steam,
     ...
   } @ inputs:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -155,6 +161,7 @@
                   sharedModules = [
                     (import-tree ./modules/home)
                     inputs.nix-index-database.homeModules.nix-index
+                    inputs.sls-steam.homeModules.sls-steam
                   ];
                   inherit users;
                 };
@@ -175,6 +182,12 @@
 
         nixosConfigurations.windwaker = mkHost {
           host = "windwaker";
+          users.purps = import ./modules/users/purps/general.nix;
+        };
+
+        nixosConfigurations.ciela = mkHost {
+          host = "ciela";
+          users.inori = import ./modules/users/inori/ciela.nix;
           users.purps = import ./modules/users/purps/general.nix;
         };
       };

@@ -26,13 +26,12 @@
         neededForUsers = true;
       };
 
-      "windwaker-purps-key" = {
+      "ciela-purps-key" = {
         owner = "purps";
         group = "users";
         mode = "0600";
       };
-
-      "windwaker-root-key" = {
+      "windwaker-purps-key" = {
         owner = "purps";
         group = "users";
         mode = "0600";
@@ -76,7 +75,6 @@
         group = "root";
         mode = "0600";
       };
-
     };
   };
 }

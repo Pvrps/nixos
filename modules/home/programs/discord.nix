@@ -3,30 +3,28 @@
   config,
   inputs,
   lib,
+  osConfig,
   ...
 }: let
   cfg = config.custom.programs.discord;
-  # fixed-equibop = (pkgs.equibop.override {inherit (pkgs) electron;})
-  #   .overrideAttrs (old: {
-  #   postFixup = let
-  #     libPath = with pkgs;
-  #       lib.makeLibraryPath [
-  #         libva
-  #         stdenv.cc.cc.lib
-  #       ];
-  #   in
-  #     (old.postFixup or "")
-  #     + ''
-  #       wrapProgram $out/bin/equibop \
-  #         --prefix LD_LIBRARY_PATH : "${libPath}" \
-  #         --set LIBVA_DRIVER_NAME "nvidia" \
-  #         --set NVD_BACKEND "direct" \
-  #         --add-flags "--enable-features=VaapiVideoEncoder,VaapiVideoDecoder,VaapiIgnoreDriverChecks,VaapiOnNvidiaGPUs,CanvasOopRasterization" \
-  #         --add-flags "--disable-features=UseChromeOSDirectVideoDecoder" \
-  #         --add-flags "--ozone-platform=wayland" \
-  #         --add-flags "--disable-gpu-memory-buffer-video-frames"
-  #     '';
-  # });
+  fixed-vesktop = pkgs.vesktop.overrideAttrs (old: {
+    postFixup = let
+      libPath = with pkgs;
+        lib.makeLibraryPath [
+          libva
+          stdenv.cc.cc.lib
+        ];
+    in
+      (old.postFixup or "")
+      + ''
+        wrapProgram $out/bin/vesktop \
+          --prefix LD_LIBRARY_PATH : "${libPath}" \
+          --set LIBVA_DRIVER_NAME "nvidia" \
+          --set NVD_BACKEND "direct" \
+          --add-flags "--enable-features=VaapiVideoEncoder,VaapiVideoDecoder,VaapiIgnoreDriverChecks,VaapiOnNvidiaGPUs,CanvasOopRasterization" \
+          --add-flags "--disable-features=UseChromeOSDirectVideoDecoder"
+      '';
+  });
 in {
   imports = [
     inputs.nixcord.homeModules.nixcord
@@ -52,6 +50,7 @@ in {
       discord.enable = false;
       vesktop = {
         enable = true;
+        package = lib.mkIf osConfig.hardware.nvidia.modesetting.enable fixed-vesktop;
         useSystemVencord = false;
         settings = {
           arRPC = false;

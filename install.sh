@@ -6,12 +6,16 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+LOG_FILE="/tmp/nixos-install-$(date +%Y%m%d-%H%M%S).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+echo "Install log: $LOG_FILE"
+
 log_info() {
   echo -e "${GREEN}[INFO]${NC} $1"
 }
 
 log_error() {
-  echo -e "${RED}[ERROR]${NC} $1" >&2
+  echo -e "${RED}[ERROR]${NC} $1"
 }
 
 log_warn() {
@@ -41,6 +45,11 @@ fi
 
 cd "$SCRIPT_DIR"
 
+log_info "Cleaning up any leftover mounts from a previous run..."
+swapoff -a 2>/dev/null || true
+umount -R -l /mnt 2>/dev/null || true
+log_info "Cleanup done."
+
 log_info "Checking internet connectivity..."
 if ! ping -c 1 -W 3 8.8.8.8 >/dev/null 2>&1; then
   log_error "No internet connectivity detected. Please connect to the internet first."
@@ -56,7 +65,8 @@ if [[ $confirm =~ ^[Nn] ]]; then
   log_warn "Skipping disk partitioning."
 else
   log_info "Starting disk partitioning with disko..."
-  if ! nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko ./$HOST_DIR/_disko.nix; then
+  DISKO_SRC=$(nix-shell -p jq --run "jq -r '.nodes.disko.locked | \"github:\\(.owner)/\\(.repo)/\\(.rev)\"' '$SCRIPT_DIR/flake.lock'")
+  if ! nix --experimental-features "nix-command flakes" run "${DISKO_SRC}" -- --mode disko ./$HOST_DIR/_disko.nix; then
     log_error "Disko failed. Please check your _disko.nix configuration."
     exit 1
   fi

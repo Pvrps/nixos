@@ -3,6 +3,10 @@ creation_rules:
     key_groups:
       - age:
           - age1hdsdpwmxzn35kmv5zkhwtkg0ntkgrdaczkh88xnydk73f707l4lswrqh86
+  - path_regex: modules/hosts/ciela/_secrets\.yaml$
+    key_groups:
+      - age:
+          - age1cea9n52tw4x67xnw8l9cg6pnh02kfv3fls7tt3h6zgmdvkmsg4uqpyz7z3
   - path_regex: modules/hosts/mickey/_secrets\.yaml$
     key_groups:
       - age:

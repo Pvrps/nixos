@@ -9,17 +9,15 @@
     ../../../modules/nixos/core.nix
     ../../../modules/nixos/nvidia.nix
     ../../../modules/nixos/gaming.nix
-    ../../../modules/nixos/services/sshfs.nix
     ../../../modules/nixos/beszel-agent.nix
     ../../../modules/nixos/tailscale.nix
-    ../../../modules/nixos/secureboot.nix
   ];
 
   programs.nh = {
     enable = true;
   };
 
-  networking.hostName = "navi";
+  networking.hostName = "ciela";
 
   custom = {
     gaming = {
@@ -27,24 +25,20 @@
       steamRemotePlay.openFirewall = true;
       steamDedicatedServer.openFirewall = true;
     };
+  };
 
-    #secureboot.enable = true;
-    services.sshfs = {
-      enable = true;
-      mounts = {
-        windwaker = {
-          host = "10.0.10.16";
-          user = "purps";
-          remotePath = "/mnt/";
-          identityFile = config.sops.secrets."windwaker-purps-key".path;
-          mountPoint = "/mnt/windwaker";
-          allowOther = true;
-        };
-      };
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "prohibit-password";
+      PasswordAuthentication = false;
     };
   };
 
+  # SSH-key-only host — passwords are random and unknown, so wheel must not need one for sudo
   sops.defaultSopsFile = ./_secrets.yaml;
+
+  security.sudo.wheelNeedsPassword = false;
 
   custom.services.beszel-agent = {
     enable = true;
