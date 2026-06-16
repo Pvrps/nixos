@@ -37,6 +37,16 @@ in {
             default = null;
             description = "Path to SSH private key file";
           };
+          knownHostKey = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            example = "ssh-ed25519 AAAAC3Nz...";
+            description = ''
+              Pinned SSH host public key for the remote. When set, host identity
+              is verified against this key (StrictHostKeyChecking=yes with a
+              generated known_hosts), instead of trust-on-first-use.
+            '';
+          };
           allowOther = lib.mkOption {
             type = lib.types.bool;
             default = false;
@@ -54,7 +64,7 @@ in {
               "ServerAliveInterval=15"
               "ServerAliveCountMax=3"
             ];
-            description = "Extra options to pass to sshfs (-o).";
+            description = "Extra options to pass to sshfs (-o). When knownHostKey is set, host-key checking options are added automatically.";
           };
         };
       });
@@ -68,7 +78,34 @@ in {
 
     systemd.services = lib.mapAttrs' (name: mountCfg: let
       hasIdentity = mountCfg.identityFile != null;
-      options = lib.concatStringsSep "," (mountCfg.extraOptions ++ lib.optional mountCfg.allowOther "allow_other" ++ lib.optional hasIdentity "IdentityFile=${mountCfg.identityFile}");
+      pinHost = mountCfg.knownHostKey != null;
+
+      # When a host key is pinned, write a known_hosts file and require it.
+      knownHostsFile =
+        pkgs.writeText "sshfs-${name}-known_hosts"
+        "${mountCfg.host} ${mountCfg.knownHostKey or ""}\n";
+
+      hostKeyOptions =
+        if pinHost
+        then [
+          "StrictHostKeyChecking=yes"
+          "UserKnownHostsFile=${knownHostsFile}"
+        ]
+        else [];
+
+      # When pinning, drop any StrictHostKeyChecking from extraOptions so it
+      # doesn't conflict with the pinned StrictHostKeyChecking=yes.
+      baseOptions =
+        if pinHost
+        then lib.filter (o: !(lib.hasPrefix "StrictHostKeyChecking=" o)) mountCfg.extraOptions
+        else mountCfg.extraOptions;
+
+      options = lib.concatStringsSep "," (
+        baseOptions
+        ++ hostKeyOptions
+        ++ lib.optional mountCfg.allowOther "allow_other"
+        ++ lib.optional hasIdentity "IdentityFile=${mountCfg.identityFile}"
+      );
 
       sshfsCmd = "${pkgs.sshfs}/bin/sshfs ${lib.escapeShellArgs ["${mountCfg.user}@${mountCfg.host}:${mountCfg.remotePath}" mountCfg.mountPoint "-p" (toString mountCfg.port) "-f" "-o" options]}";
 

@@ -49,6 +49,7 @@
           identityFile = config.sops.secrets."windwaker-purps-key".path;
           mountPoint = "/mnt/windwaker";
           allowOther = true;
+          knownHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFzhmSCILV7cN4qukQz50I2YpEsPiT6DfsJiPdLf9pUr";
         };
       };
     };
