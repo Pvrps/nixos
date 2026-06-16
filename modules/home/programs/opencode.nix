@@ -6,10 +6,10 @@
   ...
 }: let
   cfg = config.custom.programs.opencode;
-  inherit (cfg) context7 bravesearch superpowers claudeAuth;
+  inherit (cfg) context7 superpowers claudeAuth;
 
   # Write the config file if any feature that needs it is enabled
-  needsConfigFile = context7.enable || bravesearch.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
+  needsConfigFile = context7.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
 in {
   options.custom = {
     programs.opencode = {
@@ -20,14 +20,6 @@ in {
           type = lib.types.str;
           default = "";
           description = "Path to the Context7 API key secret";
-        };
-      };
-      bravesearch = {
-        enable = lib.mkEnableOption "Brave Search MCP Server";
-        apiKeyPath = lib.mkOption {
-          type = lib.types.str;
-          default = "";
-          description = "Path to the Brave Search API key secret";
         };
       };
       superpowers = {
@@ -47,7 +39,7 @@ in {
       pname = "opencode-pinned-tools";
       version = "1.0.0";
       src = ./opencode;
-      npmDepsHash = "sha256-nwYBHhjEgB4sa3qFqJcgp7bKB3Q4gQjVmX1ogUfV76I=";
+      npmDepsHash = "sha256-aJFyjh1zttkfi/CXAJEvt+op2v5AG+kIvXyNPw6a1yA=";
       dontNpmBuild = true;
       nativeBuildInputs = [pkgs.makeWrapper];
       installPhase = ''
@@ -58,8 +50,6 @@ in {
 
         makeWrapper ${pkgs.nodejs}/bin/node $out/bin/context7-mcp \
           --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@upstash/context7-mcp/dist/index.js
-        makeWrapper ${pkgs.nodejs}/bin/node $out/bin/mcp-server-brave-search \
-          --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js
 
         runHook postInstall
       '';
@@ -75,10 +65,6 @@ in {
         assertion = !context7.enable || context7.apiKeyPath != "";
         message = "custom.programs.opencode.context7.enable requires apiKeyPath to be set";
       }
-      {
-        assertion = !bravesearch.enable || bravesearch.apiKeyPath != "";
-        message = "custom.programs.opencode.bravesearch.enable requires apiKeyPath to be set";
-      }
     ];
 
     home = {
@@ -86,7 +72,7 @@ in {
         [
           opencode
         ]
-        ++ lib.optionals (context7.enable || bravesearch.enable) [opencodeTools];
+        ++ lib.optionals context7.enable [opencodeTools];
 
       file = {
         ".config/opencode/opencode.json" = lib.mkIf needsConfigFile {
@@ -97,26 +83,17 @@ in {
             // lib.optionalAttrs claudeAuth.enable {
               plugin = ["opencode-claude-auth@1.5.4"];
             }
-            // lib.optionalAttrs (context7.enable || bravesearch.enable) {
+            // lib.optionalAttrs (context7.enable || cfg.mcp-nixos.enable) {
               mcp =
                 (lib.optionalAttrs context7.enable {
                   context7 = {
                     type = "local";
+                    # Pass the API key via env var (CONTEXT7_API_KEY) rather than
+                    # --api-key, so it never appears in the process argv / ps output.
                     command = [
                       "${pkgs.bash}/bin/bash"
                       "-c"
-                      "${opencodeTools}/bin/context7-mcp --api-key $(cat ${context7.apiKeyPath} | tr -d '\n')"
-                    ];
-                    enabled = true;
-                  };
-                })
-                // (lib.optionalAttrs bravesearch.enable {
-                  bravesearch = {
-                    type = "local";
-                    command = [
-                      "${pkgs.bash}/bin/bash"
-                      "-c"
-                      "BRAVE_API_KEY=$(cat ${bravesearch.apiKeyPath} | tr -d '\n') ${opencodeTools}/bin/mcp-server-brave-search"
+                      "CONTEXT7_API_KEY=$(cat ${context7.apiKeyPath} | tr -d '\n') ${opencodeTools}/bin/context7-mcp"
                     ];
                     enabled = true;
                   };

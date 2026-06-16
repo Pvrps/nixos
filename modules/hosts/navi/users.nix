@@ -40,11 +40,6 @@
       group = "users";
       mode = "0600";
     };
-    "bravesearch-api-key" = {
-      owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
 
     "rustdesk-server" = {
       owner = "purps";
