@@ -13,19 +13,8 @@
     kdeTargets = true;
   };
 
-  # ---------------------------------------------------------------------------
-  # Desktop base (was profiles.desktop): GTK/dconf file chooser, Wayland session
-  # vars, gnome-keyring, common persistence. kde = true on this machine.
-  # ---------------------------------------------------------------------------
   home = {
     packages = [pkgs.trash-cli];
-
-    sessionVariables = {
-      NIXOS_OZONE_WL = "1";
-      XDG_DATA_DIRS = "$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share";
-      # KDE Plasma adjustment (was profiles.desktop.kde)
-      POWERDEVIL_NO_DDCUTIL = "1";
-    };
 
     persistence."/persist" = {
       hideMounts = true;
@@ -35,12 +24,11 @@
         ".var"
         ".gnupg"
         ".pki"
-        # inori machine-specific persistence
         "Downloads"
         "Pictures"
         "Videos"
         "Documents"
-        # GPU shader-cache persistence (was profiles.hardware)
+        # GPU shader caches — avoid recompiling shaders every boot.
         ".cache/nvidia"
         ".cache/mesa_shader_cache"
         ".cache/radv_builtin_shaders"
@@ -64,17 +52,10 @@
     gtk4.extraConfig.gtk-show-hidden = true;
   };
 
-  # KDE Plasma runs on Wayland via SDDM; set the flag so Wayland-only scripts
-  # pass their assertions (was profiles.desktop.kde).
-  custom.system.wayland.enable = true;
-
   custom.programs = {
+    kde.enable = true;
     gnomeKeyring.enable = true;
 
-    # -------------------------------------------------------------------------
-    # Browser (was profiles.browsers): Zen. inori currently uses the same
-    # extension set as purps; freely diverge here without affecting anyone else.
-    # -------------------------------------------------------------------------
     zen = {
       enable = true;
       homepage = "https://homepage.windwaker.ca/";
@@ -136,13 +117,19 @@
       };
     };
 
-    # -------------------------------------------------------------------------
-    # Gaming (was profiles.gaming): Steam (+SLSsteam), Discord + plugins, arRPC,
-    # bolt, prismlauncher. inori has no niri launcher. Millennium plugins below.
-    # -------------------------------------------------------------------------
     steam = {
       enable = true;
       slsSteam.enable = true;
+      millenniumPlugins = {
+        extendium = {
+          url = "https://github.com/BossSloth/Extendium/releases/download/v1.1.1/Extendium-plugin-1.1.1.zip";
+          sha256 = "0dg7q27ppzri6vqk24s1v6d6q8d0iicw3igdqc55pc8g050v1pfx";
+        };
+        achievement-groups = {
+          url = "https://github.com/BossSloth/SteamHunter-plugin/releases/download/v2.0.2/Achievement-Groups-plugin-2.0.2.zip";
+          sha256 = "18g921w6idswwvbha9dyszki60pv1pvhlzsi817ddps8pifhwpwj";
+        };
+      };
     };
     discord = {
       enable = true;
@@ -223,10 +210,6 @@
     bolt.enable = true;
     prismlauncher.enable = true;
 
-    # -------------------------------------------------------------------------
-    # Media (was profiles.media, no extras): OBS, Spotify, Stremio, Clapper,
-    # Okular, Pinta, Flatseal, RustDesk.
-    # -------------------------------------------------------------------------
     stremio.enable = true;
     clapper.enable = true;
     spotify.enable = true;
@@ -262,10 +245,6 @@
       };
     };
 
-    # -------------------------------------------------------------------------
-    # Hardware (was profiles.hardware): EasyEffects (mutable blue_yeti preset +
-    # micsave commit tool), OpenRGB. No liquidctl on this machine.
-    # -------------------------------------------------------------------------
     easyeffects = {
       enable = true;
       preset = "blue_yeti";
@@ -277,18 +256,5 @@
   custom.scripts.micsave = {
     enable = true;
     presetGitPath = "/persist/etc/nixos/modules/users/inori/files/blue_yeti.json";
-  };
-
-  # Millennium (Steam) plugins (was profiles.gaming). Explicit per-user.
-  xdg.dataFile = {
-    "millennium/plugins/extendium".source = pkgs.fetchzip {
-      url = "https://github.com/BossSloth/Extendium/releases/download/v1.1.1/Extendium-plugin-1.1.1.zip";
-      sha256 = "0dg7q27ppzri6vqk24s1v6d6q8d0iicw3igdqc55pc8g050v1pfx";
-    };
-
-    "millennium/plugins/achievement-groups".source = pkgs.fetchzip {
-      url = "https://github.com/BossSloth/SteamHunter-plugin/releases/download/v2.0.2/Achievement-Groups-plugin-2.0.2.zip";
-      sha256 = "18g921w6idswwvbha9dyszki60pv1pvhlzsi817ddps8pifhwpwj";
-    };
   };
 }

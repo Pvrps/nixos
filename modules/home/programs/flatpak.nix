@@ -23,6 +23,9 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    # Make Flatpak-exported apps and icons visible to the session.
+    home.sessionVariables.XDG_DATA_DIRS = "$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share";
+
     services.flatpak = {
       enable = true;
 

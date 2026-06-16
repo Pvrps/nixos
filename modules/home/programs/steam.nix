@@ -17,6 +17,30 @@ in {
     slsSteam = {
       enable = lib.mkEnableOption "SLSsteam Steam Family Share bypass";
     };
+    millenniumPlugins = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.submodule {
+        options = {
+          url = lib.mkOption {
+            type = lib.types.str;
+            description = "URL of the plugin release zip.";
+          };
+          sha256 = lib.mkOption {
+            type = lib.types.str;
+            description = "Hash of the fetched zip (fetchzip).";
+          };
+        };
+      });
+      default = {};
+      example = lib.literalExpression ''
+        {
+          extendium = {
+            url = "https://github.com/.../Extendium-plugin-1.1.1.zip";
+            sha256 = "...";
+          };
+        }
+      '';
+      description = "Millennium plugins to install, keyed by plugin directory name under ~/.local/share/millennium/plugins.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -78,6 +102,14 @@ in {
     };
 
     home.persistence."/persist".directories = [".steam"];
+
+    xdg.dataFile = lib.mapAttrs' (name: plugin:
+      lib.nameValuePair "millennium/plugins/${name}" {
+        source = pkgs.fetchzip {
+          inherit (plugin) url sha256;
+        };
+      })
+    cfg.millenniumPlugins;
 
     custom.programs.niri.startupCommands = lib.mkIf config.custom.programs.niri.enable [
       ''"bash" "-c" "nm-online -q --timeout=30 || true; STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 ${steamBin} -system-composer -silent > /dev/null 2>&1"''

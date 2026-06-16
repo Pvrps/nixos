@@ -9,17 +9,8 @@
 
   custom.theme.enable = true;
 
-  # ---------------------------------------------------------------------------
-  # Desktop base (was profiles.desktop): GTK/dconf file chooser, Wayland session
-  # vars, gnome-keyring, common persistence. niri = true on this machine.
-  # ---------------------------------------------------------------------------
   home = {
     packages = [pkgs.trash-cli];
-
-    sessionVariables = {
-      NIXOS_OZONE_WL = "1";
-      XDG_DATA_DIRS = "$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share";
-    };
 
     persistence."/persist" = {
       hideMounts = true;
@@ -30,14 +21,13 @@
         ".gnupg"
         ".pki"
         ".ssh"
-        # purps machine-specific persistence
         ".putty"
         "Downloads"
         "Pictures"
         "Videos"
         "Development"
         "Documents"
-        # GPU shader-cache persistence (was profiles.hardware)
+        # GPU shader caches — avoid recompiling shaders every boot.
         ".cache/nvidia"
         ".cache/mesa_shader_cache"
         ".cache/radv_builtin_shaders"
@@ -64,7 +54,6 @@
   custom.programs = {
     gnomeKeyring.enable = true;
 
-    # niri compositor stack (was profiles.desktop.niri)
     noctalia.enable = true;
     niri.enable = true;
     foot = {
@@ -74,9 +63,6 @@
     ghostty.enable = false;
     termfilepickers.enable = false;
 
-    # -------------------------------------------------------------------------
-    # Browser (was profiles.browsers): Zen with purps's pinned extension set.
-    # -------------------------------------------------------------------------
     zen = {
       enable = true;
       homepage = "https://homepage.windwaker.ca/";
@@ -138,10 +124,6 @@
       };
     };
 
-    # -------------------------------------------------------------------------
-    # Dev (was profiles.dev): zed + opencode + java. Editor choice is a simple
-    # toggle: set zed.enable = false; vscode.enable = true; to switch.
-    # -------------------------------------------------------------------------
     zed = {
       enable = true;
       extensions = [
@@ -171,12 +153,19 @@
 
     java.enable = true;
 
-    # -------------------------------------------------------------------------
-    # Gaming (was profiles.gaming): Steam, Discord + plugins, arRPC, bolt,
-    # prismlauncher, + noctalia RPC. Millennium plugins and the niri-aware
-    # Steam launcher are defined explicitly below.
-    # -------------------------------------------------------------------------
-    steam.enable = true;
+    steam = {
+      enable = true;
+      millenniumPlugins = {
+        extendium = {
+          url = "https://github.com/BossSloth/Extendium/releases/download/v1.1.1/Extendium-plugin-1.1.1.zip";
+          sha256 = "0dg7q27ppzri6vqk24s1v6d6q8d0iicw3igdqc55pc8g050v1pfx";
+        };
+        achievement-groups = {
+          url = "https://github.com/BossSloth/SteamHunter-plugin/releases/download/v2.0.2/Achievement-Groups-plugin-2.0.2.zip";
+          sha256 = "18g921w6idswwvbha9dyszki60pv1pvhlzsi817ddps8pifhwpwj";
+        };
+      };
+    };
     discord = {
       enable = true;
       plugins = {
@@ -257,10 +246,6 @@
     bolt.enable = true;
     prismlauncher.enable = true;
 
-    # -------------------------------------------------------------------------
-    # Media (was profiles.media + extras): OBS, Spotify, Stremio, Clapper,
-    # Okular, Pinta, Flatseal, RustDesk + purps extras (chatterino, imv).
-    # -------------------------------------------------------------------------
     stremio.enable = true;
     clapper.enable = true;
     spotify.enable = true;
@@ -298,10 +283,6 @@
       };
     };
 
-    # -------------------------------------------------------------------------
-    # Hardware (was profiles.hardware): EasyEffects (mutable blue_yeti preset +
-    # micsave commit tool), OpenRGB, liquidctl LCD.
-    # -------------------------------------------------------------------------
     easyeffects = {
       enable = true;
       preset = "blue_yeti";
@@ -315,7 +296,6 @@
       orientation = 270;
     };
 
-    # SSH hosts (purps machine-specific)
     ssh = {
       extraHosts = {
         "windwaker" = {
@@ -333,7 +313,6 @@
   };
 
   custom.scripts = {
-    # niri capture stack (was profiles.desktop.niri)
     capture = {
       screenshot.enable = true;
       recording.enable = true;
@@ -341,35 +320,19 @@
       ocr.enable = true;
     };
     hist-clean.enable = true;
-    # dev helper scripts (was profiles.dev)
     gitingest.enable = true;
     ports-summary.enable = true;
     dir2clip.enable = true;
-    # audiobook tools (was profiles.media.extras)
     "2m4b".enable = true;
     abd.enable = true;
-    # EasyEffects preset commit tool (was profiles.hardware)
     micsave = {
       enable = true;
       presetGitPath = "/persist/etc/nixos/modules/users/purps/files/blue_yeti.json";
     };
   };
 
-  # Millennium (Steam) plugins (was profiles.gaming). Explicit per-user.
-  xdg.dataFile = {
-    "millennium/plugins/extendium".source = pkgs.fetchzip {
-      url = "https://github.com/BossSloth/Extendium/releases/download/v1.1.1/Extendium-plugin-1.1.1.zip";
-      sha256 = "0dg7q27ppzri6vqk24s1v6d6q8d0iicw3igdqc55pc8g050v1pfx";
-    };
-
-    "millennium/plugins/achievement-groups".source = pkgs.fetchzip {
-      url = "https://github.com/BossSloth/SteamHunter-plugin/releases/download/v2.0.2/Achievement-Groups-plugin-2.0.2.zip";
-      sha256 = "18g921w6idswwvbha9dyszki60pv1pvhlzsi817ddps8pifhwpwj";
-    };
-  };
-
   # niri-aware Steam launcher: focus an existing Steam window instead of
-  # spawning a second instance (was profiles.gaming.steamNiriLauncher).
+  # spawning a second instance.
   xdg.desktopEntries.steam = {
     name = "Steam";
     genericName = "Application Distribution Platform";
@@ -388,7 +351,7 @@
   };
 
   # ---------------------------------------------------------------------------
-  # navi-specific niri layout (outputs/inputs/binds). Machine-specific.
+  # navi-specific niri layout (outputs/inputs/binds).
   # ---------------------------------------------------------------------------
   custom.programs.noctalia.primaryMonitor = "DP-1";
   custom.programs.niri = {
