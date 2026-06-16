@@ -40,15 +40,14 @@ Remaining for a true dendritic conversion:
 
 ## Intentionally Kept
 
-- [ ] Keep browser extension pinning ignored for now.
-- [ ] Keep ActivityWatch behavior unchanged.
-- [ ] Keep GitHub token secret declaration.
-- [ ] EasyEffects preset is intentionally **mutable**: the activation script copies
-      the preset out of the store so it can be tweaked live, and `micsave` commits
-      the live preset back to the repo. Do not "fix" this into a read-only symlink.
-- [ ] RustDesk writes the server address + key into `RustDesk2.toml` (a file the app
-      then owns). The key/address come from sops files read at activation/first boot,
-      not from argv. Accepted on these mostly single-user hosts.
+- Keep browser extension pinning ignored for now.
+- Keep ActivityWatch behavior unchanged.
+- EasyEffects preset is intentionally **mutable**: the activation script copies
+  the preset out of the store so it can be tweaked live, and `micsave` commits
+  the live preset back to the repo. Do not "fix" this into a read-only symlink.
+- RustDesk writes the server address + key into `RustDesk2.toml` (a file the app
+  then owns). The key/address come from sops files read at activation/first boot,
+  not from argv. Accepted on these mostly single-user hosts.
 
 ## Resolved
 
