@@ -14,6 +14,15 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    # niri and KDE both autostart a full session; running both gives two
+    # competing desktops. KDE owns this check since it is the simpler module.
+    assertions = [
+      {
+        assertion = !config.custom.programs.niri.enable;
+        message = "custom.programs.kde and custom.programs.niri are mutually exclusive; enable only one desktop.";
+      }
+    ];
+
     custom.system.wayland.enable = true;
 
     # PowerDevil's ddcutil backend spins up a thread per monitor and can hang on
