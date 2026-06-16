@@ -1,6 +1,6 @@
 {pkgs, ...}: let
   sddm-astronaut = pkgs.sddm-astronaut.override {
-    embeddedTheme = "pixel_sakura_static";
+    embeddedTheme = "pixel_sakura";
   };
 in {
   fonts.packages = [pkgs.geist-font];
