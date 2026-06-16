@@ -132,13 +132,22 @@
       systems = ["x86_64-linux"];
 
       flake = let
+        system = "x86_64-linux";
+
+        # Extend nixpkgs lib with our helper library (lib.custom.*), available
+        # in every NixOS and home-manager module via the `lib` argument.
+        # Pure: helpers that need `pkgs` take it from the module's own args.
+        lib = nixpkgs.lib.extend (final: prev: {
+          custom = import ./modules/lib {lib = final;};
+        });
+
         mkHost = {
           host,
           users,
         }:
           nixpkgs.lib.nixosSystem {
-            system = "x86_64-linux";
-            specialArgs = {inherit inputs;};
+            inherit system lib;
+            specialArgs = {inherit inputs self;};
             modules = [
               ./modules/hosts/${host}
               disko.nixosModules.disko
@@ -157,7 +166,7 @@
                   useGlobalPkgs = true;
                   useUserPackages = true;
                   backupFileExtension = "backup";
-                  extraSpecialArgs = {inherit inputs;};
+                  extraSpecialArgs = {inherit inputs self;};
                   sharedModules = [
                     (import-tree ./modules/home)
                     inputs.nix-index-database.homeModules.nix-index
