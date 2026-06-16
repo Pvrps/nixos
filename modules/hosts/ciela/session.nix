@@ -11,6 +11,10 @@ in {
       wayland.enable = true;
       settings.Users.HideUsers = "purps";
       theme = "sddm-astronaut-theme";
+      extraPackages = with pkgs.kdePackages; [
+        qtmultimedia
+        qtvirtualkeyboard
+      ];
     };
     desktopManager.plasma6.enable = true;
     upower.enable = true;
