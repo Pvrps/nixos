@@ -1,42 +1,395 @@
-{osConfig, ...}: {
+{
+  pkgs,
+  osConfig,
+  ...
+}: {
   imports = [
     ./general.nix
   ];
 
   custom.theme.enable = true;
 
-  custom.profiles = {
-    desktop = {
-      enable = true;
-      niri = true;
-      extraPersistence = [".ssh"];
+  # ---------------------------------------------------------------------------
+  # Desktop base (was profiles.desktop): GTK/dconf file chooser, Wayland session
+  # vars, gnome-keyring, common persistence. niri = true on this machine.
+  # ---------------------------------------------------------------------------
+  home = {
+    packages = [pkgs.trash-cli];
+
+    sessionVariables = {
+      NIXOS_OZONE_WL = "1";
+      XDG_DATA_DIRS = "$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share";
     };
-    browsers.enable = true;
-    dev = {
-      enable = true;
-      context7ApiKeyPath = osConfig.sops.secrets."context7-api-key".path;
-    };
-    gaming = {
-      enable = true;
-      discordRpcNoctalia = true;
-      steamNiriLauncher = true;
-    };
-    media = {
-      enable = true;
-      extras = true;
-      rustdeskServerFile = osConfig.sops.secrets."rustdesk-server".path;
-      rustdeskKeyFile = osConfig.sops.secrets."rustdesk-key".path;
-    };
-    hardware = {
-      enable = true;
-      username = "purps";
-      liquidctl = true;
-      liquidctlLcdImage = ./assets/master-sword.gif;
+
+    persistence."/persist" = {
+      hideMounts = true;
+      directories = [
+        ".local"
+        ".config"
+        ".var"
+        ".gnupg"
+        ".pki"
+        ".ssh"
+        # purps machine-specific persistence
+        ".putty"
+        "Downloads"
+        "Pictures"
+        "Videos"
+        "Development"
+        "Documents"
+        # GPU shader-cache persistence (was profiles.hardware)
+        ".cache/nvidia"
+        ".cache/mesa_shader_cache"
+        ".cache/radv_builtin_shaders"
+      ];
     };
   };
 
-  # navi-specific niri layout (outputs/inputs/binds). Machine-specific, so it
-  # lives in the host entry rather than the shared desktop profile.
+  dconf.settings = {
+    "org/gtk/settings/file-chooser" = {
+      show-hidden = true;
+      sort-directories-first = true;
+    };
+    "org/gtk/gtk4/settings/file-chooser" = {
+      show-hidden = true;
+    };
+  };
+
+  gtk = {
+    enable = true;
+    gtk3.extraConfig.gtk-show-hidden = true;
+    gtk4.extraConfig.gtk-show-hidden = true;
+  };
+
+  custom.programs = {
+    gnomeKeyring.enable = true;
+
+    # niri compositor stack (was profiles.desktop.niri)
+    noctalia.enable = true;
+    niri.enable = true;
+    foot = {
+      enable = true;
+      pad = "8x8";
+    };
+    ghostty.enable = false;
+    termfilepickers.enable = false;
+
+    # -------------------------------------------------------------------------
+    # Browser (was profiles.browsers): Zen with purps's pinned extension set.
+    # -------------------------------------------------------------------------
+    zen = {
+      enable = true;
+      homepage = "https://homepage.windwaker.ca/";
+      profiles.Personal = {
+        id = 0;
+        name = "Personal";
+        isDefault = true;
+        mods = [
+          "a6335949-4465-4b71-926c-4a52d34bc9c0"
+          "f7c71d9a-bce2-420f-ae44-a64bd92975ab"
+          "c6813222-6571-4ba6-8faf-58f3343324f6"
+          "253a3a74-0cc4-47b7-8b82-996a64f030d5"
+          "906c6915-5677-48ff-9bfc-096a02a72379"
+          "cb15abdb-0514-4e09-8ce5-722cf1f4a20f"
+          "803c7895-b39b-458e-84f8-a521f4d7a064"
+          "4ab93b88-151c-451b-a1b7-a1e0e28fa7f8"
+          "e122b5d9-d385-4bf8-9971-e137809097d0"
+          "c8d9e6e6-e702-4e15-8972-3596e57cf398"
+          "bd92a9a0-1c00-4187-a66e-94c389fa5a59"
+        ];
+        settings = {
+          "mod.autoexpand.expanded_width" = "250px";
+          "mod.autoexpand.animation_duration" = "100ms";
+          "mod.autoexpand.animation_delay" = "100ms";
+          "mod.autoexpand.collapse_delay" = "100ms";
+          "mod.autoexpand.hide_workspace_indicator" = true;
+        };
+      };
+      extensionSettings = {
+        "*" = {installation_mode = "blocked";};
+        "uBlock0@raymondhill.net" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
+          installation_mode = "force_installed";
+        };
+        "sponsorBlocker@ajay.app" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
+          installation_mode = "force_installed";
+        };
+        "{446900e4-71c2-419f-a6a7-df9c091e268b}" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi";
+          installation_mode = "force_installed";
+        };
+        "enhancerforyoutube@maximerf.addons.mozilla.org" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/enhancer-for-youtube/latest.xpi";
+          installation_mode = "force_installed";
+        };
+        "{aecec67f-0d10-4fa7-b7c7-609a2db280cf}" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey/latest.xpi";
+          installation_mode = "force_installed";
+        };
+        "izer@camelcamelcamel.com" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/the-camelizer-price-history-ch/latest.xpi";
+          installation_mode = "force_installed";
+        };
+        "webextension@metamask.io" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/ether-metamask/latest.xpi";
+          installation_mode = "force_installed";
+        };
+      };
+    };
+
+    # -------------------------------------------------------------------------
+    # Dev (was profiles.dev): zed + opencode + java. Editor choice is a simple
+    # toggle: set zed.enable = false; vscode.enable = true; to switch.
+    # -------------------------------------------------------------------------
+    zed = {
+      enable = true;
+      extensions = [
+        "nix"
+        "java"
+        "svelte"
+        "xml"
+        "dockerfile"
+        "nginx"
+        "graphql"
+        "sql"
+        "jsonnet"
+        "just"
+        "toml"
+      ];
+    };
+
+    opencode = {
+      enable = true;
+      context7 = {
+        enable = true;
+        apiKeyPath = osConfig.sops.secrets."context7-api-key".path;
+      };
+      claudeAuth.enable = true;
+      mcp-nixos.enable = true;
+    };
+
+    java.enable = true;
+
+    # -------------------------------------------------------------------------
+    # Gaming (was profiles.gaming): Steam, Discord + plugins, arRPC, bolt,
+    # prismlauncher, + noctalia RPC. Millennium plugins and the niri-aware
+    # Steam launcher are defined explicitly below.
+    # -------------------------------------------------------------------------
+    steam.enable = true;
+    discord = {
+      enable = true;
+      plugins = {
+        clearUrls.enable = true;
+        dearrow.enable = true;
+        imageZoom.enable = true;
+        onePingPerDm.enable = true;
+        pinDms = {
+          enable = true;
+          canCollapseDmSection = true;
+          pinOrder = 1;
+        };
+        shikiCodeblocks.enable = true;
+        betterGifPicker.enable = true;
+        biggerStreamPreview.enable = true;
+        callTimer.enable = true;
+        copyEmojiMarkdown.enable = true;
+        copyFileContents.enable = true;
+        disableCallIdle.enable = true;
+        experiments.enable = true;
+        favoriteEmojiFirst.enable = true;
+        forceOwnerCrown.enable = true;
+        friendsSince.enable = true;
+        gameActivityToggle.enable = true;
+        memberCount.enable = true;
+        mentionAvatars.enable = true;
+        messageLogger = {
+          enable = true;
+          collapseDeleted = true;
+          ignoreBots = true;
+          ignoreSelf = true;
+        };
+        noUnblockToJump.enable = true;
+        permissionsViewer.enable = true;
+        petpet.enable = true;
+        platformIndicators.enable = true;
+        relationshipNotifier = {
+          enable = true;
+          notices = true;
+        };
+        reverseImageSearch.enable = true;
+        sendTimestamps.enable = true;
+        serverListIndicators.enable = true;
+        showConnections.enable = true;
+        showHiddenChannels.enable = true;
+        showHiddenThings.enable = true;
+        silentMessageToggle = {
+          enable = true;
+          autoDisable = false;
+        };
+        silentTyping.enable = false;
+        startupTimings.enable = true;
+        superReactionTweaks.enable = true;
+        typingIndicator.enable = true;
+        typingTweaks.enable = false;
+        unlockedAvatarZoom.enable = true;
+        whoReacted.enable = true;
+        youtubeAdblock.enable = true;
+        streamingCodecDisabler = {
+          enable = false;
+          disableVp8Codec = false;
+          disableVp9Codec = false;
+          disableAv1Codec = false;
+        };
+        fakeNitro = {
+          enable = true;
+          enableStreamQualityBypass = false;
+          enableEmojiBypass = true;
+          enableStickerBypass = true;
+        };
+        volumeBooster.enable = true;
+        webScreenShareFixes.enable = true;
+      };
+    };
+    arrpc.enable = true;
+    discord-rpc.enable = true;
+    discord-rpc-noctalia.enable = true;
+    bolt.enable = true;
+    prismlauncher.enable = true;
+
+    # -------------------------------------------------------------------------
+    # Media (was profiles.media + extras): OBS, Spotify, Stremio, Clapper,
+    # Okular, Pinta, Flatseal, RustDesk + purps extras (chatterino, imv).
+    # -------------------------------------------------------------------------
+    stremio.enable = true;
+    clapper.enable = true;
+    spotify.enable = true;
+    okular.enable = true;
+    pinta.enable = true;
+    chatterino.enable = true;
+    imv.enable = true;
+
+    rustdesk = {
+      enable = true;
+      serverFile = osConfig.sops.secrets."rustdesk-server".path;
+      keyFile = osConfig.sops.secrets."rustdesk-key".path;
+    };
+
+    flatpak = {
+      enable = true;
+      packages = [
+        "com.github.tchx84.Flatseal"
+      ];
+    };
+
+    obs = {
+      enable = true;
+      plugins = {
+        aitumStreamSuite = {
+          enable = true;
+          version = "1.1.2";
+          hash = "sha256:46137e8ec8b92704879c58ed486bede468102935e53d25f3f1a36a5e07c71bca";
+        };
+        pipewireAudioCapture = {
+          enable = true;
+          version = "1.2.1";
+          hash = "sha256:e3bfa510bf3cfccdba092ee726e7e0d3cbe433dd49d4101f6a3e2b7fa68eae84";
+        };
+      };
+    };
+
+    # -------------------------------------------------------------------------
+    # Hardware (was profiles.hardware): EasyEffects (mutable blue_yeti preset +
+    # micsave commit tool), OpenRGB, liquidctl LCD.
+    # -------------------------------------------------------------------------
+    easyeffects = {
+      enable = true;
+      preset = "blue_yeti";
+      presetSource = "/persist/etc/nixos/modules/users/purps/files/blue_yeti.json";
+    };
+    openrgb.enable = true;
+    liquidctl = {
+      enable = true;
+      lcdImage = ./assets/master-sword.gif;
+      brightness = 100;
+      orientation = 270;
+    };
+
+    # SSH hosts (purps machine-specific)
+    ssh = {
+      extraHosts = {
+        "windwaker" = {
+          HostName = "10.0.10.16";
+          User = "purps";
+          IdentityFile = osConfig.sops.secrets."windwaker-purps-key".path;
+        };
+        "ciela" = {
+          HostName = "10.0.0.232";
+          User = "purps";
+          IdentityFile = osConfig.sops.secrets."ciela-purps-key".path;
+        };
+      };
+    };
+  };
+
+  custom.scripts = {
+    # niri capture stack (was profiles.desktop.niri)
+    capture = {
+      screenshot.enable = true;
+      recording.enable = true;
+      edit.enable = true;
+      ocr.enable = true;
+    };
+    hist-clean.enable = true;
+    # dev helper scripts (was profiles.dev)
+    gitingest.enable = true;
+    ports-summary.enable = true;
+    dir2clip.enable = true;
+    # audiobook tools (was profiles.media.extras)
+    "2m4b".enable = true;
+    abd.enable = true;
+    # EasyEffects preset commit tool (was profiles.hardware)
+    micsave = {
+      enable = true;
+      presetGitPath = "/persist/etc/nixos/modules/users/purps/files/blue_yeti.json";
+    };
+  };
+
+  # Millennium (Steam) plugins (was profiles.gaming). Explicit per-user.
+  xdg.dataFile = {
+    "millennium/plugins/extendium".source = pkgs.fetchzip {
+      url = "https://github.com/BossSloth/Extendium/releases/download/v1.1.1/Extendium-plugin-1.1.1.zip";
+      sha256 = "0dg7q27ppzri6vqk24s1v6d6q8d0iicw3igdqc55pc8g050v1pfx";
+    };
+
+    "millennium/plugins/achievement-groups".source = pkgs.fetchzip {
+      url = "https://github.com/BossSloth/SteamHunter-plugin/releases/download/v2.0.2/Achievement-Groups-plugin-2.0.2.zip";
+      sha256 = "18g921w6idswwvbha9dyszki60pv1pvhlzsi817ddps8pifhwpwj";
+    };
+  };
+
+  # niri-aware Steam launcher: focus an existing Steam window instead of
+  # spawning a second instance (was profiles.gaming.steamNiriLauncher).
+  xdg.desktopEntries.steam = {
+    name = "Steam";
+    genericName = "Application Distribution Platform";
+    exec = "${pkgs.writeShellScript "launch-steam" ''
+      id=$(${pkgs.niri}/bin/niri msg -j windows | ${pkgs.jq}/bin/jq -r '.[] | select(.app_id == "steam" and (.title | test("^notificationtoasts") | not)) | .id' | head -n 1)
+      if [ -n "$id" ]; then
+          ${pkgs.niri}/bin/niri msg action focus-window --id "$id"
+      else
+          nohup env STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 steam -system-composer "$@" > /dev/null 2>&1 &
+      fi
+    ''} %U";
+    icon = "steam";
+    terminal = false;
+    categories = ["Network" "FileTransfer" "Game"];
+    mimeType = ["x-scheme-handler/steam" "x-scheme-handler/steamlink"];
+  };
+
+  # ---------------------------------------------------------------------------
+  # navi-specific niri layout (outputs/inputs/binds). Machine-specific.
+  # ---------------------------------------------------------------------------
   custom.programs.noctalia.primaryMonitor = "DP-1";
   custom.programs.niri = {
     xwaylandDisplay = ":11";
@@ -145,33 +498,5 @@
     extraConfig = ''
       screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
     '';
-  };
-
-  home.persistence."/persist" = {
-    directories = [
-      ".putty"
-      "Downloads"
-      "Pictures"
-      "Videos"
-      "Development"
-      "Documents"
-    ];
-  };
-
-  custom.scripts.capture.ocr.enable = true;
-
-  custom.programs.ssh = {
-    extraHosts = {
-      "windwaker" = {
-        HostName = "10.0.10.16";
-        User = "purps";
-        IdentityFile = osConfig.sops.secrets."windwaker-purps-key".path;
-      };
-      "ciela" = {
-        HostName = "10.0.0.232";
-        User = "purps";
-        IdentityFile = osConfig.sops.secrets."ciela-purps-key".path;
-      };
-    };
   };
 }

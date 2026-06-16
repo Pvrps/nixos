@@ -19,7 +19,9 @@ Prerequisites already satisfied:
 
 - [x] `lib.custom` helpers (`modules/lib/`) — mkScript, mkContainer,
       mkTerminalPalette, mkRequireWayland, mkRustdeskConfigScript.
-- [x] Option-driven `custom.profiles.*` and `custom.theme` (auto-imported).
+- [x] Generic, option-driven `custom.programs.*` / `custom.scripts.*` /
+      `custom.theme` modules (auto-imported). Behaviour lives in the program
+      module; each user declares only their own choices in their entry file.
 - [x] Host base injected in `mkHost` (core/common/tailscale + `hostName`).
 
 Remaining for a true dendritic conversion:
@@ -40,6 +42,15 @@ Remaining for a true dendritic conversion:
 
 ## Intentionally Kept
 
+- The home-manager layer deliberately has **no shared `profiles/` aggregation
+  layer**. Each `custom.programs.*` module is generic and reusable; every
+  _opinion_ (which programs, which Zen extensions, which Discord plugins, zed
+  vs vscode, persistence dirs, niri layout) is declared explicitly in the
+  owning user's entry file (`modules/users/<user>/<host>.nix`). This is more
+  verbose than a profile bundle, but it means one user can diverge freely
+  without editing anything another user consumes — adding a program is
+  `custom.programs.<x>.enable = true` in your own file, nothing else. Do not
+  reintroduce a `profiles/` layer that bakes personal choices into shared files.
 - Keep browser extension pinning ignored for now.
 - Keep ActivityWatch behavior unchanged.
 - EasyEffects preset is intentionally **mutable**: the activation script copies
