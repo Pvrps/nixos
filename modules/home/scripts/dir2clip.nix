@@ -1,31 +1,17 @@
-{
-  pkgs,
-  lib,
-  config,
-  ...
-}: let
-  cfg = config.custom.scripts.dir2clip;
-  dir2clip-tool = pkgs.writeShellScriptBin "dir2clip" ''
-    set -euo pipefail
-
-    JQ="${pkgs.jq}/bin/jq"
-    NOTIFY="${pkgs.libnotify}/bin/notify-send"
-    WL_COPY="${pkgs.wl-clipboard}/bin/wl-copy"
-    FILE_CMD="${pkgs.file}/bin/file"
-    TREE_CMD="${pkgs.tree}/bin/tree"
-    GREP="${pkgs.gnugrep}/bin/grep"
-    REALPATH="${pkgs.coreutils}/bin/realpath"
-    FIND="${pkgs.findutils}/bin/find"
-    SORT="${pkgs.coreutils}/bin/sort"
-    WC="${pkgs.coreutils}/bin/wc"
-    CAT="${pkgs.coreutils}/bin/cat"
-
+{lib, ...}:
+lib.custom.mkScript {
+  name = "dir2clip";
+  description = "Directory to clipboard ingestion tool";
+  requiresWayland = true;
+  runtimeInputs = pkgs:
+    with pkgs; [jq libnotify wl-clipboard file tree gnugrep coreutils findutils];
+  text = ''
     if [[ $# -ge 1 ]]; then
       DIR="$1"
     else
       DIR="."
     fi
-    DIR="$($REALPATH "$DIR")"
+    DIR="$(realpath "$DIR")"
 
     if [[ ! -d "$DIR" ]]; then
       echo "Usage: dir2clip [directory]"
@@ -50,26 +36,24 @@
       echo "Directory: $DIR"
       echo ""
 
-      if command -v "$TREE_CMD" &>/dev/null; then
-        "$TREE_CMD" "$DIR" -I "$TREE_SKIP" --charset=utf-8 --noreport 2>/dev/null || true
-      fi
+      tree "$DIR" -I "$TREE_SKIP" --charset=utf-8 --noreport 2>/dev/null || true
 
       echo ""
       echo "---"
       echo ""
 
-      "$FIND" "$DIR" -type f \
-        | "$GREP" -v -E "/($SKIP_DIRS)/" \
-        | "$SORT" \
+      find "$DIR" -type f \
+        | grep -v -E "/($SKIP_DIRS)/" \
+        | sort \
         | while IFS= read -r f; do
-            REL=$($REALPATH --relative-to="$DIR" "$f")
+            REL=$(realpath --relative-to="$DIR" "$f")
 
-            if printf '%s\n' "$REL" | "$GREP" -E -q "($SKIP_FILES)"; then
+            if printf '%s\n' "$REL" | grep -E -q "($SKIP_FILES)"; then
               printf '%s\n' "$REL" >> "$SKIPPED_SECRETS"
               continue
             fi
 
-            BYTES=$("$WC" -c < "$f" 2>/dev/null || echo 0)
+            BYTES=$(wc -c < "$f" 2>/dev/null || echo 0)
             BYTES=$(echo "$BYTES" | tr -d ' ')
 
             if [[ "$BYTES" -gt 1048576 ]]; then
@@ -77,27 +61,27 @@
               continue
             fi
 
-            MIME=$("$FILE_CMD" --mime-type -b "$f" 2>/dev/null || echo "application/octet-stream")
+            MIME=$(file --mime-type -b "$f" 2>/dev/null || echo "application/octet-stream")
 
             case "$MIME" in
               text/*|application/json|application/javascript|application/typescript|application/xml|application/x-yaml|application/x-toml|application/x-sh|application/x-csh|application/x-perl|application/x-python|application/x-ruby|application/x-php|application/x-lua|application/x-haskell|application/x-clojure|application/x-scheme|application/x-awk|application/x-tcl|application/x-httpd-php|application/xhtml+xml|application/atom+xml|application/rss+xml|application/svg+xml|application/x-shellscript|application/x-subrip)
-                if "$GREP" -I -E -q "$SECRET_CONTENT" "$f" 2>/dev/null; then
+                if grep -I -E -q "$SECRET_CONTENT" "$f" 2>/dev/null; then
                   printf '%s\n' "$REL" >> "$SKIPPED_SECRETS"
                   continue
                 fi
 
                 echo "====== $REL ======"
-                "$CAT" "$f"
+                cat "$f"
                 echo ""
                 ;;
             esac
           done
     } > "$TMPFILE"
 
-    FILE_COUNT=$("$GREP" -c '^====== ' "$TMPFILE" || true)
-    SECRET_SKIP_COUNT=$("$GREP" -c . "$SKIPPED_SECRETS" || true)
-    LARGE_SKIP_COUNT=$("$GREP" -c . "$SKIPPED_LARGE" || true)
-    BYTE_COUNT=$("$WC" -c < "$TMPFILE")
+    FILE_COUNT=$(grep -c '^====== ' "$TMPFILE" || true)
+    SECRET_SKIP_COUNT=$(grep -c . "$SKIPPED_SECRETS" || true)
+    LARGE_SKIP_COUNT=$(grep -c . "$SKIPPED_LARGE" || true)
+    BYTE_COUNT=$(wc -c < "$TMPFILE")
     TOKEN_ESTIMATE=$((BYTE_COUNT / 4))
 
     echo "dir2clip summary"
@@ -110,13 +94,13 @@
     if [[ "$SECRET_SKIP_COUNT" -gt 0 ]]; then
       echo ""
       echo "Secret-like files skipped:"
-      "$CAT" "$SKIPPED_SECRETS"
+      cat "$SKIPPED_SECRETS"
     fi
 
     if [[ "$LARGE_SKIP_COUNT" -gt 0 ]]; then
       echo ""
       echo "Large files skipped:"
-      "$CAT" "$SKIPPED_LARGE"
+      cat "$SKIPPED_LARGE"
     fi
 
     echo ""
@@ -124,35 +108,20 @@
     case "$CONFIRM" in
       y|Y|yes|YES) ;;
       *)
-        "$NOTIFY" "dir2clip" "Copy cancelled"
+        notify-send "dir2clip" "Copy cancelled"
         echo "Cancelled"
         exit 1
         ;;
     esac
 
-    "$WL_COPY" < "$TMPFILE"
+    wl-copy < "$TMPFILE"
 
     if [[ "$TOKEN_ESTIMATE" -ge 1000 ]]; then
-      "$NOTIFY" "dir2clip" "Copied $FILE_COUNT files (~$((TOKEN_ESTIMATE / 1000))K tokens) from $(basename "$DIR")"
+      notify-send "dir2clip" "Copied $FILE_COUNT files (~$((TOKEN_ESTIMATE / 1000))K tokens) from $(basename "$DIR")"
       echo "Copied $FILE_COUNT files (~$((TOKEN_ESTIMATE / 1000))K tokens) from $(basename "$DIR")"
     else
-      "$NOTIFY" "dir2clip" "Copied $FILE_COUNT files (~$TOKEN_ESTIMATE tokens) from $(basename "$DIR")"
+      notify-send "dir2clip" "Copied $FILE_COUNT files (~$TOKEN_ESTIMATE tokens) from $(basename "$DIR")"
       echo "Copied $FILE_COUNT files (~$TOKEN_ESTIMATE tokens) from $(basename "$DIR")"
     fi
   '';
-in {
-  options.custom.scripts.dir2clip.enable = lib.mkEnableOption "Directory to clipboard ingestion tool";
-
-  config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.custom.system.wayland.enable;
-        message = "dir2clip script requires a Wayland compositor (uses wl-clipboard).";
-      }
-    ];
-
-    home.packages = [
-      dir2clip-tool
-    ];
-  };
 }

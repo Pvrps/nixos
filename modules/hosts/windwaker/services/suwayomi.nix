@@ -1,16 +1,12 @@
-{
-  ...
-}:
-let
+_: let
   dockerVolumeDir = "/mnt/docker";
-in
-{
+in {
   virtualisation.quadlet.containers.suwayomi = {
     autoStart = true;
     containerConfig = {
       image = "ghcr.io/suwayomi/suwayomi-server:stable";
-      networks = [ "lan_bridge" ];
-      publishPorts = [ "45126:4567" ];
+      networks = ["lan_bridge"];
+      publishPorts = ["45126:4567"];
       environments = {
         TZ = "America/Toronto";
       };

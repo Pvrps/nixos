@@ -1,11 +1,6 @@
-{
-  config,
-  ...
-}:
-let
+{config, ...}: let
   dockerVolumeDir = "/mnt/docker";
-in
-{
+in {
   sops.secrets."rustdesk-env".sopsFile = ./_secrets.yaml;
 
   virtualisation.quadlet.containers = {
@@ -13,13 +8,13 @@ in
       autoStart = true;
       containerConfig = {
         image = "tailscale/tailscale:latest";
-        networks = [ "lan_bridge" ];
+        networks = ["lan_bridge"];
         addCapabilities = [
           "NET_ADMIN"
           "NET_RAW"
         ];
-        devices = [ "/dev/net/tun:/dev/net/tun" ];
-        environmentFiles = [ config.sops.secrets."rustdesk-env".path ];
+        devices = ["/dev/net/tun:/dev/net/tun"];
+        environmentFiles = [config.sops.secrets."rustdesk-env".path];
         environments = {
           TS_STATE_DIR = "/var/lib/tailscale";
           TS_USERSPACE = "false";
@@ -53,7 +48,7 @@ in
       containerConfig = {
         image = "rustdesk/rustdesk-server:latest";
         exec = "hbbs";
-        podmanArgs = [ "--network=container:tailscale-rustdesk" ];
+        podmanArgs = ["--network=container:tailscale-rustdesk"];
         environments = {
           TZ = "America/Toronto";
         };
@@ -62,8 +57,8 @@ in
         ];
       };
       unitConfig = {
-        After = [ "tailscale-rustdesk.service" ];
-        Requires = [ "tailscale-rustdesk.service" ];
+        After = ["tailscale-rustdesk.service"];
+        Requires = ["tailscale-rustdesk.service"];
         RequiresMountsFor = ["/mnt/docker"];
       };
       serviceConfig = {
@@ -77,7 +72,7 @@ in
       containerConfig = {
         image = "rustdesk/rustdesk-server:latest";
         exec = "hbbr";
-        podmanArgs = [ "--network=container:tailscale-rustdesk" ];
+        podmanArgs = ["--network=container:tailscale-rustdesk"];
         environments = {
           TZ = "America/Toronto";
         };

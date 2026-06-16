@@ -64,6 +64,5 @@ in {
       };
       # No Install.WantedBy — only started on demand via `drpc enable`
     };
-
   };
 }

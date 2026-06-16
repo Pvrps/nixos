@@ -1,20 +1,15 @@
-{
-  config,
-  ...
-}:
-let
+{config, ...}: let
   dockerVolumeDir = "/mnt/docker";
-in
-{
+in {
   sops.secrets."dragonwilds-env".sopsFile = ./_secrets.yaml;
 
   virtualisation.quadlet.containers.runescape-dragonwilds = {
     autoStart = true;
     containerConfig = {
       image = "indifferentbroccoli/runescape-dragonwilds-server-docker:latest";
-      networks = [ "lan_bridge" ];
-      publishPorts = [ "55180:55180/udp" ];
-      environmentFiles = [ config.sops.secrets."dragonwilds-env".path ];
+      networks = ["lan_bridge"];
+      publishPorts = ["55180:55180/udp"];
+      environmentFiles = [config.sops.secrets."dragonwilds-env".path];
       environments = {
         PUID = "1000";
         PGID = "1000";

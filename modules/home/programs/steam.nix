@@ -21,8 +21,7 @@ in {
 
   config = lib.mkIf cfg.enable {
     home.packages = with pkgs;
-      []
-      ++ lib.optionals cfg.slsSteam.enable [
+      lib.optionals cfg.slsSteam.enable [
         inputs.sls-steam.packages.${pkgs.system}.wrapped
       ];
 

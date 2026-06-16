@@ -1,22 +1,9 @@
-{
-  pkgs,
-  lib,
-  config,
-  ...
-}: let
-  cfg = config.custom.scripts.ports-summary;
-
-  ports-summary = pkgs.writeShellScriptBin "ports-summary" ''
-    set -euo pipefail
-
-    LSOF="${pkgs.lsof}/bin/lsof"
-    READLINK="${pkgs.coreutils}/bin/readlink"
-    BASENAME="${pkgs.coreutils}/bin/basename"
-    DIRNAME="${pkgs.coreutils}/bin/dirname"
-    TR="${pkgs.coreutils}/bin/tr"
-    SORT="${pkgs.coreutils}/bin/sort"
-    AWK="${pkgs.gawk}/bin/awk"
-
+{lib, ...}:
+lib.custom.mkScript {
+  name = "ports-summary";
+  description = "ports-summary open port viewer";
+  runtimeInputs = pkgs: with pkgs; [lsof coreutils gawk gnugrep];
+  text = ''
     BOLD=$'\033[1m'
     DIM=$'\033[2m'
     CYAN=$'\033[0;36m'
@@ -36,12 +23,12 @@
       local raw_cmd="$2"
       local full_exe="$3"
       local exe_base
-      exe_base=$("$BASENAME" "$full_exe" 2>/dev/null || echo "$raw_cmd")
+      exe_base=$(basename "$full_exe" 2>/dev/null || echo "$raw_cmd")
 
       if [[ "$exe_base" == "node" || "$exe_base" == "bun" || "$exe_base" == "deno" \
          || "$exe_base" == "electron" || "$raw_cmd" == "MainThread" ]]; then
 
-        mapfile -t _args < <("$TR" '\0' '\n' < /proc/"$pid"/cmdline 2>/dev/null || true)
+        mapfile -t _args < <(tr '\0' '\n' < /proc/"$pid"/cmdline 2>/dev/null || true)
 
         # node_modules/.bin/ wins for node/bun/deno
         for arg in "''${_args[@]}"; do
@@ -58,11 +45,11 @@
             [[ -z "$arg" ]] && continue
             [[ "$arg" == --* ]] && continue
             if [[ "$arg" == *.asar || "$arg" == */resources/app || "$arg" == */resources/app.asar ]]; then
-              parent="$("$DIRNAME" "$arg")"
-              pname="$("$BASENAME" "$parent")"
+              parent="$(dirname "$arg")"
+              pname="$(basename "$parent")"
               if [[ "$pname" == "resources" ]]; then
-                parent="$("$DIRNAME" "$parent")"
-                pname="$("$BASENAME" "$parent")"
+                parent="$(dirname "$parent")"
+                pname="$(basename "$parent")"
               fi
               # Strip nix store hash prefix (e.g. abc123-vesktop-1.5.3 → vesktop-1.5.3)
               pname="''${pname#*-}"
@@ -79,7 +66,7 @@
           for arg in "''${_args[@]}"; do
             if [[ "$arg" == --user-data-dir=* ]]; then
               udd="''${arg#--user-data-dir=}"
-              udd_name="$("$BASENAME" "$udd")"
+              udd_name="$(basename "$udd")"
               if [[ -n "$udd_name" && "$udd_name" != "." ]]; then
                 echo "electron ($udd_name)"
                 return
@@ -92,7 +79,7 @@
             [[ "$arg" == "$full_exe" || "$arg" == "/proc/self/exe" ]] && continue
             [[ -z "$arg" ]] && continue
             [[ "$arg" == --* ]] && continue
-            name_part="$("$BASENAME" "$arg")"
+            name_part="$(basename "$arg")"
             [[ -z "$name_part" || "$name_part" == "$exe_base" || "$name_part" == "exe" ]] && continue
             echo "electron ($name_part)"
             return
@@ -108,7 +95,7 @@
           [[ -z "$arg" ]] && continue
           [[ "$arg" == --* || "$arg" == -e || "$arg" == -r ]] && continue
           [[ "$arg" == /nix/store/* && ! "$arg" == *.js && ! "$arg" == *.ts && ! "$arg" == *.mjs ]] && continue
-          name_part="$("$BASENAME" "$arg")"
+          name_part="$(basename "$arg")"
           [[ -z "$name_part" ]] && continue
           echo "$exe_base ($name_part)"
           return
@@ -143,7 +130,7 @@
           fi
           ;;
       esac
-    done < <("$LSOF" -i TCP -P -n -F pcn 2>/dev/null)
+    done < <(lsof -i TCP -P -n -F pcn 2>/dev/null)
 
     # ── Pass 2: collect listeners + established connections per PID ───────────
     _cur_pid=""
@@ -172,21 +159,21 @@
           fi
           ;;
       esac
-    done < <("$LSOF" -i -P -n -F pcn 2>/dev/null)
+    done < <(lsof -i -P -n -F pcn 2>/dev/null)
 
     # ── Pass 3: resolve display names + script paths ──────────────────────────
     for pid in "''${!pid_listeners[@]}"; do
       raw_name="''${pid_name[$pid]:-}"
-      full_exe=$("$READLINK" -f /proc/"$pid"/exe 2>/dev/null || echo "")
+      full_exe=$(readlink -f /proc/"$pid"/exe 2>/dev/null || echo "")
       pid_path[$pid]="$full_exe"
 
       resolved=$(resolve_display_name "$pid" "$raw_name" "$full_exe")
       pid_name[$pid]="$resolved"
 
-      exe_base=$("$BASENAME" "$full_exe" 2>/dev/null || echo "$raw_name")
+      exe_base=$(basename "$full_exe" 2>/dev/null || echo "$raw_name")
       if [[ "$exe_base" == "node" || "$exe_base" == "bun" || "$exe_base" == "deno" \
          || "$exe_base" == "electron" || "$raw_name" == "MainThread" ]]; then
-        mapfile -t _args < <("$TR" '\0' '\n' < /proc/"$pid"/cmdline 2>/dev/null || true)
+        mapfile -t _args < <(tr '\0' '\n' < /proc/"$pid"/cmdline 2>/dev/null || true)
         for arg in "''${_args[@]}"; do
           [[ "$arg" == "$full_exe" || "$arg" == "/proc/self/exe" ]] && continue
           [[ -z "$arg" ]] && continue
@@ -203,7 +190,7 @@
     mapfile -t sorted_pids < <(
       for pid in "''${!pid_listeners[@]}"; do
         printf '%s\t%s\n' "''${pid_name[$pid]:-zzz}" "$pid"
-      done | "$SORT" | "$AWK" -F'\t' '{print $2}'
+      done | sort | awk -F'\t' '{print $2}'
     )
 
     # ── Render ────────────────────────────────────────────────────────────────
@@ -225,7 +212,7 @@
       mapfile -t addrs < <(
         printf '%s' "''${pid_listeners[$pid]:-}" \
           | grep -v '^$' \
-          | "$SORT" -t: -k2 -n
+          | sort -t: -k2 -n
       )
       total_addrs="''${#addrs[@]}"
 
@@ -236,9 +223,9 @@
 
         mapfile -t conns < <(
           printf '%s' "''${pid_connections[$pid]:-}" \
-            | "$AWK" -v p="$port" '$1 == p && $2 != "" {print $2}' \
+            | awk -v p="$port" '$1 == p && $2 != "" {print $2}' \
             | grep -v '^$' \
-            | "$SORT" -u \
+            | sort -u \
             || true
         )
         num_conns="''${#conns[@]}"
@@ -262,7 +249,7 @@
             conn_raw_name="''${port_to_name[$remote_port]:-}"
             conn_pid="''${port_to_pid[$remote_port]:-}"
             if [[ -n "$conn_pid" && -n "$conn_raw_name" ]]; then
-              conn_exe=$("$READLINK" -f /proc/"$conn_pid"/exe 2>/dev/null || echo "")
+              conn_exe=$(readlink -f /proc/"$conn_pid"/exe 2>/dev/null || echo "")
               conn_label=$(resolve_display_name "$conn_pid" "$conn_raw_name" "$conn_exe")
             fi
           fi
@@ -289,11 +276,4 @@
       printf "\n"
     done
   '';
-in {
-  options.custom.scripts.ports-summary.enable =
-    lib.mkEnableOption "ports-summary open port viewer";
-
-  config = lib.mkIf cfg.enable {
-    home.packages = [ports-summary];
-  };
 }

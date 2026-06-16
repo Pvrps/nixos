@@ -60,7 +60,7 @@
         (sysBin pkgs.basedpyright "basedpyright-langserver")
         // {
           binary =
-            ((sysBin pkgs.basedpyright "basedpyright-langserver").binary)
+            (sysBin pkgs.basedpyright "basedpyright-langserver").binary
             // {
               arguments = ["--stdio"];
             };
@@ -90,7 +90,7 @@
         (sysBin pkgs.svelte-language-server "svelteserver")
         // {
           binary =
-            ((sysBin pkgs.svelte-language-server "svelteserver").binary)
+            (sysBin pkgs.svelte-language-server "svelteserver").binary
             // {
               arguments = ["--stdio"];
             };
@@ -102,7 +102,7 @@
         (sysBin pkgs.yaml-language-server "yaml-language-server")
         // {
           binary =
-            ((sysBin pkgs.yaml-language-server "yaml-language-server").binary)
+            (sysBin pkgs.yaml-language-server "yaml-language-server").binary
             // {
               arguments = ["--stdio"];
             };
@@ -112,7 +112,7 @@
         (sysBin pkgs.docker-language-server "docker-language-server")
         // {
           binary =
-            ((sysBin pkgs.docker-language-server "docker-language-server").binary)
+            (sysBin pkgs.docker-language-server "docker-language-server").binary
             // {
               arguments = ["start" "--stdio"];
             };
@@ -124,7 +124,7 @@
         (sysBin pkgs.graphql-language-service-cli "graphql-lsp")
         // {
           binary =
-            ((sysBin pkgs.graphql-language-service-cli "graphql-lsp").binary)
+            (sysBin pkgs.graphql-language-service-cli "graphql-lsp").binary
             // {
               arguments = ["server" "--method" "stream"];
             };
@@ -134,7 +134,7 @@
         (sysBin pkgs.vtsls "vtsls")
         // {
           binary =
-            ((sysBin pkgs.vtsls "vtsls").binary)
+            (sysBin pkgs.vtsls "vtsls").binary
             // {
               arguments = ["--stdio"];
             };
@@ -187,7 +187,7 @@
         (sysBin pkgs.vscode-langservers-extracted "vscode-css-language-server")
         // {
           binary =
-            ((sysBin pkgs.vscode-langservers-extracted "vscode-css-language-server").binary)
+            (sysBin pkgs.vscode-langservers-extracted "vscode-css-language-server").binary
             // {
               arguments = ["--stdio"];
             };
@@ -196,7 +196,7 @@
         (sysBin pkgs.vscode-langservers-extracted "vscode-html-language-server")
         // {
           binary =
-            ((sysBin pkgs.vscode-langservers-extracted "vscode-html-language-server").binary)
+            (sysBin pkgs.vscode-langservers-extracted "vscode-html-language-server").binary
             // {
               arguments = ["--stdio"];
             };
@@ -205,7 +205,7 @@
         (sysBin pkgs.vscode-langservers-extracted "vscode-json-language-server")
         // {
           binary =
-            ((sysBin pkgs.vscode-langservers-extracted "vscode-json-language-server").binary)
+            (sysBin pkgs.vscode-langservers-extracted "vscode-json-language-server").binary
             // {
               arguments = ["--stdio"];
             };
@@ -214,7 +214,7 @@
         (sysBin pkgs.vscode-langservers-extracted "vscode-markdown-language-server")
         // {
           binary =
-            ((sysBin pkgs.vscode-langservers-extracted "vscode-markdown-language-server").binary)
+            (sysBin pkgs.vscode-langservers-extracted "vscode-markdown-language-server").binary
             // {
               arguments = ["--stdio"];
             };
@@ -223,7 +223,7 @@
         (sysBin pkgs.vscode-langservers-extracted "vscode-eslint-language-server")
         // {
           binary =
-            ((sysBin pkgs.vscode-langservers-extracted "vscode-eslint-language-server").binary)
+            (sysBin pkgs.vscode-langservers-extracted "vscode-eslint-language-server").binary
             // {
               arguments = ["--stdio"];
             };

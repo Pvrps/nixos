@@ -58,55 +58,57 @@ in {
         })
       cfg.profiles;
 
-      policies = {
-        Preferences = {
-          "browser.sessionstore.resume_from_crash" = false;
-        };
-
-        AutofillAddressEnabled = false;
-        AutofillCreditCardEnabled = false;
-        DisableAppUpdate = true;
-        DisableFeedbackCommands = true;
-        DisableFirefoxStudies = true;
-        DisplayBookmarksToolbar = false;
-        DisablePocket = true;
-        DisableTelemetry = true;
-        DontCheckDefaultBrowser = true;
-        NoDefaultBookmarks = true;
-        OfferToSaveLogins = false;
-        PasswordManagerEnabled = false;
-
-        EnableTrackingProtection = {
-          Value = true;
-          Locked = true;
-          Cryptomining = true;
-          Fingerprinting = true;
-        };
-
-        FirefoxHome = {
-          Search = true;
-          Pocket = false;
-          Snippets = false;
-          TopSites = false;
-          Highlights = false;
-          SponsoredPocket = false;
-          SponsoredTopSites = false;
-        };
-
-        SearchSuggestEnabled = true;
-        DefaultSearchEngine = "Google";
-
-        ExtensionSettings =
-          cfg.extensionSettings
-          // lib.optionalAttrs (cfg.homepage != null) {
-            "newtaboverride@agenedia.com" = {
-              install_url = "https://addons.mozilla.org/firefox/downloads/latest/new-tab-override/latest.xpi";
-              installation_mode = "force_installed";
-            };
+      policies =
+        {
+          Preferences = {
+            "browser.sessionstore.resume_from_crash" = false;
           };
-      } // lib.optionalAttrs (cfg.extensionPolicies != {}) {
-        "3rdparty".Extensions = cfg.extensionPolicies;
-      };
+
+          AutofillAddressEnabled = false;
+          AutofillCreditCardEnabled = false;
+          DisableAppUpdate = true;
+          DisableFeedbackCommands = true;
+          DisableFirefoxStudies = true;
+          DisplayBookmarksToolbar = false;
+          DisablePocket = true;
+          DisableTelemetry = true;
+          DontCheckDefaultBrowser = true;
+          NoDefaultBookmarks = true;
+          OfferToSaveLogins = false;
+          PasswordManagerEnabled = false;
+
+          EnableTrackingProtection = {
+            Value = true;
+            Locked = true;
+            Cryptomining = true;
+            Fingerprinting = true;
+          };
+
+          FirefoxHome = {
+            Search = true;
+            Pocket = false;
+            Snippets = false;
+            TopSites = false;
+            Highlights = false;
+            SponsoredPocket = false;
+            SponsoredTopSites = false;
+          };
+
+          SearchSuggestEnabled = true;
+          DefaultSearchEngine = "Google";
+
+          ExtensionSettings =
+            cfg.extensionSettings
+            // lib.optionalAttrs (cfg.homepage != null) {
+              "newtaboverride@agenedia.com" = {
+                install_url = "https://addons.mozilla.org/firefox/downloads/latest/new-tab-override/latest.xpi";
+                installation_mode = "force_installed";
+              };
+            };
+        }
+        // lib.optionalAttrs (cfg.extensionPolicies != {}) {
+          "3rdparty".Extensions = cfg.extensionPolicies;
+        };
     };
   };
 }

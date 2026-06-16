@@ -1,19 +1,11 @@
-{
-  pkgs,
-  lib,
-  config,
-  ...
-}: let
-  cfg = config.custom.scripts.gitingest;
-  ingest-tool = pkgs.writeShellScriptBin "gitingest" ''
-    JQ="${pkgs.jq}/bin/jq"
-    CURL="${pkgs.curl}/bin/curl"
-    NOTIFY="${pkgs.libnotify}/bin/notify-send"
-    WL_COPY="${pkgs.wl-clipboard}/bin/wl-copy"
-    GREP="${pkgs.gnugrep}/bin/grep"
-    GUM="${pkgs.gum}/bin/gum"
-
-    URL="$1"
+{lib, ...}:
+lib.custom.mkScript {
+  name = "gitingest";
+  description = "GitIngest repository ingestion tool";
+  requiresWayland = true;
+  runtimeInputs = pkgs: with pkgs; [jq curl libnotify wl-clipboard gnugrep gum];
+  text = ''
+    URL="''${1:-}"
 
     # 1. Validation
     if [[ -z "$URL" ]]; then
@@ -21,58 +13,39 @@
       exit 1
     fi
 
-    if ! echo "$URL" | $GREP -E -q '^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(/.*)?$'; then
-       $NOTIFY "GitIngest Failed" "Only public https://github.com/owner/repo URLs are accepted"
+    if ! echo "$URL" | grep -E -q '^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(/.*)?$'; then
+       notify-send "GitIngest Failed" "Only public https://github.com/owner/repo URLs are accepted"
        echo "Error: expected https://github.com/owner/repo"
        exit 1
     fi
 
-    PAYLOAD=$($JQ -n --arg url "$URL" '{input_text: $url, max_file_size: 10000}')
+    PAYLOAD=$(jq -n --arg url "$URL" '{input_text: $url, max_file_size: 10000}')
 
-    RESPONSE=$($GUM spin --spinner dot --title "Ingesting repository..." --show-output -- \
-      $CURL -sS --fail --max-time 60 -X POST "https://gitingest.com/api/ingest" \
+    if ! RESPONSE=$(gum spin --spinner dot --title "Ingesting repository..." --show-output -- \
+      curl -sS --fail --max-time 60 -X POST "https://gitingest.com/api/ingest" \
       -H "Content-Type: application/json" \
-      -d "$PAYLOAD")
-
-    EXIT_CODE=$?
-
-    if [ $EXIT_CODE -ne 0 ]; then
-       $NOTIFY "GitIngest Failed" "Server timeout or connection error."
-       echo "Error: Failed to reach gitingest.com (Exit code: $EXIT_CODE)"
+      -d "$PAYLOAD"); then
+       notify-send "GitIngest Failed" "Server timeout or connection error."
+       echo "Error: Failed to reach gitingest.com"
        exit 1
     fi
 
-    if echo "$RESPONSE" | $GREP -q "\"detail\""; then
-       ERR=$(echo "$RESPONSE" | $JQ -r '.detail[0].msg // .detail // "Unknown API error"')
-       $NOTIFY "GitIngest Failed" "$ERR"
+    if echo "$RESPONSE" | grep -q "\"detail\""; then
+       ERR=$(echo "$RESPONSE" | jq -r '.detail[0].msg // .detail // "Unknown API error"')
+       notify-send "GitIngest Failed" "$ERR"
        echo "API Error: $ERR"
        exit 1
     fi
 
-    CONTENT_LEN=$(echo "$RESPONSE" | $JQ -r '(.summary + .tree + .content) | length')
+    CONTENT_LEN=$(echo "$RESPONSE" | jq -r '(.summary + .tree + .content) | length')
     if [[ "$CONTENT_LEN" -eq 0 ]]; then
-       $NOTIFY "GitIngest Failed" "API returned empty content."
+       notify-send "GitIngest Failed" "API returned empty content."
        exit 1
     fi
 
-    echo "$RESPONSE" | $JQ -r '.summary + "\n\n" + .tree + "\n\n" + .content' | $WL_COPY
+    echo "$RESPONSE" | jq -r '.summary + "\n\n" + .tree + "\n\n" + .content' | wl-copy
 
-    $NOTIFY "GitIngest" "Copied contents of $URL"
+    notify-send "GitIngest" "Copied contents of $URL"
     echo "✓ Copied to clipboard!"
   '';
-in {
-  options.custom.scripts.gitingest.enable = lib.mkEnableOption "GitIngest repository ingestion tool";
-
-  config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.custom.system.wayland.enable;
-        message = "gitingest script requires a Wayland compositor (uses wl-clipboard).";
-      }
-    ];
-
-    home.packages = [
-      ingest-tool
-    ];
-  };
 }

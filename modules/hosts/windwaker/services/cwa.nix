@@ -1,20 +1,15 @@
-{
-  config,
-  ...
-}:
-let
+{config, ...}: let
   dockerVolumeDir = "/mnt/docker";
-in
-{
+in {
   sops.secrets."cwa-env".sopsFile = ./_secrets.yaml;
 
   virtualisation.quadlet.containers.calibre-web-automated = {
     autoStart = true;
     containerConfig = {
       image = "crocodilestick/calibre-web-automated:latest";
-      networks = [ "lan_bridge" ];
-      publishPorts = [ "28083:8083" ];
-      environmentFiles = [ config.sops.secrets."cwa-env".path ];
+      networks = ["lan_bridge"];
+      publishPorts = ["28083:8083"];
+      environmentFiles = [config.sops.secrets."cwa-env".path];
       environments = {
         PUID = "1000";
         PGID = "1000";

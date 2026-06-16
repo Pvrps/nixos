@@ -34,7 +34,7 @@ in {
       type = lib.types.listOf lib.types.str;
       default = [];
       description = "Extra block devices to track disk usage for (EXTRA_FILESYSTEMS).";
-      example = [ "sda" "sdb" ];
+      example = ["sda" "sdb"];
     };
 
     gpuPackages = lib.mkOption {
@@ -61,17 +61,17 @@ in {
       openFirewall = true;
       extraPath = cfg.gpuPackages;
       environment =
-        lib.optionalAttrs (cfg.key != "") { KEY = cfg.key; }
-        //         lib.optionalAttrs (cfg.tokenFile != null) { TOKEN_FILE = cfg.tokenFile; }
-        // lib.optionalAttrs (cfg.intelGpuDevice != null) { INTEL_GPU_DEVICE = cfg.intelGpuDevice; }
-        // lib.optionalAttrs (cfg.hubUrl != "") { HUB_URL = cfg.hubUrl; }
+        lib.optionalAttrs (cfg.key != "") {KEY = cfg.key;}
+        // lib.optionalAttrs (cfg.tokenFile != null) {TOKEN_FILE = cfg.tokenFile;}
+        // lib.optionalAttrs (cfg.intelGpuDevice != null) {INTEL_GPU_DEVICE = cfg.intelGpuDevice;}
+        // lib.optionalAttrs (cfg.hubUrl != "") {HUB_URL = cfg.hubUrl;}
         // lib.optionalAttrs (cfg.extraFilesystems != []) {
           EXTRA_FILESYSTEMS = lib.concatStringsSep "," cfg.extraFilesystems;
         };
     };
 
     systemd.services.beszel-agent.serviceConfig = lib.mkMerge [
-      (lib.mkIf cfg.capPerfmon { AmbientCapabilities = "CAP_PERFMON"; })
+      (lib.mkIf cfg.capPerfmon {AmbientCapabilities = "CAP_PERFMON";})
       (lib.mkIf cfg.gpuMonitoring {
         PrivateDevices = lib.mkForce false;
         PrivateUsers = lib.mkForce false;

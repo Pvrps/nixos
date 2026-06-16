@@ -1,17 +1,13 @@
-{
-  ...
-}:
-let
+_: let
   dockerVolumeDir = "/mnt/docker";
-in
-{
+in {
   virtualisation.quadlet.containers = {
     twitch-points-miner-purps = {
       autoStart = true;
       containerConfig = {
         image = "rdavidoff/twitch-channel-points-miner-v2";
-        networks = [ "lan_bridge" ];
-        publishPorts = [ "55000:5000" ];
+        networks = ["lan_bridge"];
+        publishPorts = ["55000:5000"];
         environments = {
           TERM = "xterm-256color";
         };
@@ -33,8 +29,8 @@ in
       autoStart = true;
       containerConfig = {
         image = "rdavidoff/twitch-channel-points-miner-v2";
-        networks = [ "lan_bridge" ];
-        publishPorts = [ "55001:5000" ];
+        networks = ["lan_bridge"];
+        publishPorts = ["55001:5000"];
         environments = {
           TERM = "xterm-256color";
         };

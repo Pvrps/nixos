@@ -1,14 +1,9 @@
-{
-  pkgs,
-  lib,
-  config,
-  ...
-}: let
-  cfg = config.custom.scripts.hist-clean;
-
-  hist-clean = pkgs.writeShellScriptBin "hist-clean" ''
-    set -euo pipefail
-
+{lib, ...}:
+lib.custom.mkScript {
+  name = "hist-clean";
+  description = "hist-clean interactive shell history cleaner";
+  runtimeInputs = pkgs: with pkgs; [coreutils gawk gnugrep fzf];
+  text = ''
     BOLD=$'\033[1m'
     DIM=$'\033[2m'
     CYAN=$'\033[0;36m'
@@ -37,7 +32,7 @@
     # ── Parse history files into "SOURCE\x01RAWLINE\x01DISPLAY" records ──────────
     # SOH (\x01) is used as delimiter since it won't appear in commands.
 
-    ENTRIES_FILE="$(${pkgs.coreutils}/bin/mktemp)"
+    ENTRIES_FILE="$(mktemp)"
     trap 'rm -f "''${ENTRIES_FILE}"' EXIT
 
     parse_zsh() {
@@ -77,7 +72,7 @@
     parse_bash "$BASH_HIST"
     parse_fish "$FISH_HIST"
 
-    TOTAL="$(${pkgs.coreutils}/bin/wc -l < "''${ENTRIES_FILE}" | tr -d ' ')"
+    TOTAL="$(wc -l < "''${ENTRIES_FILE}" | tr -d ' ')"
 
     if [[ "$TOTAL" -eq 0 ]]; then
       printf "%bNo history entries found.%b\n" "$YELLOW" "$RESET"
@@ -85,10 +80,10 @@
     fi
 
     # ── Build the display list for fzf ───────────────────────────────────────────
-    FZF_INPUT_FILE="$(${pkgs.coreutils}/bin/mktemp)"
+    FZF_INPUT_FILE="$(mktemp)"
     trap 'rm -f "''${ENTRIES_FILE}" "''${FZF_INPUT_FILE}"' EXIT
 
-    ${pkgs.gawk}/bin/awk -F'\x01' '{print NR"\x01"$3}' "''${ENTRIES_FILE}" > "''${FZF_INPUT_FILE}"
+    awk -F'\x01' '{print NR"\x01"$3}' "''${ENTRIES_FILE}" > "''${FZF_INPUT_FILE}"
 
     FZF_ARGS=(
       --multi
@@ -106,8 +101,8 @@
     fi
 
     # Run fzf; if user aborts (Esc / Ctrl-C), exit cleanly
-    SELECTED="$(${pkgs.gawk}/bin/awk -F'\x01' '{print NR"\x01"$3}' "''${ENTRIES_FILE}" \
-      | ${pkgs.fzf}/bin/fzf "''${FZF_ARGS[@]}" || true)"
+    SELECTED="$(awk -F'\x01' '{print NR"\x01"$3}' "''${ENTRIES_FILE}" \
+      | fzf "''${FZF_ARGS[@]}" || true)"
 
     if [[ -z "$SELECTED" ]]; then
       printf "%bNo entries selected. Aborting.%b\n" "$YELLOW" "$RESET"
@@ -116,14 +111,14 @@
 
     # ── Collect the raw lines to delete (by index) ───────────────────────────────
     SELECTED_INDICES="$(printf '%s\n' "$SELECTED" \
-      | ${pkgs.gawk}/bin/awk -F'\x01' '{print $1}')"
+      | awk -F'\x01' '{print $1}')"
 
     printf "\n%b%s entries selected for deletion:%b\n\n" "$BOLD" \
-      "$(printf '%s\n' "$SELECTED_INDICES" | ${pkgs.coreutils}/bin/wc -l | tr -d ' ')" "$RESET"
+      "$(printf '%s\n' "$SELECTED_INDICES" | wc -l | tr -d ' ')" "$RESET"
 
     # Show a preview of what will be removed
     while IFS= read -r idx; do
-      display="$(${pkgs.gawk}/bin/awk -F'\x01' -v n="$idx" 'NR==n{print $3}' "''${ENTRIES_FILE}")"
+      display="$(awk -F'\x01' -v n="$idx" 'NR==n{print $3}' "''${ENTRIES_FILE}")"
       printf "  %b-%b %s\n" "$RED" "$RESET" "$display"
     done <<< "$SELECTED_INDICES"
 
@@ -132,14 +127,14 @@
     [[ "$CONFIRM" =~ ^[Yy]$ ]] || { printf "Aborted.\n"; exit 0; }
 
     # ── Build a set of raw lines to remove, per source ───────────────────────────
-    ZSH_REMOVE="$(${pkgs.coreutils}/bin/mktemp)"
-    BASH_REMOVE="$(${pkgs.coreutils}/bin/mktemp)"
-    FISH_REMOVE="$(${pkgs.coreutils}/bin/mktemp)"
+    ZSH_REMOVE="$(mktemp)"
+    BASH_REMOVE="$(mktemp)"
+    FISH_REMOVE="$(mktemp)"
     trap 'rm -f "''${ENTRIES_FILE}" "''${FZF_INPUT_FILE}" "''${ZSH_REMOVE}" "''${BASH_REMOVE}" "''${FISH_REMOVE}"' EXIT
 
     while IFS= read -r idx; do
-      src="$(${pkgs.gawk}/bin/awk -F'\x01' -v n="$idx" 'NR==n{print $1}' "''${ENTRIES_FILE}")"
-      rawline="$(${pkgs.gawk}/bin/awk -F'\x01' -v n="$idx" 'NR==n{print $2}' "''${ENTRIES_FILE}")"
+      src="$(awk -F'\x01' -v n="$idx" 'NR==n{print $1}' "''${ENTRIES_FILE}")"
+      rawline="$(awk -F'\x01' -v n="$idx" 'NR==n{print $2}' "''${ENTRIES_FILE}")"
       case "$src" in
         zsh)  printf '%s\n' "$rawline" >> "''${ZSH_REMOVE}"  ;;
         bash) printf '%s\n' "$rawline" >> "''${BASH_REMOVE}" ;;
@@ -157,20 +152,20 @@
       [[ -s "$removelist" ]] || return 0
 
       local tmp
-      tmp="$(${pkgs.coreutils}/bin/mktemp)"
+      tmp="$(mktemp)"
 
-      ${pkgs.gawk}/bin/awk '
+      awk '
         NR==FNR { remove[$0]=1; next }
         !($0 in remove)
       ' "$removelist" "$src" > "$tmp"
 
       local before after removed_count
-      before="$(${pkgs.coreutils}/bin/wc -l < "$src" | tr -d ' ')"
-      after="$(${pkgs.coreutils}/bin/wc -l < "$tmp" | tr -d ' ')"
+      before="$(wc -l < "$src" | tr -d ' ')"
+      after="$(wc -l < "$tmp" | tr -d ' ')"
       removed_count=$(( before - after ))
 
-      ${pkgs.coreutils}/bin/cp --backup=simple "$src" "''${src}.bak" 2>/dev/null || true
-      ${pkgs.coreutils}/bin/mv "$tmp" "$src"
+      cp --backup=simple "$src" "''${src}.bak" 2>/dev/null || true
+      mv "$tmp" "$src"
 
       printf "  %b%s%b  removed %b%d%b lines  %b(backup: %s.bak)%b\n" \
         "$CYAN" "$label" "$RESET" \
@@ -186,34 +181,27 @@
     # ── Purge this invocation from history ────────────────────────────────────────
     for hist_file in "$ZSH_HIST" "$BASH_HIST"; do
       [[ -f "$hist_file" ]] || continue
-      tmp_purge="$(${pkgs.coreutils}/bin/mktemp)"
-      ${pkgs.gnugrep}/bin/grep -v 'hist-clean' "$hist_file" > "$tmp_purge" || true
-      ${pkgs.coreutils}/bin/mv "$tmp_purge" "$hist_file"
+      tmp_purge="$(mktemp)"
+      grep -v 'hist-clean' "$hist_file" > "$tmp_purge" || true
+      mv "$tmp_purge" "$hist_file"
     done
 
     printf "\n%bDone.%b\n" "$GREEN" "$RESET"
   '';
-in {
-  options.custom.scripts.hist-clean.enable =
-    lib.mkEnableOption "hist-clean interactive shell history cleaner";
 
-  config = lib.mkIf cfg.enable {
-    home.packages = [hist-clean];
-
-    # Fish wrapper: run the binary then delete the invocation from fish's
-    # in-memory history before it is ever written to disk.
-    programs.fish.functions.hist-clean = {
-      description = "Interactive shell history cleaner";
-      body = ''
-        command hist-clean $argv
-        # Fish writes the invocation to disk before executing, so we must
-        # scrub the file directly, then reload into memory.
-        set -l histfile ~/.local/share/fish/fish_history
-        if test -f $histfile
-          sed -i -e '/^- cmd: hist-clean/,+1d' $histfile
-          builtin history merge
-        end
-      '';
-    };
+  # Fish wrapper: run the binary then delete the invocation from fish's
+  # in-memory history before it is ever written to disk.
+  extraConfig.programs.fish.functions.hist-clean = {
+    description = "Interactive shell history cleaner";
+    body = ''
+      command hist-clean $argv
+      # Fish writes the invocation to disk before executing, so we must
+      # scrub the file directly, then reload into memory.
+      set -l histfile ~/.local/share/fish/fish_history
+      if test -f "$histfile"
+        sed -i -e '/^- cmd: hist-clean/,+1d' "$histfile"
+        builtin history merge
+      end
+    '';
   };
 }

@@ -1,25 +1,43 @@
-{
-  pkgs,
-  lib,
-  config,
-  ...
-}: let
-  cfg = config.custom.scripts.capture.recording;
+{lib, ...}:
+lib.custom.mkScript {
+  name = "recording-tool";
+  optionName = "capture.recording";
+  description = "Screen recording tool";
+  requiresWayland = true;
+  keybind = ''Mod+Shift+C { spawn "recording-tool"; }'';
+  runtimeInputs = pkgs:
+    with pkgs; [
+      gpu-screen-recorder
+      slurp
+      procps
+      pulseaudio
+      wl-clipboard
+      libnotify
+      gawk
+      gnugrep
+      coreutils
+      niri
+    ];
+  text = ''
+    set -uo pipefail
 
-  recording-tool = pkgs.writeShellScriptBin "recording-tool" ''
-    STATE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}/recording-tool"
+    # Mode: "region" (default, slurp selection) or "monitor" (focused niri output)
+    MODE="''${1:-region}"
+
+    STATE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/recording-tool"
     mkdir -p "$STATE_DIR"
     chmod 700 "$STATE_DIR"
-    PIDFILE="$STATE_DIR/recording.pid"
-    RECFILE="$STATE_DIR/recording.file"
+    PIDFILE="$STATE_DIR/$MODE-recording.pid"
+    RECFILE="$STATE_DIR/$MODE-recording.file"
     DIR="$HOME/Videos/Recordings"
     mkdir -p "$DIR"
 
+    # --- Stop an in-progress recording -------------------------------------
     if [ -f "$PIDFILE" ]; then
       PID=$(cat "$PIDFILE")
-      if ${pkgs.procps}/bin/kill -0 "$PID" 2>/dev/null; then
-        ${pkgs.procps}/bin/kill -SIGTERM "$PID"
-        while ${pkgs.procps}/bin/kill -0 "$PID" 2>/dev/null; do sleep 0.1; done
+      if kill -0 "$PID" 2>/dev/null; then
+        kill -SIGTERM "$PID"
+        while kill -0 "$PID" 2>/dev/null; do sleep 0.1; done
       fi
       rm "$PIDFILE"
 
@@ -28,124 +46,60 @@
         rm "$RECFILE"
 
         if [ -f "$FILE" ]; then
-          ${pkgs.wl-clipboard}/bin/wl-copy "$FILE"
-          RESULT=$(${pkgs.libnotify}/bin/notify-send \
+          wl-copy "$FILE"
+          RESULT=$(notify-send \
             --action="copy-path=Copy Path" \
             "Recording Saved" "$FILE")
           if [[ "$RESULT" == "copy-path" ]]; then
-            printf '%s' "$FILE" | ${pkgs.wl-clipboard}/bin/wl-copy
+            printf '%s' "$FILE" | wl-copy
           fi
         fi
       fi
-    else
-      FILE="$DIR/$(date +'%Y-%m-%d_%H-%M-%S').mp4"
-
-      if AREA=$(${pkgs.slurp}/bin/slurp); then
-        # slurp outputs "X,Y WxH"; convert to "WxH+X+Y" for gpu-screen-recorder
-        REGION=$(echo "$AREA" | ${pkgs.gawk}/bin/awk '{split($1,a,","); split($2,b,"x"); printf "%sx%s+%s+%s", b[1], b[2], a[1], a[2]}')
-        echo "$FILE" > "$RECFILE"
-
-        AUDIO_SINK=$(${pkgs.pulseaudio}/bin/pactl get-default-sink).monitor
-        AUDIO_MIC=$(${pkgs.pulseaudio}/bin/pactl get-default-source)
-
-        ${pkgs.gpu-screen-recorder}/bin/gpu-screen-recorder \
-          -w region -region "$REGION" \
-          -a "$AUDIO_SINK" \
-          -a "$AUDIO_MIC" \
-          -c mp4 -o "$FILE" > /dev/null 2>&1 &
-        PID=$!
-        echo $PID > "$PIDFILE"
-
-        ${pkgs.libnotify}/bin/notify-send "Recording Started" "Press Win+Shift+C to stop"
-      fi
+      exit 0
     fi
-  '';
 
-  monitor-recording-tool = pkgs.writeShellScriptBin "monitor-recording-tool" ''
-    STATE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}/recording-tool"
-    mkdir -p "$STATE_DIR"
-    chmod 700 "$STATE_DIR"
-    PIDFILE="$STATE_DIR/monitor-recording.pid"
-    RECFILE="$STATE_DIR/monitor-recording.file"
-    DIR="$HOME/Videos/Recordings"
-    mkdir -p "$DIR"
+    # --- Start a new recording ---------------------------------------------
+    FILE="$DIR/$(date +'%Y-%m-%d_%H-%M-%S').mp4"
 
-    if [ -f "$PIDFILE" ]; then
-      PID=$(cat "$PIDFILE")
-      if ${pkgs.procps}/bin/kill -0 "$PID" 2>/dev/null; then
-        ${pkgs.procps}/bin/kill -SIGTERM "$PID"
-        while ${pkgs.procps}/bin/kill -0 "$PID" 2>/dev/null; do sleep 0.1; done
-      fi
-      rm "$PIDFILE"
-
-      if [ -f "$RECFILE" ]; then
-        FILE=$(cat "$RECFILE")
-        rm "$RECFILE"
-
-        if [ -f "$FILE" ]; then
-          ${pkgs.wl-clipboard}/bin/wl-copy "$FILE"
-          RESULT=$(${pkgs.libnotify}/bin/notify-send \
-            --action="copy-path=Copy Path" \
-            "Recording Saved" "$FILE")
-          if [[ "$RESULT" == "copy-path" ]]; then
-            printf '%s' "$FILE" | ${pkgs.wl-clipboard}/bin/wl-copy
-          fi
-        fi
-      fi
-    else
-      FILE="$DIR/$(date +'%Y-%m-%d_%H-%M-%S').mp4"
-
-      # Extract connector name (e.g. "DP-3") from niri's focused output at runtime
-      OUTPUT=$(niri msg focused-output 2>/dev/null | ${pkgs.gnugrep}/bin/grep -oP '\(\K[^)]+' | head -1)
-
+    # Determine the gpu-screen-recorder capture target for the mode.
+    if [ "$MODE" = "monitor" ]; then
+      # Extract connector name (e.g. "DP-3") from niri's focused output.
+      OUTPUT=$(niri msg focused-output 2>/dev/null | grep -oP '\(\K[^)]+' | head -1)
       if [ -z "$OUTPUT" ]; then
-        ${pkgs.libnotify}/bin/notify-send "Recording Failed" "Could not determine focused monitor"
+        notify-send "Recording Failed" "Could not determine focused monitor"
         exit 1
       fi
-
-      echo "$FILE" > "$RECFILE"
-
-      AUDIO_SINK=$(${pkgs.pulseaudio}/bin/pactl get-default-sink).monitor
-      AUDIO_MIC=$(${pkgs.pulseaudio}/bin/pactl get-default-source)
-
-      ${pkgs.gpu-screen-recorder}/bin/gpu-screen-recorder \
-        -w "$OUTPUT" \
-        -a "$AUDIO_SINK" \
-        -a "$AUDIO_MIC" \
-        -c mp4 -o "$FILE" > /dev/null 2>&1 &
-      PID=$!
-      echo $PID > "$PIDFILE"
-
-      ${pkgs.libnotify}/bin/notify-send "Recording Started" "$OUTPUT — Press Win+Shift+R to stop"
+      CAPTURE_ARGS=(-w "$OUTPUT")
+      STOP_HINT="$OUTPUT — Press Win+Shift+R to stop"
+    else
+      if ! AREA=$(slurp); then
+        exit 0
+      fi
+      # slurp outputs "X,Y WxH"; convert to "WxH+X+Y" for gpu-screen-recorder.
+      REGION=$(echo "$AREA" | awk '{split($1,a,","); split($2,b,"x"); printf "%sx%s+%s+%s", b[1], b[2], a[1], a[2]}')
+      CAPTURE_ARGS=(-w region -region "$REGION")
+      STOP_HINT="Press Win+Shift+C to stop"
     fi
+
+    echo "$FILE" > "$RECFILE"
+
+    AUDIO_SINK=$(pactl get-default-sink).monitor
+    AUDIO_MIC=$(pactl get-default-source)
+
+    gpu-screen-recorder \
+      "''${CAPTURE_ARGS[@]}" \
+      -a "$AUDIO_SINK" \
+      -a "$AUDIO_MIC" \
+      -c mp4 -o "$FILE" > /dev/null 2>&1 &
+    PID=$!
+    echo $PID > "$PIDFILE"
+
+    notify-send "Recording Started" "$STOP_HINT"
   '';
-in {
-  options.custom.scripts.capture.recording.enable = lib.mkEnableOption "Screen recording tool";
-
-  config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.custom.system.wayland.enable;
-        message = "capture-recording requires a Wayland compositor (uses gpu-screen-recorder, slurp).";
-      }
-    ];
-
-    home.packages = [
-      recording-tool
-      monitor-recording-tool
-      pkgs.gpu-screen-recorder
-      pkgs.slurp
-      pkgs.procps
-      pkgs.pulseaudio
-      pkgs.wl-clipboard
-      pkgs.libnotify
-      pkgs.gawk
-      pkgs.gnugrep
-    ];
-
-    custom.programs.niri.keybinds = [
-      ''Mod+Shift+C { spawn "recording-tool"; }''
-      ''Mod+Shift+R { spawn "monitor-recording-tool"; }''
+  # The monitor mode is invoked via its own keybind; guarded behind niri.enable.
+  extraConfig = {config, ...}: {
+    custom.programs.niri.keybinds = lib.mkIf config.custom.programs.niri.enable [
+      ''Mod+Shift+R { spawn "recording-tool" "monitor"; }''
     ];
   };
 }

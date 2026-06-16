@@ -1,16 +1,12 @@
-{
-  ...
-}:
-let
+_: let
   dockerVolumeDir = "/mnt/docker";
-in
-{
+in {
   virtualisation.quadlet.containers.audiobookshelf = {
     autoStart = true;
     containerConfig = {
       image = "ghcr.io/advplyr/audiobookshelf:latest";
-      networks = [ "lan_bridge" ];
-      publishPorts = [ "13378:80" ];
+      networks = ["lan_bridge"];
+      publishPorts = ["13378:80"];
       environments = {
         TZ = "America/Toronto";
       };

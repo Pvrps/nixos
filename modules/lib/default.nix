@@ -32,51 +32,71 @@
   #   - optionally contributes a niri keybind (guarded behind niri.enable)
   #
   # Arguments:
-  #   pkgs          - nixpkgs instance (from the calling module's args)
   #   name          - binary name (also the option leaf unless optionName given)
   #   optionName    - dotted option path under custom.scripts (default: name)
   #   description   - mkEnableOption description
-  #   runtimeInputs - list of packages available on the script's PATH
+  #   runtimeInputs - list of packages (function pkgs -> [pkg]) on the PATH
   #   text          - the shell script body
   #   requiresWayland - bool, adds the Wayland assertion (default false)
   #   keybind       - nullable niri keybind line, e.g. ''Mod+Shift+O { spawn "ocr-tool"; }''
   #   extraConfig   - extra home-manager config merged into the module
   #
-  # Returns a module function { config, ... }: { ... }.
+  # Returns an attrset module { imports = [ <module fn> ]; }, so a script file
+  # is simply:  { lib, ... }: lib.custom.mkScript { ... }
+  # (the inner module fn is wrapped in imports because a module file may not be
+  #  a function returning a function).
   # ---------------------------------------------------------------------------
   mkScript = {
-    pkgs,
     name,
     optionName ? name,
     description,
-    runtimeInputs ? [],
+    runtimeInputs ? (_pkgs: []),
     text,
     requiresWayland ? false,
     keybind ? null,
+    extraOptions ? {},
+    extraAssertions ? (_config: []),
     extraConfig ? {},
-  }: {config, ...}: let
-    cfg = lib.getAttrFromPath (lib.splitString "." optionName) config.custom.scripts;
-    tool = pkgs.writeShellApplication {
-      inherit name runtimeInputs text;
-    };
-  in {
-    options.custom.scripts = lib.setAttrByPath (lib.splitString "." optionName) {
-      enable = lib.mkEnableOption description;
-    };
+  }: {
+    imports = [
+      ({
+        config,
+        pkgs,
+        ...
+      }: let
+        cfg = lib.getAttrFromPath (lib.splitString "." optionName) config.custom.scripts;
+        tool = pkgs.writeShellApplication {
+          inherit name text;
+          runtimeInputs = runtimeInputs pkgs;
+        };
+      in {
+        options.custom.scripts = lib.setAttrByPath (lib.splitString "." optionName) ({
+            enable = lib.mkEnableOption description;
+          }
+          // extraOptions);
 
-    config = lib.mkIf cfg.enable (lib.mkMerge [
-      {
-        home.packages = [tool];
-      }
-      (lib.mkIf requiresWayland {
-        assertions = [(mkRequireWayland config name)];
+        config = lib.mkIf cfg.enable (lib.mkMerge [
+          {
+            home.packages = [tool];
+          }
+          (lib.mkIf requiresWayland {
+            assertions = [(mkRequireWayland config name)];
+          })
+          {
+            assertions = extraAssertions config;
+          }
+          (lib.mkIf (keybind != null) {
+            custom.programs.niri.keybinds =
+              lib.mkIf config.custom.programs.niri.enable [keybind];
+          })
+          (
+            if lib.isFunction extraConfig
+            then extraConfig {inherit config pkgs;}
+            else extraConfig
+          )
+        ]);
       })
-      (lib.mkIf (keybind != null) {
-        custom.programs.niri.keybinds =
-          lib.mkIf config.custom.programs.niri.enable [keybind];
-      })
-      extraConfig
-    ]);
+    ];
   };
 
   # ---------------------------------------------------------------------------

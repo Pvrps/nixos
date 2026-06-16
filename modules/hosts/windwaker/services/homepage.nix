@@ -1,16 +1,12 @@
-{
-  ...
-}:
-let
+_: let
   dockerVolumeDir = "/mnt/docker";
-in
-{
+in {
   virtualisation.quadlet.containers.homepage = {
     autoStart = true;
     containerConfig = {
       image = "ghcr.io/gethomepage/homepage:latest";
-      networks = [ "lan_bridge" ];
-      publishPorts = [ "47576:3000" ];
+      networks = ["lan_bridge"];
+      publishPorts = ["47576:3000"];
       environments = {
         HOMEPAGE_ALLOWED_HOSTS = "windwaker.ca:47576,10.0.10.16:47576,homepage.windwaker.ca";
       };

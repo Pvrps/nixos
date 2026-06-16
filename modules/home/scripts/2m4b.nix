@@ -1,18 +1,10 @@
-{
-  pkgs,
-  lib,
-  config,
-  ...
-}: let
-  cfg = config.custom.scripts."2m4b";
-  m4b-tool = pkgs.writeShellScriptBin "2m4b" ''
-    set -euo pipefail
-
-    FFMPEG="${pkgs.ffmpeg}/bin/ffmpeg"
-    FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
-    PYTHON="${pkgs.python3}/bin/python3"
-    GREP="${pkgs.gnugrep}/bin/grep"
-
+{lib, ...}:
+lib.custom.mkScript {
+  name = "2m4b";
+  optionName = "2m4b";
+  description = "MP3 to chapterized M4B audiobook converter";
+  runtimeInputs = pkgs: with pkgs; [ffmpeg python3 gnugrep coreutils];
+  text = ''
     usage() {
       echo "Usage: 2m4b [options] <input.mp3> [output.m4b]"
       echo ""
@@ -142,11 +134,11 @@
     sys.stderr.write("Generated %d chapters\n" % len(cuts))
     PYEOF
 
-    DURATION=$($FFPROBE -v error -show_entries format=duration -of default=nw=1:nk=1 "$INPUT")
-    CHANNELS=$($FFPROBE -v error -select_streams a:0 -show_entries stream=channels -of default=nw=1:nk=1 "$INPUT")
-    CHAPTER_COUNT=$($FFPROBE -v error -show_chapters -of csv=p=0 "$INPUT" | $GREP -c . || true)
-    CUESHEET=$($FFPROBE -v error -show_entries format_tags=CUESHEET -of default=nw=1:nk=1 "$INPUT" || true)
-    COVER_CODEC=$($FFPROBE -v error -select_streams v:0 -show_entries stream=codec_name -of default=nw=1:nk=1 "$INPUT" || true)
+    DURATION=$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$INPUT")
+    CHANNELS=$(ffprobe -v error -select_streams a:0 -show_entries stream=channels -of default=nw=1:nk=1 "$INPUT")
+    CHAPTER_COUNT=$(ffprobe -v error -show_chapters -of csv=p=0 "$INPUT" | grep -c . || true)
+    CUESHEET=$(ffprobe -v error -show_entries format_tags=CUESHEET -of default=nw=1:nk=1 "$INPUT" || true)
+    COVER_CODEC=$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=nw=1:nk=1 "$INPUT" || true)
 
     if [[ -z "$BITRATE" ]]; then
       if [[ "''${CHANNELS:-1}" -ge 2 ]]; then
@@ -165,13 +157,13 @@
     elif [[ -n "$CUESHEET" ]]; then
       MODE="cuesheet"
       echo "Using embedded CUESHEET tag for chapters"
-      printf '%s' "$CUESHEET" | $PYTHON "$PYSCRIPT" cue "$DURATION" > "$META"
+      printf '%s' "$CUESHEET" | python3 "$PYSCRIPT" cue "$DURATION" > "$META"
       EARGS+=(-i "$META" -map_chapters 1)
     else
       MODE="silence"
       echo "No chapter data found; detecting silences (decodes the whole file, may take a while)..."
-      SILENCE_LOG=$($FFMPEG -hide_banner -nostats -i "$INPUT" -vn -af "silencedetect=noise=$NOISE:d=$SIL_DUR" -f null - 2>&1)
-      printf '%s' "$SILENCE_LOG" | $PYTHON "$PYSCRIPT" silence "$DURATION" "$MIN_LEN" "$MAX_LEN" > "$META"
+      SILENCE_LOG=$(ffmpeg -hide_banner -nostats -i "$INPUT" -vn -af "silencedetect=noise=$NOISE:d=$SIL_DUR" -f null - 2>&1)
+      printf '%s' "$SILENCE_LOG" | python3 "$PYSCRIPT" silence "$DURATION" "$MIN_LEN" "$MAX_LEN" > "$META"
       EARGS+=(-i "$META" -map_chapters 1)
     fi
 
@@ -184,17 +176,9 @@
     EARGS+=(-movflags +faststart -f ipod "$OUTPUT")
 
     echo "Encoding to $OUTPUT (aac $BITRATE, chapter mode: $MODE)..."
-    $FFMPEG "''${EARGS[@]}"
+    ffmpeg "''${EARGS[@]}"
 
-    OUT_CHAPTERS=$($FFPROBE -v error -show_chapters -of csv=p=0 "$OUTPUT" | $GREP -c . || true)
+    OUT_CHAPTERS=$(ffprobe -v error -show_chapters -of csv=p=0 "$OUTPUT" | grep -c . || true)
     echo "✓ Wrote $OUTPUT ($OUT_CHAPTERS chapters)"
   '';
-in {
-  options.custom.scripts."2m4b".enable = lib.mkEnableOption "MP3 to chapterized M4B audiobook converter";
-
-  config = lib.mkIf cfg.enable {
-    home.packages = [
-      m4b-tool
-    ];
-  };
 }

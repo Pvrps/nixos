@@ -8,10 +8,12 @@
 
   startupLines = lib.concatStringsSep "\n" (map (cmd: "spawn-at-startup ${cmd}") cfg.startupCommands);
 
-  terminalKeybind = lib.optionalString (cfg.defaultTerminal != null)
-    ''    Mod+Return { spawn "${cfg.defaultTerminal}"; }'';
+  terminalKeybind =
+    lib.optionalString (cfg.defaultTerminal != null)
+    ''Mod+Return { spawn "${cfg.defaultTerminal}"; }'';
 
-  allBinds = lib.concatStringsSep "\n    "
+  allBinds =
+    lib.concatStringsSep "\n    "
     (lib.optional (terminalKeybind != "") terminalKeybind ++ cfg.keybinds)
     + lib.optionalString (cfg.bindsConfig != "") "\n    ${cfg.bindsConfig}";
 
@@ -125,9 +127,9 @@ in {
       ${cfg.layerRulesConfig}
 
       ${lib.optionalString (allBinds != "") ''
-      binds {
-          ${allBinds}
-      }''}
+        binds {
+            ${allBinds}
+        }''}
 
       ${cfg.gesturesConfig}
 
