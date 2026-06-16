@@ -133,6 +133,7 @@
       enable = true;
       withInput = true;
       openNetwork = true;
+      corsOrigins = ["http://mickey:5600"];
     };
     firefox = {
       enable = true;

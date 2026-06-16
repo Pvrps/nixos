@@ -14,8 +14,10 @@
       ${pkgs.dpkg}/bin/dpkg-deb -x ${src} $out
     '';
     base = ".var/app/com.obsproject.Studio/config/obs-studio/plugins/${name}";
+    # Debian multiarch triplet for the .deb's lib layout (e.g. x86_64-linux-gnu).
+    debianMultiarch = "${pkgs.stdenv.hostPlatform.parsed.cpu.name}-linux-gnu";
   in {
-    "${base}/bin/64bit/${name}.so".source = "${extracted}/usr/lib/x86_64-linux-gnu/obs-plugins/${name}.so";
+    "${base}/bin/64bit/${name}.so".source = "${extracted}/usr/lib/${debianMultiarch}/obs-plugins/${name}.so";
     # Map the entire data directory instead of just locale, as modern plugins have UI assets
     "${base}/data".source = "${extracted}/usr/share/obs/obs-plugins/${name}";
   };

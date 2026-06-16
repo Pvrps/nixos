@@ -38,6 +38,7 @@
       enable = true;
       userName = "purps";
       userEmail = "github@purps.ca";
+      safeDirectories = ["/persist/etc/nixos"];
     };
     ssh = {
       enable = true;

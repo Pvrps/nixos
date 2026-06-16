@@ -18,6 +18,12 @@ in {
         default = "anonymous@localhost";
         description = "Git user email";
       };
+      safeDirectories = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        example = ["/persist/etc/nixos"];
+        description = "Directories to mark as safe (git safe.directory), e.g. root-owned repos.";
+      };
     };
   };
 
@@ -65,7 +71,7 @@ in {
             "https://github.com/"
           ];
         };
-        safe.directory = "/persist/etc/nixos";
+        safe.directory = cfg.safeDirectories;
       };
     };
   };

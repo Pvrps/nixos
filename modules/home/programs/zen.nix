@@ -33,7 +33,7 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    stylix.targets.zen-browser.profileNames = builtins.attrNames cfg.profiles;
+    stylix.targets.zen-browser.profileNames = lib.mkIf config.stylix.enable (builtins.attrNames cfg.profiles);
 
     xdg.mimeApps.defaultApplications = {
       "text/html" = "zen.desktop";

@@ -11,13 +11,19 @@ in {
     withInput = lib.mkEnableOption "Input watcher (keypress/mouse tracking)";
     useAwatcher = lib.mkEnableOption "Use awatcher instead of default watchers (works on X11 and Wayland)";
     openNetwork = lib.mkEnableOption "Bind aw-server to all interfaces for remote access (restrict with firewall as needed)";
+    corsOrigins = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      example = ["http://mickey:5600"];
+      description = "Allowed CORS origins when openNetwork is set.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
     xdg.configFile."activitywatch/aw-server-rust/config.toml" = lib.mkIf cfg.openNetwork {
       text = ''
         address = "0.0.0.0"
-        cors = ["http://mickey:5600"]
+        cors = [${lib.concatMapStringsSep ", " (o: "\"${o}\"") cfg.corsOrigins}]
       '';
     };
 

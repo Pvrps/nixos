@@ -50,7 +50,7 @@ in {
       discord.enable = false;
       vesktop = {
         enable = true;
-        package = lib.mkIf osConfig.hardware.nvidia.modesetting.enable fixed-vesktop;
+        package = lib.mkIf (osConfig.hardware.nvidia.modesetting.enable or false) fixed-vesktop;
         useSystemVencord = false;
         settings = {
           arRPC = false;
