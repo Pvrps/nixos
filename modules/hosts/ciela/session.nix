@@ -11,7 +11,6 @@ in {
       wayland.enable = true;
       settings.Users.HideUsers = "purps";
       theme = "sddm-astronaut-theme";
-      extraPackages = [sddm-astronaut];
     };
     desktopManager.plasma6.enable = true;
     upower.enable = true;
@@ -34,5 +33,6 @@ in {
 
   environment.systemPackages = with pkgs; [
     nix-your-shell
+    sddm-astronaut
   ];
 }
