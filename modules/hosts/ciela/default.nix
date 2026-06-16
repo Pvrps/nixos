@@ -8,10 +8,24 @@
 
     ../../../modules/nixos/nvidia.nix
     ../../../modules/nixos/gaming.nix
+    ../../../modules/nixos/audio.nix
+    ../../../modules/nixos/flatpak.nix
+    ../../../modules/nixos/bluetooth.nix
+    ../../../modules/nixos/hardware-control.nix
     ../../../modules/nixos/beszel-agent.nix
   ];
 
   custom = {
+    audio.lowLatency.enable = true;
+    flatpak.enable = true;
+
+    bluetooth.enable = true;
+
+    hardwareControl = {
+      enable = true;
+      motherboard = "amd";
+    };
+
     gaming = {
       enable = true;
       steamRemotePlay.openFirewall = true;
