@@ -45,8 +45,6 @@ in {
 
     programs.zen-browser = {
       enable = true;
-      languagePacks = ["en-US"];
-
       profiles = lib.mapAttrs (name: profile:
         profile
         // {

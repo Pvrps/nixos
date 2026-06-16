@@ -55,7 +55,6 @@
 
   nixpkgs.config = {
     allowUnfree = true;
-    cudaSupport = true;
   };
 
   nix = {
