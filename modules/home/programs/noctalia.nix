@@ -59,15 +59,15 @@ in {
               url = "https://github.com/noctalia-dev/noctalia-plugins";
             }
           ];
+          states = lib.mapAttrs'
+            (name: plugin:
+              lib.nameValuePair name {
+                enabled = true;
+                sourceUrl = plugin.sourceUrl;
+              })
+            (lib.filterAttrs (_: p: p.enable) cfg.plugins);
           version = 2;
-        }
-        // lib.mapAttrs'
-          (name: plugin:
-            lib.nameValuePair name {
-              enabled = true;
-              sourceUrl = plugin.sourceUrl;
-            })
-          (lib.filterAttrs (_: p: p.enable) cfg.plugins);
+        };
       pluginSettings = lib.mapAttrs'
         (name: plugin: lib.nameValuePair name plugin.settings)
         (lib.filterAttrs (_: p: p.enable && p.settings != {}) cfg.plugins);
