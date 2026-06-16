@@ -9,17 +9,10 @@
     ./_persist.nix
     ./users.nix
 
-    ../../../modules/nixos/core.nix
-    ../../../modules/nixos/tailscale.nix
     ../../../modules/nixos/secureboot.nix
     ../../../modules/nixos/services/rustdesk.nix
   ];
 
-  programs.nh = {
-    enable = true;
-  };
-
-  networking.hostName = "mickey";
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [22 5600];
 
   systemd.timers.fwupd-refresh.enable = false;
@@ -85,6 +78,4 @@
     server = config.sops.secrets."rustdesk-server".path;
     keyFile = config.sops.secrets."rustdesk-key".path;
   };
-
-  sops.defaultSopsFile = ./_secrets.yaml;
 }

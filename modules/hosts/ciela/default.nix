@@ -6,18 +6,10 @@
     ./desktop.nix
     ./users.nix
 
-    ../../../modules/nixos/core.nix
     ../../../modules/nixos/nvidia.nix
     ../../../modules/nixos/gaming.nix
     ../../../modules/nixos/beszel-agent.nix
-    ../../../modules/nixos/tailscale.nix
   ];
-
-  programs.nh = {
-    enable = true;
-  };
-
-  networking.hostName = "ciela";
 
   custom = {
     gaming = {
@@ -36,8 +28,6 @@
   };
 
   # SSH-key-only host — passwords are random and unknown, so wheel must not need one for sudo
-  sops.defaultSopsFile = ./_secrets.yaml;
-
   security.sudo.wheelNeedsPassword = false;
 
   custom.services.beszel-agent = {

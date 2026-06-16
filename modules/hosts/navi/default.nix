@@ -6,20 +6,12 @@
     ./desktop.nix
     ./users.nix
 
-    ../../../modules/nixos/core.nix
     ../../../modules/nixos/nvidia.nix
     ../../../modules/nixos/gaming.nix
     ../../../modules/nixos/services/sshfs.nix
     ../../../modules/nixos/beszel-agent.nix
-    ../../../modules/nixos/tailscale.nix
     ../../../modules/nixos/secureboot.nix
   ];
-
-  programs.nh = {
-    enable = true;
-  };
-
-  networking.hostName = "navi";
 
   custom = {
     gaming = {
@@ -43,8 +35,6 @@
       };
     };
   };
-
-  sops.defaultSopsFile = ./_secrets.yaml;
 
   custom.services.beszel-agent = {
     enable = true;

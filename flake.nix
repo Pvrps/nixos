@@ -147,9 +147,15 @@
         }:
           nixpkgs.lib.nixosSystem {
             inherit system lib;
-            specialArgs = {inherit inputs self;};
+            specialArgs = {
+              inherit inputs self;
+              hostName = host;
+            };
             modules = [
               ./modules/hosts/${host}
+              ./modules/nixos/core.nix
+              ./modules/nixos/common.nix
+              ./modules/nixos/tailscale.nix
               disko.nixosModules.disko
               sops-nix.nixosModules.sops
               home-manager.nixosModules.home-manager

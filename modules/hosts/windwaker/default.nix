@@ -20,18 +20,10 @@
     ./services/dragonwilds.nix
     ./services/beszel-hub.nix
 
-    ../../../modules/nixos/core.nix
-    ../../../modules/nixos/tailscale.nix
     ../../../modules/nixos/beszel-agent.nix
   ];
 
-  programs.nh = {
-    enable = true;
-  };
-
   networking = {
-    hostName = "windwaker";
-
     # Disable NetworkManager — use systemd-networkd for static VLAN sub-interfaces
     networkmanager.enable = lib.mkForce false;
     useNetworkd = true;
@@ -139,8 +131,6 @@
   ];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  sops.defaultSopsFile = ./_secrets.yaml;
 
   custom.services.beszel-agent = {
     enable = true;
