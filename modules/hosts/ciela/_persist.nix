@@ -8,7 +8,8 @@
     directories = [
       "/var/log"
       "/var/lib/nixos"
-      "/var/lib/systemd/coredump"
+      # Intentionally NOT persisting /var/lib/systemd/coredump: stale dumps
+      # accumulate and DrKonqi replays them as crash popups on every login.
       "/var/lib/NetworkManager"
       "/var/lib/sddm"
       "/var/lib/tailscale"

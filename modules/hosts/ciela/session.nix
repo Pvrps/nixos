@@ -22,6 +22,18 @@ in {
     desktopManager.plasma6.enable = true;
     upower.enable = true;
     gnome.gnome-keyring.enable = true;
+
+    # Fix the "log out, then can't log back in for several tries" race.
+    # On logout, plasma's `systemd --user` manager (user@1000) takes ~20s to
+    # tear down (kwin, plasmashell, baloo...). logind keeps that manager alive
+    # for UserStopDelaySec (default 10s) after the last session ends, so a
+    # quick re-login lands in the *same* manager while its plasma targets still
+    # have a queued `stop` job. startplasma-wayland's `start` then collides:
+    # "Requested transaction contradicts existing jobs ... is destructive",
+    # the session aborts, and SDDM bounces back to the greeter.
+    # Setting this to 0 terminates user@1000 immediately on logout, so each
+    # login gets a clean manager with no in-flight stop jobs to collide with.
+    logind.settings.Login.UserStopDelaySec = 0;
   };
 
   environment.plasma6.excludePackages = with pkgs.kdePackages; [
