@@ -4,7 +4,7 @@
     clapper.enable = true;
     rustdesk = {
       enable = true;
-      server = osConfig.sops.secrets."rustdesk-server".path;
+      serverFile = osConfig.sops.secrets."rustdesk-server".path;
       keyFile = osConfig.sops.secrets."rustdesk-key".path;
     };
     flatpak = {

@@ -100,6 +100,43 @@
   };
 
   # ---------------------------------------------------------------------------
+  # mkRustdeskConfigScript: shell that writes RustDesk2.toml once (if absent)
+  # from a server address and a key, BOTH read from files at runtime. This is
+  # the shared writer for the NixOS system daemon and the home-manager program.
+  #
+  # FIX: previously `server` was interpolated literally while callers passed a
+  # sops *path*, so the config ended up with `/run/secrets/...` instead of the
+  # address. Now both serverFile and keyFile are read at runtime.
+  #
+  #   configFile  - target RustDesk2.toml path
+  #   serverFile  - file containing the relay/rendezvous address
+  #   keyFile     - file containing the server public key
+  # ---------------------------------------------------------------------------
+  mkRustdeskConfigScript = {
+    configFile,
+    serverFile,
+    keyFile,
+  }: ''
+    config_file="${configFile}"
+    if [ ! -f "$config_file" ]; then
+      server=$(tr -d '\n' < ${serverFile})
+      key=$(tr -d '\n' < ${keyFile})
+      mkdir -p "$(dirname "$config_file")"
+      cat > "$config_file" <<EOF
+    rendezvous_server = "$server"
+    relay_server = "$server"
+    api_server = ""
+    key = "$key"
+
+    [options]
+    custom-rendezvous-server = "$server"
+    relay-server = "$server"
+    key = "$key"
+    EOF
+    fi
+  '';
+
+  # ---------------------------------------------------------------------------
   # mkTerminalPalette: map a stylix base16 color set to the 16 ANSI slots.
   # Returns an attrset { normal = { black = ...; ... }; bright = { ... }; }
   # consumed by foot/ghostty (each formats it to its own syntax).

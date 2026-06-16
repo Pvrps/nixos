@@ -75,7 +75,7 @@
 
   custom.services.rustdesk = {
     enable = true;
-    server = config.sops.secrets."rustdesk-server".path;
+    serverFile = config.sops.secrets."rustdesk-server".path;
     keyFile = config.sops.secrets."rustdesk-key".path;
   };
 }

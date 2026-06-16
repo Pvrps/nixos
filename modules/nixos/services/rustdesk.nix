@@ -5,19 +5,19 @@
   ...
 }: let
   cfg = config.custom.services.rustdesk;
-  hasServer = cfg.server != "" && cfg.keyFile != "";
+  hasServer = cfg.serverFile != null && cfg.keyFile != null;
 in {
   options.custom.services.rustdesk = {
     enable = lib.mkEnableOption "RustDesk system-level daemon (pre-login access)";
-    server = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "RustDesk relay/rendezvous server address (IP or hostname).";
+    serverFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Path to a file containing the RustDesk relay/rendezvous server address. Read at runtime (e.g. a sops secret path).";
     };
     keyFile = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Path to a file containing the RustDesk server public key.";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Path to a file containing the RustDesk server public key. Read at runtime.";
     };
   };
 
@@ -34,24 +34,10 @@ in {
         Type = "oneshot";
         RemainAfterExit = true;
       };
-      script = ''
-        config_file="/root/.config/rustdesk/RustDesk2.toml"
-        if [ ! -f "$config_file" ]; then
-          key=$(tr -d '\n' < ${cfg.keyFile})
-          mkdir -p /root/.config/rustdesk
-          cat > "$config_file" <<EOF
-        rendezvous_server = "${cfg.server}"
-        relay_server = "${cfg.server}"
-        api_server = ""
-        key = "$key"
-
-        [options]
-        custom-rendezvous-server = "${cfg.server}"
-        relay-server = "${cfg.server}"
-        key = "$key"
-        EOF
-        fi
-      '';
+      script = lib.custom.mkRustdeskConfigScript {
+        configFile = "/root/.config/rustdesk/RustDesk2.toml";
+        inherit (cfg) serverFile keyFile;
+      };
     };
 
     systemd.services.rustdesk = {

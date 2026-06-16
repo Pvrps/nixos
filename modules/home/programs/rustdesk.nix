@@ -5,20 +5,20 @@
   ...
 }: let
   cfg = config.custom.programs.rustdesk;
-  hasServer = cfg.server != "" && cfg.keyFile != "";
+  hasServer = cfg.serverFile != null && cfg.keyFile != null;
 in {
   options.custom.programs.rustdesk = {
     enable = lib.mkEnableOption "RustDesk remote desktop";
     autoStart = lib.mkEnableOption "Auto-start RustDesk server in background";
-    server = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "RustDesk relay/rendezvous server address (IP or hostname).";
+    serverFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Path to a file containing the RustDesk relay/rendezvous server address. Read at runtime (e.g. a sops secret path).";
     };
     keyFile = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Path to a file containing the RustDesk server public key.";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Path to a file containing the RustDesk server public key. Read at runtime.";
     };
   };
 
@@ -44,27 +44,13 @@ in {
     };
 
     # On first activation only (file absent), write RustDesk2.toml with server
-    # config. The key is read at activation time from the sops-managed keyFile.
-    # RustDesk owns the file from that point forward.
+    # config. Both server address and key are read at activation time from the
+    # sops-managed files. RustDesk owns the file from that point forward.
     home.activation.rustdeskConfig = lib.mkIf hasServer (
-      lib.hm.dag.entryAfter ["writeBoundary"] ''
-        config_file="$HOME/.config/rustdesk/RustDesk2.toml"
-        if [ ! -f "$config_file" ]; then
-          key=$(cat ${cfg.keyFile} | tr -d '\n')
-          mkdir -p "$HOME/.config/rustdesk"
-          cat > "$config_file" <<EOF
-        rendezvous_server = "${cfg.server}"
-        relay_server = "${cfg.server}"
-        api_server = ""
-        key = "$key"
-
-        [options]
-        custom-rendezvous-server = "${cfg.server}"
-        relay-server = "${cfg.server}"
-        key = "$key"
-        EOF
-        fi
-      ''
+      lib.hm.dag.entryAfter ["writeBoundary"] (lib.custom.mkRustdeskConfigScript {
+        configFile = "$HOME/.config/rustdesk/RustDesk2.toml";
+        inherit (cfg) serverFile keyFile;
+      })
     );
   };
 }
