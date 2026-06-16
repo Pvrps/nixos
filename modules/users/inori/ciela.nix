@@ -216,6 +216,7 @@
     okular.enable = true;
     pinta.enable = true;
 
+    linux-wallpaperengine.enable = true;
     rustdesk = {
       enable = true;
       serverFile = osConfig.sops.secrets."rustdesk-server".path;

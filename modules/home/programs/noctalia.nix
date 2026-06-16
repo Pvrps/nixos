@@ -18,6 +18,26 @@ in {
       type = lib.types.str;
       description = "Wayland output name used for lock screen and notifications. Required when noctalia is enabled.";
     };
+    plugins = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.submodule ({name, ...}: {
+        options = {
+          enable = lib.mkEnableOption "Noctalia plugin ${name}";
+          sourceUrl = lib.mkOption {
+            type = lib.types.str;
+            default = "https://github.com/noctalia-dev/noctalia-plugins";
+            description = "Plugin registry source URL (composite key prefix).";
+          };
+          barWidget = lib.mkEnableOption "append this plugin's bar widget to the bar's right section";
+          settings = lib.mkOption {
+            type = lib.types.attrs;
+            default = {};
+            description = "Per-plugin settings written to plugins/<id>/settings.json.";
+          };
+        };
+      }));
+      default = {};
+      description = "Noctalia registry plugins to install/enable declaratively per user.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -30,6 +50,27 @@ in {
 
     programs.noctalia-shell = {
       enable = true;
+      plugins =
+        lib.optionalAttrs (cfg.plugins != {}) {
+          sources = [
+            {
+              enabled = true;
+              name = "Official Noctalia Plugins";
+              url = "https://github.com/noctalia-dev/noctalia-plugins";
+            }
+          ];
+          version = 2;
+        }
+        // lib.mapAttrs'
+          (name: plugin:
+            lib.nameValuePair name {
+              enabled = true;
+              sourceUrl = plugin.sourceUrl;
+            })
+          (lib.filterAttrs (_: p: p.enable) cfg.plugins);
+      pluginSettings = lib.mapAttrs'
+        (name: plugin: lib.nameValuePair name plugin.settings)
+        (lib.filterAttrs (_: p: p.enable && p.settings != {}) cfg.plugins);
       settings = {
         dock = {
           enabled = false;
@@ -86,11 +127,10 @@ in {
                 {id = "Volume";}
                 {id = "ControlCenter";}
               ]
-              # sourceUrl = noctalia mainSourceUrl → composite key is bare "discord-rpc"
-              # → stable widget ID "plugin:discord-rpc" with no hash fragility.
-              ++ lib.optionals config.custom.programs.discord-rpc-noctalia.enable [
-                {id = "plugin:discord-rpc";}
-              ];
+              ++ (lib.concatLists (lib.mapAttrsToList
+                (name: plugin:
+                  lib.optional plugin.barWidget {id = "plugin:${name}";})
+                (lib.filterAttrs (_: p: p.enable) cfg.plugins)));
           };
         };
       };

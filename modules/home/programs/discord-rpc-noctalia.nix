@@ -36,19 +36,13 @@ in {
         ./discord-rpc-noctalia/Panel.qml;
     };
 
-    # ── Register plugin via the noctalia-shell HM option ──────────────────────
-    # programs.noctalia-shell.plugins uses pkgs.formats.json{} which deep-merges
-    # attrsets, so this entry is combined with anything set in noctalia.nix rather
-    # than conflicting. The "states" key holds per-plugin enabled/sourceUrl pairs.
-    # ── Register plugin via the noctalia-shell HM option ──────────────────────
+    # ── Register plugin via the declarative noctalia plugins option ──────────
     # sourceUrl matches Noctalia's mainSourceUrl so the composite key is the
     # bare "discord-rpc" (no hash prefix), giving the stable bar widget ID
     # "plugin:discord-rpc" regardless of any future changes here.
-    programs.noctalia-shell.plugins = {
-      states."discord-rpc" = {
-        enabled = true;
-        sourceUrl = "https://github.com/noctalia-dev/noctalia-plugins";
-      };
+    custom.programs.noctalia.plugins."discord-rpc" = {
+      enable = true;
+      barWidget = true;
     };
   };
 }
