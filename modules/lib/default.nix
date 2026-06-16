@@ -209,6 +209,12 @@
       "unitConfig"
       "autoStart"
     ];
+    # Always carry the caller's environments through; layer TZ on top only when
+    # a timezone is requested. (A previous version only kept environments when
+    # tz != null, silently dropping PUID/PGID/etc. on tz = null containers.)
+    mergedEnvironments =
+      lib.optionalAttrs (tz != null) {TZ = tz;}
+      // (containerConfig.environments or {});
   in
     {
       inherit autoStart;
@@ -219,8 +225,8 @@
             then networks
             else [network];
         }
-        // lib.optionalAttrs (tz != null) {
-          environments = {TZ = tz;} // (containerConfig.environments or {});
+        // lib.optionalAttrs (mergedEnvironments != {}) {
+          environments = mergedEnvironments;
         }
         // (builtins.removeAttrs containerConfig ["environments"]);
       serviceConfig =
