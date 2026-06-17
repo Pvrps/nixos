@@ -300,14 +300,19 @@
     ssh = {
       extraHosts = {
         "windwaker" = {
-          HostName = "10.0.10.16";
+          HostName = "windwaker";
           User = "purps";
           IdentityFile = osConfig.sops.secrets."windwaker-purps-key".path;
         };
         "ciela" = {
-          HostName = "10.0.0.232";
+          HostName = "ciela";
           User = "purps";
           IdentityFile = osConfig.sops.secrets."ciela-purps-key".path;
+        };
+        "mickey" = {
+          HostName = "mickey";
+          User = "purps";
+          IdentityFile = osConfig.sops.secrets."mickey-purps-key".path;
         };
       };
     };

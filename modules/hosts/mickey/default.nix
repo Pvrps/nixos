@@ -68,10 +68,13 @@
       enable = true;
       openFirewall = false;
       settings = {
-        PermitRootLogin = "no";
+        PermitRootLogin = "prohibit-password";
+        PasswordAuthentication = false;
       };
     };
   };
+
+  security.sudo.wheelNeedsPassword = false;
 
   custom.services.rustdesk = {
     enable = true;

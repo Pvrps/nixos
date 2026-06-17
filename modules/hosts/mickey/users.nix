@@ -15,14 +15,14 @@
       uid = 1000;
       extraGroups = ["wheel" "networkmanager" "video" "audio" "input" "tailscale"];
       shell = pkgs.fish;
-      hashedPasswordFile = config.sops.secrets."purps-password".path;
+      hashedPassword = "!";
+      openssh.authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC6oz9GSx/BDWu4m6gfaBh8QJUsoc3I86kYWX0W151UD purps@navi"
+      ];
     };
   };
 
   sops.secrets = {
-    "purps-password" = {
-      neededForUsers = true;
-    };
     "mike-password" = {
       neededForUsers = true;
     };

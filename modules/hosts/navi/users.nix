@@ -28,6 +28,11 @@
       group = "users";
       mode = "0600";
     };
+    "mickey-purps-key" = {
+      owner = "purps";
+      group = "users";
+      mode = "0600";
+    };
 
     "github-ssh-key" = {
       owner = "purps";
