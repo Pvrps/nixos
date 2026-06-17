@@ -39,6 +39,11 @@
       group = "users";
       mode = "0600";
     };
+    "github-token" = {
+      owner = "purps";
+      group = "users";
+      mode = "0600";
+    };
 
     "context7-api-key" = {
       owner = "purps";
