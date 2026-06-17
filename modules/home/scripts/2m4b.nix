@@ -3,7 +3,7 @@ lib.custom.mkScript {
   name = "2m4b";
   optionName = "2m4b";
   description = "MP3 to chapterized M4B audiobook converter";
-  runtimeInputs = pkgs: with pkgs; [ffmpeg python3 gnugrep coreutils];
+  runtimeInputs = pkgs: with pkgs; [(ffmpeg-full.override { withUnfree = true; }) python3 gnugrep coreutils];
   text = ''
     usage() {
       echo "Usage: 2m4b [options] <input.mp3> [output.m4b]"
@@ -46,6 +46,46 @@ lib.custom.mkScript {
     [[ ''${#POSITIONAL[@]} -ge 1 ]] || usage
     INPUT="''${POSITIONAL[0]}"
     OUTPUT="''${POSITIONAL[1]:-''${INPUT%.*}.m4b}"
+
+    # Render seconds as H:MM:SS for human-readable durations.
+    fmt_hms() {
+      local t=''${1%.*}
+      printf '%d:%02d:%02d' $((t / 3600)) $(((t % 3600) / 60)) $((t % 60))
+    }
+
+    # Drive ffmpeg via -progress and print a single rewriting status line that
+    # reports a real percentage of the total duration plus encode speed, so the
+    # media-position counter is never mistaken for time remaining. Usage:
+    #   run_with_progress <label> <total_seconds> <loglevel> -- <ffmpeg args...>
+    # Stderr is left untouched so callers can capture e.g. silencedetect output.
+    run_with_progress() {
+      local label="$1" total="$2" loglevel="$3"; shift 3
+      [[ "$1" == "--" ]] && shift
+      local total_s=''${total%.*}
+      [[ "$total_s" -gt 0 ]] 2>/dev/null || total_s=0
+      ffmpeg -hide_banner -nostats -loglevel "$loglevel" -progress pipe:1 "$@" \
+        | while IFS='=' read -r key val; do
+            case "$key" in
+              out_time_us|out_time_ms)
+                cur=$((val / 1000000))
+                if [[ "$total_s" -gt 0 ]]; then
+                  pct=$((cur * 100 / total_s))
+                  [[ "$pct" -gt 100 ]] && pct=100
+                  printf '\r  %s: %3d%%  (%s / %s)        ' \
+                    "$label" "$pct" "$(fmt_hms "$cur")" "$(fmt_hms "$total_s")"
+                else
+                  printf '\r  %s: %s        ' "$label" "$(fmt_hms "$cur")"
+                fi
+                ;;
+              progress)
+                [[ "$val" == "end" ]] && printf '\r  %s: done%50s\n' "$label" ""
+                ;;
+            esac
+          done
+      # Propagate ffmpeg's exit status, not the while-loop's, so encode/scan
+      # failures still abort under `set -o errexit -o pipefail`.
+      return "''${PIPESTATUS[0]}"
+    }
 
     if [[ ! -f "$INPUT" ]]; then
       echo "Error: '$INPUT' does not exist"
@@ -148,7 +188,7 @@ lib.custom.mkScript {
       fi
     fi
 
-    EARGS=(-v error -nostats -y -i "$INPUT")
+    EARGS=(-y -i "$INPUT")
 
     if [[ "$CHAPTER_COUNT" -ge 2 ]]; then
       MODE="container"
@@ -161,13 +201,36 @@ lib.custom.mkScript {
       EARGS+=(-i "$META" -map_chapters 1)
     else
       MODE="silence"
-      echo "No chapter data found; detecting silences (decodes the whole file, may take a while)..."
-      SILENCE_LOG=$(ffmpeg -hide_banner -nostats -i "$INPUT" -vn -af "silencedetect=noise=$NOISE:d=$SIL_DUR" -f null - 2>&1)
-      printf '%s' "$SILENCE_LOG" | python3 "$PYSCRIPT" silence "$DURATION" "$MIN_LEN" "$MAX_LEN" > "$META"
+      echo "No chapter data found; scanning for silences (full decode, ~total runtime / speed)..."
+      SILENCE_LOG=$(mktemp --suffix=.silog)
+      trap 'rm -f "$PYSCRIPT" "$META" "$SILENCE_LOG"' EXIT
+      # silencedetect findings are emitted at `info` level on stderr (captured
+      # to file); -progress drives the status line on stdout.
+      run_with_progress "Scanning" "$DURATION" info -- \
+        -i "$INPUT" -vn -af "silencedetect=noise=$NOISE:d=$SIL_DUR" -f null - \
+        2> "$SILENCE_LOG"
+      python3 "$PYSCRIPT" silence "$DURATION" "$MIN_LEN" "$MAX_LEN" < "$SILENCE_LOG" > "$META"
       EARGS+=(-i "$META" -map_chapters 1)
     fi
 
-    EARGS+=(-map 0:a -map_metadata 0 -c:a aac -b:a "$BITRATE")
+    # NOTE: do NOT use `ffmpeg -encoders | grep -q` here. Under `set -o pipefail`
+    # `grep -q` closes the pipe on first match, ffmpeg dies with SIGPIPE (141),
+    # and the pipeline reports failure even though the encoder is present, so we
+    # silently fell back to the lower-quality `aac` encoder. Capture first, then
+    # match the captured text.
+    ENCODERS=$(ffmpeg -hide_banner -encoders 2>/dev/null || true)
+    if [[ "$ENCODERS" == *libfdk_aac* ]]; then
+      AAC_CODEC="libfdk_aac"
+      ENCODE_EXTRA=(-afterburner 0)
+      if [[ "''${CHANNELS:-1}" -lt 2 ]]; then
+        ENCODE_EXTRA+=(-profile:a aac_he)
+      fi
+    else
+      AAC_CODEC="aac"
+      ENCODE_EXTRA=(-aac_coder fast)
+    fi
+
+    EARGS+=(-map 0:a -map_metadata 0 -c:a "$AAC_CODEC" -b:a "$BITRATE" "''${ENCODE_EXTRA[@]}")
 
     case "$COVER_CODEC" in
       mjpeg | png) EARGS+=(-map 0:v:0 -c:v copy -disposition:v:0 attached_pic) ;;
@@ -175,8 +238,8 @@ lib.custom.mkScript {
 
     EARGS+=(-movflags +faststart -f ipod "$OUTPUT")
 
-    echo "Encoding to $OUTPUT (aac $BITRATE, chapter mode: $MODE)..."
-    ffmpeg "''${EARGS[@]}"
+    echo "Encoding to $OUTPUT ($AAC_CODEC $BITRATE, chapter mode: $MODE)..."
+    run_with_progress "Encoding" "$DURATION" warning -- "''${EARGS[@]}"
 
     OUT_CHAPTERS=$(ffprobe -v error -show_chapters -of csv=p=0 "$OUTPUT" | grep -c . || true)
     echo "✓ Wrote $OUTPUT ($OUT_CHAPTERS chapters)"

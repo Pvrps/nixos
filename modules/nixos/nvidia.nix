@@ -1,5 +1,5 @@
 {pkgs, ...}: {
-  nixpkgs.config.cudaSupport = true;
+
 
   hardware = {
     graphics = {

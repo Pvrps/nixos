@@ -56,7 +56,7 @@
 
   abd-tool = pkgs.writeShellApplication {
     name = "abd";
-    runtimeInputs = with pkgs; [curl python3 ffmpeg coreutils gnugrep gnused];
+    runtimeInputs = with pkgs; [curl python3 (ffmpeg-full.override { withUnfree = true; }) coreutils gnugrep gnused];
     text = ''
       EXTRACTOR="${extractorPy}"
       UA="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0"
@@ -125,8 +125,10 @@
       echo "Working in $WORKDIR"
 
       # ── download MP3s ──────────────────────────────────────────────────────────
-      echo "Downloading $COUNT files..."
+      MAX_PARALLEL=4
+      echo "Downloading $COUNT files ($MAX_PARALLEL at a time)..."
       IDX=0
+      RUNNING=0
       for URL in "''${MP3S[@]}"; do
         IDX=$((IDX + 1))
         PADDED=$(printf '%04d' "$IDX")
@@ -134,8 +136,14 @@
         echo "  [$IDX/$COUNT] $URL"
         curl -sS --fail --max-time 300 --retry 3 --retry-delay 2 \
           -H "User-Agent: $UA" \
-          -o "$DEST" "$URL"
+          -o "$DEST" "$URL" &
+        RUNNING=$((RUNNING + 1))
+        if [[ "$RUNNING" -ge "$MAX_PARALLEL" ]]; then
+          wait -n 2>/dev/null || wait
+          RUNNING=$((RUNNING - 1))
+        fi
       done
+      wait || { echo "Error: one or more downloads failed"; exit 1; }
 
       # ── concatenate into a single MP3 ─────────────────────────────────────────
       if [[ "$COUNT" -eq 1 ]]; then
