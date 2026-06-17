@@ -2,6 +2,12 @@
   dockerVolumeDir = "/mnt/docker";
   torrentingPort = 48150;
 in {
+  # Ensure correct ownership so the container (UID/GID 1000) can write downloads.
+  systemd.tmpfiles.rules = [
+    "d ${dockerVolumeDir}/qbittorrent/torrents 0755 1000 1000 -"
+    "d ${dockerVolumeDir}/qbittorrent/config   0755 1000 1000 -"
+  ];
+
   virtualisation.quadlet.containers.qbittorrent = lib.custom.mkContainer {
     containerConfig = {
       image = "ghcr.io/linuxserver/qbittorrent:latest";
@@ -12,7 +18,7 @@ in {
       ];
       volumes = [
         "${dockerVolumeDir}/qbittorrent/config:/config"
-        "${dockerVolumeDir}/qbittorrent/torrents:/torrents"
+        "${dockerVolumeDir}/qbittorrent/torrents:/downloads"
       ];
       environments = {
         PUID = "1000";
