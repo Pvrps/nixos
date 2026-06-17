@@ -17,8 +17,9 @@
     ./services/suwayomi.nix
     ./services/asf.nix
     ./services/twitchpointminer.nix
-    ./services/dragonwilds.nix
+    #./services/dragonwilds.nix
     ./services/beszel-hub.nix
+    ./services/qbittorrent.nix
 
     ../../../modules/nixos/beszel-agent.nix
   ];

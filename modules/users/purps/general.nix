@@ -18,7 +18,6 @@
       just
       fastfetch
       btop
-      aria2
       wget
     ];
   };
