@@ -466,6 +466,11 @@
 
     extraConfig = ''
       screenshot-path "~/Pictures/Screenshots/%Y-%m-%d-%H-%M-%S.png"
+
+      // Runtime-managed window rules (written/cleared by `just run` in the osrs
+      // project). Optional so a missing file is a warning, not an error; niri
+      // live-reloads when it appears, changes, or is removed.
+      include optional=true "~/.config/niri/runtime-rules.kdl"
     '';
   };
 }
