@@ -55,7 +55,7 @@
     "/mnt" = {
       device = "/dev/disk/by-uuid/3b95b690-13a1-4052-bc81-ade5b51f2de1";
       fsType = "ext4";
-      options = ["nofail" "x-systemd.device-timeout=10"];
+      options = ["nofail" "x-systemd.device-timeout=90" "x-systemd.automount"];
     };
   };
 }
