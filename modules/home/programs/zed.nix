@@ -151,6 +151,9 @@
         };
         settings = {
           java = {
+            contentProvider = {
+              preferred = "fernflower";
+            };
             configuration = {
               updateBuildConfiguration = "automatic";
               runtimes = [
