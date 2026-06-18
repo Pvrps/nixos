@@ -144,43 +144,45 @@
       "just-lsp" = sysBin pkgs.just-lsp "just-lsp";
       ols = sysBin pkgs.ols "ols";
       jdtls = {
-        binary = {
-          path = "${pkgs.jdt-language-server}/bin/jdtls";
-          ignore_system_version = true;
-          arguments = ["--jvm-arg=-javaagent:${pkgs.lombok}/share/java/lombok.jar"];
-        };
         settings = {
-          java = {
-            contentProvider = {
-              preferred = "fernflower";
-            };
-            configuration = {
-              updateBuildConfiguration = "automatic";
-              runtimes = [
-                {
-                  name = "JavaSE-1.8";
-                  path = "${pkgs.zulu8}";
-                }
-                {
-                  name = "JavaSE-11";
-                  path = "${pkgs.zulu11}";
-                }
-                {
-                  name = "JavaSE-17";
-                  path = "${pkgs.zulu17}";
-                }
-                {
-                  name = "JavaSE-21";
-                  path = "${pkgs.zulu21}";
-                  default = true;
-                }
-              ];
-            };
-            eclipse = {
-              advancedGradleModelSupported = true;
-            };
-            import = {
-              gradle = {};
+          jdtls_launcher = "${pkgs.jdt-language-server}/bin/jdtls";
+          lombok_support = true;
+          lombok_jar = "${pkgs.lombok}/share/java/lombok.jar";
+          initialization_options = {
+            settings = {
+              java = {
+                contentProvider = {
+                  preferred = "fernflower";
+                };
+                configuration = {
+                  updateBuildConfiguration = "automatic";
+                  runtimes = [
+                    {
+                      name = "JavaSE-1.8";
+                      path = "${pkgs.zulu8}";
+                    }
+                    {
+                      name = "JavaSE-11";
+                      path = "${pkgs.zulu11}";
+                    }
+                    {
+                      name = "JavaSE-17";
+                      path = "${pkgs.zulu17}";
+                    }
+                    {
+                      name = "JavaSE-21";
+                      path = "${pkgs.zulu21}";
+                      default = true;
+                    }
+                  ];
+                };
+                eclipse = {
+                      downloadSources = true;
+                    };
+                import = {
+                  gradle = {};
+                };
+              };
             };
           };
         };
@@ -306,5 +308,25 @@ in {
       mutableUserSettings = false;
       userSettings = lib.mkMerge [defaultSettings cfg.userSettings];
     };
+
+    # The Zed Java extension ships a pre-compiled proxy binary that needs
+    # patching to run on NixOS. Patch every version found under the extension
+    # work directory so this survives extension updates automatically.
+    home.activation.patchZedJavaProxy = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      proxy_dir="$HOME/.local/share/zed/extensions/work/java/proxy-bin"
+      if [ -d "$proxy_dir" ]; then
+        for proxy in "$proxy_dir"/*/java-lsp-proxy; do
+          [ -f "$proxy" ] || continue
+          interp=$(${pkgs.patchelf}/bin/patchelf --print-interpreter "$proxy" 2>/dev/null || true)
+          if [[ "$interp" != /nix/store/* ]]; then
+            echo "Patching $proxy for NixOS..."
+            ${pkgs.patchelf}/bin/patchelf \
+              --set-interpreter ${pkgs.glibc}/lib/ld-linux-x86-64.so.2 \
+              --set-rpath ${pkgs.gcc.cc.lib}/lib:${pkgs.glibc}/lib \
+              "$proxy"
+          fi
+        done
+      fi
+    '';
   };
 }
