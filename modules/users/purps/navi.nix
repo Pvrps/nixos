@@ -2,7 +2,10 @@
   pkgs,
   osConfig,
   ...
-}: {
+}: let
+  mavenExt = import ./vscode-maven.nix {inherit pkgs;};
+  javaDebugExt = import ./vscode-java-debug.nix {inherit pkgs;};
+in {
   imports = [
     ./general.nix
   ];
@@ -125,7 +128,7 @@
     };
 
     zed = {
-      enable = true;
+      enable = false;
       extensions = [
         "nix"
         "java"
@@ -139,6 +142,77 @@
         "just"
         "toml"
       ];
+    };
+
+    vscode = {
+      enable = true;
+      javaFormatterConfig = files/eclipse-formatter.xml;
+      extensions = with pkgs.vscode-extensions; [
+        jnoortheen.nix-ide
+        davidanson.vscode-markdownlint
+        naumovs.color-highlight
+        esbenp.prettier-vscode
+        vscjava.vscode-java-pack
+        redhat.java
+        javaDebugExt
+        vscjava.vscode-java-test
+        mavenExt
+        vscjava.vscode-java-dependency
+        vscjava.vscode-gradle
+        oderwat.indent-rainbow
+      ];
+      userSettings = {
+        "editor.formatOnSave" = true;
+        "editor.formatOnSaveMode" = "modificationsIfAvailable";
+        "java.cleanup.actions" = [
+          "qualifyStaticMembers"
+          "addOverride"
+          "addDeprecated"
+          "stringConcatToTextBlock"
+          "invertEquals"
+          "addFinalModifier"
+          "lambdaExpressionFromAnonymousClass"
+          "lambdaExpression"
+          "switchExpression"
+          "tryWithResource"
+          "renameFileToType"
+          "organizeImports"
+          "renameUnusedLocalVariables"
+          "useSwitchForInstanceofPattern"
+        ];
+        "java.format.settings.url" = "/home/purps/.config/Code/User/eclipse-formatter.xml";
+        "redhat.telemetry.enabled" = false;
+        "window.restoreWindows" = "none";
+        "git.confirmSync" = false;
+        "[java]" = {
+          "editor.defaultFormatter" = "redhat.java";
+          "editor.formatOnSave" = true;
+        };
+        "editor.codeActionsOnSave" = {
+          "source.generate.finalModifiers" = "explicit";
+          "source.organizeImports" = "explicit";
+        };
+        "java.configuration.runtimes" = [
+          {
+            name = "JavaSE-1.8";
+            path = "${pkgs.zulu8}";
+          }
+          {
+            name = "JavaSE-11";
+            path = "${pkgs.zulu11}";
+          }
+          {
+            name = "JavaSE-17";
+            path = "${pkgs.zulu17}";
+          }
+          {
+            name = "JavaSE-21";
+            path = "${pkgs.zulu21}";
+            default = true;
+          }
+        ];
+        "maven.executable.path" = "${pkgs.maven}/bin/mvn";
+      };
     };
 
     opencode = {

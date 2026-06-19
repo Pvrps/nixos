@@ -74,6 +74,7 @@ in {
       (writeShellScriptBin "java21" ''
         exec "${zulu21}/bin/java" "$@"
       '')
+      maven
       gradleWithToolchains
       (writeShellScriptBin "kill-gradle-daemons" ''
         echo "Stopping all Gradle daemons..."
