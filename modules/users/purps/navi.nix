@@ -2,10 +2,12 @@
   pkgs,
   osConfig,
   ...
-}: let
-  mavenExt = import ./vscode-maven.nix {inherit pkgs;};
-  javaDebugExt = import ./vscode-java-debug.nix {inherit pkgs;};
-in {
+}:
+let
+  mavenExt = import ./vscode-maven.nix { inherit pkgs; };
+  javaDebugExt = import ./vscode-java-debug.nix { inherit pkgs; };
+in
+{
   imports = [
     ./general.nix
   ];
@@ -13,7 +15,7 @@ in {
   custom.theme.enable = true;
 
   home = {
-    packages = [pkgs.trash-cli];
+    packages = [ pkgs.trash-cli ];
 
     persistence."/persist" = {
       hideMounts = true;
@@ -95,7 +97,9 @@ in {
         };
       };
       extensionSettings = {
-        "*" = {installation_mode = "blocked";};
+        "*" = {
+          installation_mode = "blocked";
+        };
         "uBlock0@raymondhill.net" = {
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
           installation_mode = "force_installed";
@@ -328,7 +332,7 @@ in {
     chatterino.enable = true;
     imv.enable = true;
 
-    linux-wallpaperengine.enable = true;
+    linux-wallpaperengine.enable = false;
     rustdesk = {
       enable = true;
       serverFile = osConfig.sops.secrets."rustdesk-server".path;
@@ -426,8 +430,15 @@ in {
     ''} %U";
     icon = "steam";
     terminal = false;
-    categories = ["Network" "FileTransfer" "Game"];
-    mimeType = ["x-scheme-handler/steam" "x-scheme-handler/steamlink"];
+    categories = [
+      "Network"
+      "FileTransfer"
+      "Game"
+    ];
+    mimeType = [
+      "x-scheme-handler/steam"
+      "x-scheme-handler/steamlink"
+    ];
   };
 
   # ---------------------------------------------------------------------------

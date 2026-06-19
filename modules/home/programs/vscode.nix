@@ -35,6 +35,8 @@ in {
       };
     };
 
+    home.packages = [pkgs.nixfmt];
+
     home.persistence."/persist".directories = [".vscode"];
 
     home.file.".config/Code/User/eclipse-formatter.xml" = lib.mkIf (cfg.javaFormatterConfig != null) {
