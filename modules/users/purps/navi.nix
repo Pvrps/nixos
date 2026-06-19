@@ -344,10 +344,9 @@ in {
       ];
     };
 
-      obs = {
+    obs = {
       enable = true;
       plugins = {
-        aitumMultistream.enable = true;
         pipewireAudioCapture.enable = true;
         backgroundRemoval.enable = true;
       };

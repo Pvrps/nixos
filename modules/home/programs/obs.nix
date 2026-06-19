@@ -22,13 +22,6 @@
     "${base}/data".source = "${pkg}/share/obs/obs-plugins/${soName}";
   };
 
-  aitumMultistreamFiles =
-    lib.optionalAttrs cfg.plugins.aitumMultistream.enable
-    (mkPluginNixpkgs {
-      dirName = "aitum-multistream";
-      pkg = pkgs.obs-studio-plugins.obs-aitum-multistream;
-    });
-
   pipewireAudioCaptureFiles =
     lib.optionalAttrs cfg.plugins.pipewireAudioCapture.enable
     (mkPluginNixpkgs {
@@ -47,9 +40,6 @@ in {
     programs.obs = {
       enable = lib.mkEnableOption "OBS Studio via Flatpak with plugin management";
       plugins = {
-        aitumMultistream = {
-          enable = lib.mkEnableOption "Aitum Multistream plugin";
-        };
         pipewireAudioCapture = {
           enable = lib.mkEnableOption "PipeWire Audio Capture plugin";
         };
@@ -76,7 +66,6 @@ in {
     '';
 
     home.file = lib.mkMerge [
-      aitumMultistreamFiles
       pipewireAudioCaptureFiles
       backgroundRemovalFiles
     ];
