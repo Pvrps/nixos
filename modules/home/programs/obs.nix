@@ -6,73 +6,40 @@
 }: let
   cfg = config.custom.programs.obs;
 
-  mkPlugin = {
-    name,
-    src,
-  }: let
-    extracted = pkgs.runCommand "obs-plugin-${name}" {} ''
-      ${pkgs.dpkg}/bin/dpkg-deb -x ${src} $out
-    '';
-    base = ".var/app/com.obsproject.Studio/config/obs-studio/plugins/${name}";
-    # Debian multiarch triplet for the .deb's lib layout (e.g. x86_64-linux-gnu).
-    debianMultiarch = "${pkgs.stdenv.hostPlatform.parsed.cpu.name}-linux-gnu";
-  in {
-    "${base}/bin/64bit/${name}.so".source = "${extracted}/usr/lib/${debianMultiarch}/obs-plugins/${name}.so";
-    # Map the entire data directory instead of just locale, as modern plugins have UI assets
-    "${base}/data".source = "${extracted}/usr/share/obs/obs-plugins/${name}";
-  };
-
-  # For plugins distributed as flatpak tarballs (layout: <name>/bin/64bit/<name>.so and <name>/data/)
-  # The plugin dir name must match the .so name for OBS to load it.
-  mkPluginFlatpakTarball = {
-    name,
-    src,
-  }: let
-    extracted = pkgs.runCommand "obs-plugin-${name}" {} ''
-      mkdir -p $out
-      ${pkgs.gnutar}/bin/tar -xzf ${src} -C $out --strip-components=1
-    '';
-    base = ".var/app/com.obsproject.Studio/config/obs-studio/plugins/${name}";
-  in {
-    "${base}/bin/64bit/${name}.so".source = "${extracted}/bin/64bit/${name}.so";
-    "${base}/data".source = "${extracted}/data";
-  };
-
-  # For plugins distributed as nixpkgs obs-studio-plugins (layout: lib/obs-plugins/<name>.so, share/obs/obs-plugins/<name>/)
+  # For plugins distributed as nixpkgs obs-studio-plugins.
+  # nixpkgs layout: lib/obs-plugins/<soName>.so, share/obs/obs-plugins/<dataName>/
+  # flatpak layout: plugins/<dirName>/bin/64bit/<soName>.so, plugins/<dirName>/data/
   mkPluginNixpkgs = {
-    name,
+    # Directory name OBS scans (must match the .so basename for OBS to load it)
+    dirName,
+    # Basename of the .so inside lib/obs-plugins/ (and share/obs/obs-plugins/)
+    soName ? dirName,
     pkg,
   }: let
-    base = ".var/app/com.obsproject.Studio/config/obs-studio/plugins/${name}";
+    base = ".var/app/com.obsproject.Studio/config/obs-studio/plugins/${dirName}";
   in {
-    "${base}/bin/64bit/${name}.so".source = "${pkg}/lib/obs-plugins/${name}.so";
-    "${base}/data".source = "${pkg}/share/obs/obs-plugins/${name}";
+    "${base}/bin/64bit/${soName}.so".source = "${pkg}/lib/obs-plugins/${soName}.so";
+    "${base}/data".source = "${pkg}/share/obs/obs-plugins/${soName}";
   };
 
-  aitumStreamSuiteFiles =
-    lib.optionalAttrs cfg.plugins.aitumStreamSuite.enable
-    (mkPlugin {
-      name = "aitum-stream-suite";
-      src = pkgs.fetchurl {
-        url = "https://github.com/Aitum/obs-aitum-stream-suite/releases/download/${cfg.plugins.aitumStreamSuite.version}/aitum-stream-suite-linux-gnu.deb";
-        inherit (cfg.plugins.aitumStreamSuite) hash;
-      };
+  aitumMultistreamFiles =
+    lib.optionalAttrs cfg.plugins.aitumMultistream.enable
+    (mkPluginNixpkgs {
+      dirName = "aitum-multistream";
+      pkg = pkgs.obs-studio-plugins.obs-aitum-multistream;
     });
+
   pipewireAudioCaptureFiles =
     lib.optionalAttrs cfg.plugins.pipewireAudioCapture.enable
-    (mkPluginFlatpakTarball {
-      # OBS loads plugins by scanning subdirs of plugins/; the dir name must match the .so name
-      name = "linux-pipewire-audio";
-      src = pkgs.fetchurl {
-        url = "https://github.com/dimtpap/obs-pipewire-audio-capture/releases/download/${cfg.plugins.pipewireAudioCapture.version}/linux-pipewire-audio-${cfg.plugins.pipewireAudioCapture.version}-flatpak-30.tar.gz";
-        inherit (cfg.plugins.pipewireAudioCapture) hash;
-      };
+    (mkPluginNixpkgs {
+      dirName = "linux-pipewire-audio";
+      pkg = pkgs.obs-studio-plugins.obs-pipewire-audio-capture;
     });
 
   backgroundRemovalFiles =
     lib.optionalAttrs cfg.plugins.backgroundRemoval.enable
     (mkPluginNixpkgs {
-      name = "obs-backgroundremoval";
+      dirName = "obs-backgroundremoval";
       pkg = pkgs.obs-studio-plugins.obs-backgroundremoval;
     });
 in {
@@ -80,32 +47,14 @@ in {
     programs.obs = {
       enable = lib.mkEnableOption "OBS Studio via Flatpak with plugin management";
       plugins = {
-        aitumStreamSuite = {
-          enable = lib.mkEnableOption "Aitum Stream Suite plugin";
-          version = lib.mkOption {
-            type = lib.types.str;
-            default = "1.1.0";
-            description = "GitHub release tag for aitum-stream-suite";
-          };
-          hash = lib.mkOption {
-            type = lib.types.str;
-            description = "SHA256 hash of the .deb release asset";
-          };
+        aitumMultistream = {
+          enable = lib.mkEnableOption "Aitum Multistream plugin";
         };
         pipewireAudioCapture = {
-          enable = lib.mkEnableOption "PipeWire Audio Capture";
-          version = lib.mkOption {
-            type = lib.types.str;
-            default = "1.2.1";
-            description = "GitHub release tag for pipewire-audio-capture";
-          };
-          hash = lib.mkOption {
-            type = lib.types.str;
-            description = "SHA256 hash of the flatpak tarball release asset";
-          };
+          enable = lib.mkEnableOption "PipeWire Audio Capture plugin";
         };
         backgroundRemoval = {
-          enable = lib.mkEnableOption "Background Removal";
+          enable = lib.mkEnableOption "Background Removal plugin";
         };
       };
     };
@@ -127,7 +76,7 @@ in {
     '';
 
     home.file = lib.mkMerge [
-      aitumStreamSuiteFiles
+      aitumMultistreamFiles
       pipewireAudioCaptureFiles
       backgroundRemovalFiles
     ];
