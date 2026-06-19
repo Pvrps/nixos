@@ -38,6 +38,17 @@
     "${base}/data".source = "${extracted}/data";
   };
 
+  # For plugins distributed as nixpkgs obs-studio-plugins (layout: lib/obs-plugins/<name>.so, share/obs/obs-plugins/<name>/)
+  mkPluginNixpkgs = {
+    name,
+    pkg,
+  }: let
+    base = ".var/app/com.obsproject.Studio/config/obs-studio/plugins/${name}";
+  in {
+    "${base}/bin/64bit/${name}.so".source = "${pkg}/lib/obs-plugins/${name}.so";
+    "${base}/data".source = "${pkg}/share/obs/obs-plugins/${name}";
+  };
+
   aitumStreamSuiteFiles =
     lib.optionalAttrs cfg.plugins.aitumStreamSuite.enable
     (mkPlugin {
@@ -56,6 +67,13 @@
         url = "https://github.com/dimtpap/obs-pipewire-audio-capture/releases/download/${cfg.plugins.pipewireAudioCapture.version}/linux-pipewire-audio-${cfg.plugins.pipewireAudioCapture.version}-flatpak-30.tar.gz";
         inherit (cfg.plugins.pipewireAudioCapture) hash;
       };
+    });
+
+  backgroundRemovalFiles =
+    lib.optionalAttrs cfg.plugins.backgroundRemoval.enable
+    (mkPluginNixpkgs {
+      name = "obs-backgroundremoval";
+      pkg = pkgs.obs-studio-plugins.obs-backgroundremoval;
     });
 in {
   options.custom = {
@@ -86,6 +104,9 @@ in {
             description = "SHA256 hash of the flatpak tarball release asset";
           };
         };
+        backgroundRemoval = {
+          enable = lib.mkEnableOption "Background Removal";
+        };
       };
     };
   };
@@ -108,6 +129,7 @@ in {
     home.file = lib.mkMerge [
       aitumStreamSuiteFiles
       pipewireAudioCaptureFiles
+      backgroundRemovalFiles
     ];
   };
 }

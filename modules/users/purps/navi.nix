@@ -2,12 +2,10 @@
   pkgs,
   osConfig,
   ...
-}:
-let
-  mavenExt = import ./vscode-maven.nix { inherit pkgs; };
-  javaDebugExt = import ./vscode-java-debug.nix { inherit pkgs; };
-in
-{
+}: let
+  mavenExt = import ./vscode-maven.nix {inherit pkgs;};
+  javaDebugExt = import ./vscode-java-debug.nix {inherit pkgs;};
+in {
   imports = [
     ./general.nix
   ];
@@ -15,7 +13,7 @@ in
   custom.theme.enable = true;
 
   home = {
-    packages = [ pkgs.trash-cli ];
+    packages = [pkgs.trash-cli];
 
     persistence."/persist" = {
       hideMounts = true;
@@ -358,6 +356,9 @@ in
           enable = true;
           version = "1.2.1";
           hash = "sha256:e3bfa510bf3cfccdba092ee726e7e0d3cbe433dd49d4101f6a3e2b7fa68eae84";
+        };
+        backgroundRemoval = {
+          enable = true;
         };
       };
     };
