@@ -24,6 +24,17 @@
       "/etc/ssh/ssh_host_rsa_key"
       "/etc/ssh/ssh_host_rsa_key.pub"
     ];
+
+    users = {
+      purps = {
+        directories = [
+          ".ssh"
+        ];
+        files = [
+          ".local/share/fish/fish_history"
+        ];
+      };
+    };
   };
 
   fileSystems."/home" = {
