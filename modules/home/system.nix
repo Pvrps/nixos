@@ -13,6 +13,9 @@
   config = {
     xdg.mimeApps.enable = true;
 
+    xdg.configFile."mimeapps.list".force = true;
+    gtk.gtk2.force = true;
+
     # Tell Chromium/Electron apps to use the native Wayland backend.
     home.sessionVariables = lib.mkIf config.custom.system.wayland.enable {
       NIXOS_OZONE_WL = "1";
