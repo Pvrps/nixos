@@ -26,7 +26,7 @@ in {
     #   viewport stays at its initial small size and the rest of the window fills
     #   with black bars regardless of the Niri window rule.
     #
-    # sun.java2d.uiScale=1 — prevents Java from applying a second DPI-scaling
+    # sun.java2d.uiScale=2 — prevents Java from applying a second DPI-scaling
     #   pass on top of XWayland's, which would otherwise produce an additional
     #   resolution mismatch on HiDPI outputs.
     #
@@ -42,6 +42,7 @@ in {
     #   fully software-rendered Java2D painting, which correctly repaints after
     #   every layout change.  RuneLite's in-game rendering uses LWJGL directly
     #   and is unaffected by either flag.
+    #
     # Xcursor theme env vars + filesystem access inside the Flatpak sandbox:
     #
     # Java AWT's Cursor.getPredefinedCursor(CROSSHAIR_CURSOR) calls
@@ -55,7 +56,7 @@ in {
     # so XWayland falls back to the un-themed core font cursor.
     xdg.dataFile."flatpak/overrides/com.adamcake.Bolt".text = ''
       [Environment]
-      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2
+      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2 -D_JAVA_AWT_WM_NONREPARENTING=1 -Dsun.java2d.opengl=false -Dsun.java2d.xrender=false
       XCURSOR_THEME=${config.stylix.cursor.name}
       XCURSOR_SIZE=${toString config.stylix.cursor.size}
       XCURSOR_PATH=${config.stylix.cursor.package}/share/icons
