@@ -115,6 +115,18 @@ in {
       ''"bash" "-c" "nm-online -q --timeout=30 || true; STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 ${steamBin} -system-composer -silent > /dev/null 2>&1"''
     ];
 
+    xdg.configFile."autostart/steam.desktop" = lib.mkIf config.custom.programs.kde.enable {
+      text = ''
+        [Desktop Entry]
+        Type=Application
+        Name=Steam
+        Exec=bash -c 'nm-online -q --timeout=30 || true; STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 ${steamBin} -system-composer -silent > /dev/null 2>&1'
+        Icon=steam
+        Terminal=false
+        X-KDE-autostart-after=panel
+      '';
+    };
+
     custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
       window-rule {
           match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
