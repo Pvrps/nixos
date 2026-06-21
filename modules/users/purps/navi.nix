@@ -321,6 +321,7 @@ in {
     discord-rpc-noctalia.enable = true;
     bolt.enable = true;
     prismlauncher.enable = true;
+    osu.enable = true;
 
     stremio.enable = true;
     clapper.enable = true;

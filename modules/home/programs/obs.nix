@@ -13,7 +13,7 @@
   # CUDA-enabled build on NVIDIA systems so the GPU is used instead of the CPU.
   onnxruntime-cuda = pkgs.onnxruntime.override {
     cudaSupport = true;
-    cudaPackages = pkgs.cudaPackages;
+    inherit (pkgs) cudaPackages;
   };
 
   obs-backgroundremoval =
@@ -109,16 +109,22 @@ in {
 
     custom.programs.flatpak.packages = lib.mkAfter ["com.obsproject.Studio"];
 
-    # Fix audio crackling when opening OBS by increasing PulseAudio latency
-    home.activation.obsPulseLatency = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      run ${pkgs.flatpak}/bin/flatpak override --user --env=PULSE_LATENCY_MSEC=60 com.obsproject.Studio
+    # Clear stale latency env vars from previous config iterations. These
+    # inflated the graph-wide quantum to 2048 whenever OBS was open, killing
+    # low-latency playback for rhythm games. OBS inherits the system quantum.
+    home.activation.obsClearLatencyEnv = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      run ${pkgs.flatpak}/bin/flatpak override --user \
+        --unset-env=PULSE_LATENCY_MSEC \
+        --unset-env=PIPEWIRE_LATENCY \
+        com.obsproject.Studio
     '';
 
     # Expose CUDA runtime libs to the Flatpak sandbox so onnxruntime can
     # dlopen() libonnxruntime_providers_cuda.so at runtime.
     # LD_PRELOAD ensures libnvrtc and providers_shared are in the global symbol
     # table before onnxruntime attempts to load the CUDA provider.
-    home.activation.obsCudaLibs = lib.mkIf (hasNvidia && cfg.plugins.backgroundRemoval.enable)
+    home.activation.obsCudaLibs =
+      lib.mkIf (hasNvidia && cfg.plugins.backgroundRemoval.enable)
       (lib.hm.dag.entryAfter ["writeBoundary"] ''
         run ${pkgs.flatpak}/bin/flatpak override --user \
           --env=LD_LIBRARY_PATH=${cudaLibPath} \

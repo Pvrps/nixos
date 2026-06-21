@@ -50,25 +50,26 @@ in {
 
     programs.noctalia-shell = {
       enable = true;
-      plugins =
-        lib.optionalAttrs (cfg.plugins != {}) {
-          sources = [
-            {
+      plugins = lib.optionalAttrs (cfg.plugins != {}) {
+        sources = [
+          {
+            enabled = true;
+            name = "Official Noctalia Plugins";
+            url = "https://github.com/noctalia-dev/noctalia-plugins";
+          }
+        ];
+        states =
+          lib.mapAttrs'
+          (name: plugin:
+            lib.nameValuePair name {
               enabled = true;
-              name = "Official Noctalia Plugins";
-              url = "https://github.com/noctalia-dev/noctalia-plugins";
-            }
-          ];
-          states = lib.mapAttrs'
-            (name: plugin:
-              lib.nameValuePair name {
-                enabled = true;
-                sourceUrl = plugin.sourceUrl;
-              })
-            (lib.filterAttrs (_: p: p.enable) cfg.plugins);
-          version = 2;
-        };
-      pluginSettings = lib.mapAttrs'
+              inherit (plugin) sourceUrl;
+            })
+          (lib.filterAttrs (_: p: p.enable) cfg.plugins);
+        version = 2;
+      };
+      pluginSettings =
+        lib.mapAttrs'
         (name: plugin: lib.nameValuePair name plugin.settings)
         (lib.filterAttrs (_: p: p.enable && p.settings != {}) cfg.plugins);
       settings = {

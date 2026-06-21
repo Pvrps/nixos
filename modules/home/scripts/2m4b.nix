@@ -3,7 +3,7 @@ lib.custom.mkScript {
   name = "2m4b";
   optionName = "2m4b";
   description = "MP3 to chapterized M4B audiobook converter";
-  runtimeInputs = pkgs: with pkgs; [(ffmpeg-full.override { withUnfree = true; }) python3 gnugrep coreutils];
+  runtimeInputs = pkgs: with pkgs; [(ffmpeg-full.override {withUnfree = true;}) python3 gnugrep coreutils];
   text = ''
     usage() {
       echo "Usage: 2m4b [options] <input.mp3> [output.m4b]"

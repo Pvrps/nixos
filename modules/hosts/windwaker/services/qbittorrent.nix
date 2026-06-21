@@ -12,7 +12,7 @@ in {
     containerConfig = {
       image = "ghcr.io/linuxserver/qbittorrent:latest";
       publishPorts = [
-        "24535:8080"                             # WebUI (internal 8080 -> host 24535)
+        "24535:8080" # WebUI (internal 8080 -> host 24535)
         "${toString torrentingPort}:${toString torrentingPort}/tcp"
         "${toString torrentingPort}:${toString torrentingPort}/udp"
       ];

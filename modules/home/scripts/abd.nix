@@ -56,7 +56,7 @@
 
   abd-tool = pkgs.writeShellApplication {
     name = "abd";
-    runtimeInputs = with pkgs; [curl python3 (ffmpeg-full.override { withUnfree = true; }) coreutils gnugrep gnused];
+    runtimeInputs = with pkgs; [curl python3 (ffmpeg-full.override {withUnfree = true;}) coreutils gnugrep gnused];
     text = ''
       EXTRACTOR="${extractorPy}"
       UA="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0"

@@ -177,8 +177,8 @@
                   ];
                 };
                 eclipse = {
-                      downloadSources = true;
-                    };
+                  downloadSources = true;
+                };
                 import = {
                   gradle = {};
                 };
