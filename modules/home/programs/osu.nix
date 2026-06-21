@@ -5,24 +5,6 @@
   ...
 }: let
   cfg = config.custom.programs.osu;
-  # osu!lazer uses SDL2, which defaults to the ALSA backend on Linux. When run
-  # via ALSA it registers as a native PipeWire ALSA client, which OBS's
-  # "Application Audio Capture (PipeWire)" plugin cannot enumerate (it lists
-  # PulseAudio clients only). Forcing SDL2 to the PulseAudio backend makes osu!
-  # a PulseAudio client so OBS can capture it per-application.
-  #
-  # osu-lazer-bin is an appimageTools.wrapType2 package with a wrapProgram layer
-  # for OSU_EXTERNAL_UPDATE_PROVIDER. We use symlinkJoin + wrapProgram to add
-  # SDL_AUDIODRIVER without disturbing the existing wrapper chain — bwrap
-  # inherits env vars from the parent process, so the var propagates through.
-  osu-wrapped = pkgs.symlinkJoin {
-    name = "osu-wrapped";
-    paths = [pkgs.osu-lazer-bin];
-    buildInputs = [pkgs.makeWrapper];
-    postBuild = ''
-      wrapProgram $out/bin/osu! --set SDL_AUDIODRIVER pulseaudio
-    '';
-  };
 
   # shared-mime-info entry registering osu!'s custom file extensions so XDG
   # file managers / portals dispatch .osk, .osz, .olz and .osr files to the
@@ -50,7 +32,7 @@ in {
   options.custom.programs.osu.enable = lib.mkEnableOption "osu!lazer (AppImage build with score submission and multiplayer)";
 
   config = lib.mkIf cfg.enable {
-    home.packages = [osu-wrapped];
+    home.packages = [pkgs.osu-lazer-bin];
 
     # Drop the custom mime-info into the user mime DB so .osk etc. resolve to
     # the right MIME type. The freedesktop spec requires the package file to
@@ -70,6 +52,7 @@ in {
     # regex, so some picky XDG implementations refuse to resolve it as a
     # default app. Ship a spec-compliant alias with the same Exec and MIME
     # support, and use it as the default for the osu! archive types.
+    # NoDisplay hides it from the launcher so only "osu!" shows up.
     xdg.desktopEntries.osu-lazer = {
       name = "osu!lazer";
       genericName = "Rhythm Game";
@@ -89,6 +72,7 @@ in {
       settings = {
         StartupWMClass = "osu!";
         SingleMainWindow = "true";
+        NoDisplay = "true";
       };
     };
 
