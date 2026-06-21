@@ -12,6 +12,7 @@
     ../../../modules/nixos/flatpak.nix
     ../../../modules/nixos/bluetooth.nix
     ../../../modules/nixos/hardware-control.nix
+    ../../../modules/nixos/opentabletdriver.nix
     ../../../modules/nixos/services/sshfs.nix
     ../../../modules/nixos/beszel-agent.nix
     ../../../modules/nixos/secureboot.nix
@@ -20,6 +21,8 @@
   custom = {
     audio.lowLatency.enable = true;
     flatpak.enable = true;
+
+    opentabletdriver.enable = true;
 
     bluetooth = {
       enable = true;

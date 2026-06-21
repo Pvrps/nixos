@@ -44,7 +44,6 @@ in {
         "92-low-latency" = {
           "context.properties" = {
             "default.clock.rate" = 48000;
-            "default.clock.allowed-rates" = [44100 48000 96000];
             "default.clock.quantum" = 512;
             "default.clock.min-quantum" = 512;
             "default.clock.max-quantum" = 2048;
