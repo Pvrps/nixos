@@ -66,6 +66,8 @@ in {
     ghostty.enable = false;
     termfilepickers.enable = false;
 
+    thunar.enable = true;
+
     zen = {
       enable = true;
       homepage = "https://homepage.windwaker.ca/";
