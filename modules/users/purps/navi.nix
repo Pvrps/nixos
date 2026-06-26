@@ -94,6 +94,18 @@ in {
           "mod.autoexpand.animation_delay" = "100ms";
           "mod.autoexpand.collapse_delay" = "100ms";
           "mod.autoexpand.hide_workspace_indicator" = true;
+          # Hardware video decoding — VA-API via nvidia-vaapi-driver.
+          # force-enabled bypasses gfxInfo blocklist which blocks HW decode on NVIDIA.
+          "media.ffmpeg.vaapi.enabled" = true;
+          "media.hardware-video-decoding.force-enabled" = true;
+          "gfx.webrender.all" = true;
+          # Force DMABuf WebGL — blocklisted by gfxInfo on NVIDIA but works fine.
+          "webgl.force-enabled" = true;
+          "webgl.disable-fail-if-major-performance-caveat" = true;
+          # Use Vulkan backend for WebRender — bypasses thread-unsafe OpenGL issue on NVIDIA.
+          # Fixes CANVAS_RENDERER_THREAD being blocked by FEATURE_FAILURE_THREAD_UNSAFE_GL.
+          "gfx.webrender.compositor.force-enabled" = true;
+          "gfx.canvas.accelerated.force-enabled" = true;
         };
       };
       extensionSettings = {
