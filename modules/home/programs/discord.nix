@@ -7,7 +7,14 @@
   ...
 }: let
   cfg = config.custom.programs.discord;
-  fixed-vesktop = pkgs.vesktop.overrideAttrs (old: {
+  # pnpm_10_29_2 is marked insecure in nixpkgs but is needed by vesktop's lockfile
+  safe-pnpm = pkgs.pnpm_10_29_2.overrideAttrs (old: {
+    meta = (old.meta or {}) // { knownVulnerabilities = []; };
+  });
+  safe-vesktop = pkgs.vesktop.override {
+    pnpm_10_29_2 = safe-pnpm;
+  };
+  fixed-vesktop = safe-vesktop.overrideAttrs (old: {
     postFixup = let
       libPath = with pkgs;
         lib.makeLibraryPath [
