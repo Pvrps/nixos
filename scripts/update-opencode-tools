@@ -45,7 +45,7 @@ NODE
 (
   cd "$PKG_DIR"
   npm install --package-lock-only --ignore-scripts --no-audit
-  npm audit fix --ignore-scripts --no-audit
+  npm audit fix --ignore-scripts --no-audit --package-lock-only
   npm audit --audit-level=high
 )
 

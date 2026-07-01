@@ -3,3 +3,4 @@ keys.txt
 .sidecar
 .todos
 result
+node_modules/

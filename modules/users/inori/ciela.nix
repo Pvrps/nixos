@@ -153,7 +153,6 @@
         experiments.enable = true;
         favoriteEmojiFirst.enable = true;
         forceOwnerCrown.enable = true;
-        friendsSince.enable = true;
         gameActivityToggle.enable = true;
         memberCount.enable = true;
         mentionAvatars.enable = true;
