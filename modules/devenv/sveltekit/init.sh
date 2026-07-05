@@ -45,7 +45,6 @@ cat > devenv.nix <<EOF
 {pkgs, ...}: {
   profile.sveltekit = {
     enable = true;
-    extraPackages = [pkgs.ffmpeg];
   };
 }
 EOF

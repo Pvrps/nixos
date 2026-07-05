@@ -24,13 +24,7 @@ in {
     extraPackages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [];
-      description = "Extra packages to add to the environment (e.g. ffmpeg, python3 for scripts).";
-    };
-
-    extraPythonPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
-      default = [];
-      description = "Python packages to install alongside the extra python3 (e.g. pydub).";
+      description = "Extra packages to add to the environment (e.g. ffmpeg for asset processing).";
     };
   };
 
@@ -41,10 +35,6 @@ in {
       lsp.enable = cfg.lsp.enable;
     };
 
-    packages =
-      cfg.extraPackages
-      ++ lib.optional (cfg.extraPythonPackages != []) (
-        pkgs.python3.withPackages (_: cfg.extraPythonPackages)
-      );
+    packages = cfg.extraPackages;
   };
 }
