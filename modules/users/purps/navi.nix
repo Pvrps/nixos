@@ -2,10 +2,7 @@
   pkgs,
   osConfig,
   ...
-}: let
-  mavenExt = import ./vscode-maven.nix {inherit pkgs;};
-  javaDebugExt = import ./vscode-java-debug.nix {inherit pkgs;};
-in {
+}: {
   imports = [
     ./general.nix
   ];
@@ -147,38 +144,14 @@ in {
       };
     };
 
-    zed = {
-      enable = false;
-      extensions = [
-        "nix"
-        "java"
-        "svelte"
-        "xml"
-        "dockerfile"
-        "nginx"
-        "graphql"
-        "sql"
-        "jsonnet"
-        "just"
-        "toml"
-      ];
-    };
-
     vscode = {
       enable = true;
-      javaFormatterConfig = files/eclipse-formatter.xml;
+      javaFormatterConfig = ./files/eclipse-formatter.xml;
       extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide
         davidanson.vscode-markdownlint
         naumovs.color-highlight
         esbenp.prettier-vscode
-        vscjava.vscode-java-pack
-        redhat.java
-        javaDebugExt
-        vscjava.vscode-java-test
-        mavenExt
-        vscjava.vscode-java-dependency
-        vscjava.vscode-gradle
         oderwat.indent-rainbow
       ];
       userSettings = {
@@ -204,34 +177,10 @@ in {
         "redhat.telemetry.enabled" = false;
         "window.restoreWindows" = "none";
         "git.confirmSync" = false;
-        "[java]" = {
-          "editor.defaultFormatter" = "redhat.java";
-          "editor.formatOnSave" = true;
-        };
         "editor.codeActionsOnSave" = {
           "source.generate.finalModifiers" = "explicit";
           "source.organizeImports" = "explicit";
         };
-        "java.configuration.runtimes" = [
-          {
-            name = "JavaSE-1.8";
-            path = "${pkgs.zulu8}";
-          }
-          {
-            name = "JavaSE-11";
-            path = "${pkgs.zulu11}";
-          }
-          {
-            name = "JavaSE-17";
-            path = "${pkgs.zulu17}";
-          }
-          {
-            name = "JavaSE-21";
-            path = "${pkgs.zulu21}";
-            default = true;
-          }
-        ];
-        "maven.executable.path" = "${pkgs.maven}/bin/mvn";
       };
     };
 
@@ -245,7 +194,7 @@ in {
       mcp-nixos.enable = true;
     };
 
-    java.enable = true;
+    devenv.enable = true;
 
     steam = {
       enable = true;

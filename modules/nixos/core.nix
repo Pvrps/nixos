@@ -65,12 +65,15 @@
         "https://nix-community.cachix.org"
         "https://mic92.cachix.org"
         "https://cache.numtide.com"
+        "https://devenv.cachix.org"
       ];
       trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         "mic92.cachix.org-1:vL3/V4C9t6xBFZ8c4hA29EfGaKjXcruzjxj815V/V24="
         "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+        "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
       ];
+      trusted-users = ["root" "@wheel"];
     };
     gc = {
       automatic = true;
@@ -79,6 +82,11 @@
     };
     optimise.automatic = true;
   };
+
+  # Allow prebuilt dynamically-linked binaries (e.g. JREs bundled in VSCode
+  # marketplace extensions) to run on NixOS by providing the dynamic linker
+  # stub at /lib64/ld-linux-x86-64.so.2.
+  programs.nix-ld.enable = true;
 
   system.stateVersion = "26.05";
 }

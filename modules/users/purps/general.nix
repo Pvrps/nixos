@@ -19,6 +19,7 @@
       fastfetch
       btop
       wget
+      jq
     ];
   };
 

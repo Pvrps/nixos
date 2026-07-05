@@ -68,9 +68,9 @@ in {
           "git@github.com:".insteadOf = [
             "gh:"
             "git://github.com/"
-            "https://github.com/"
           ];
         };
+        credential."https://github.com".helper = "!f() { test \"$1\" = get && test -f /run/secrets/github-token && echo \"username=x-access-token\" && echo \"password=$(cat /run/secrets/github-token)\"; }; f";
         safe.directory = cfg.safeDirectories;
       };
     };
