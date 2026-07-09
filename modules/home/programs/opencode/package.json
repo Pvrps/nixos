@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@upstash/context7-mcp": "3.2.2",
-    "opencode-claude-auth": "1.5.4"
+    "@upstash/context7-mcp": "3.2.3",
+    "opencode-claude-auth": "2.0.0"
   },
   "overrides": {
     "@modelcontextprotocol/sdk": "^1.25.2"

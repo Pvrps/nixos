@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+host="${1:-$(hostname)}"
+shift $(( $# > 0 ? 1 : 0 )) 2>/dev/null || true
+
+attr="nixosConfigurations.${host}.config.system.build.toplevel"
+
+echo "▸ Host:      $host"
+echo "▸ Target:    .#$attr"
+echo "▸ Flags:     --show-trace --keep-going --no-link"
+echo
+
+tmp="$(mktemp)"
+trap 'rm -f "$tmp"' EXIT
+
+nix build ".#$attr" --show-trace --keep-going --no-link 2>&1 | tee "$tmp" || true
+
+if ! grep -q "^error:" "$tmp"; then
+  echo "✓ Build succeeded — nothing to analyze."
+  exit 0
+fi
+
+flake_store=""
+for src in $(grep -oE '/nix/store/[a-z0-9]+-source' "$tmp" | sort -u); do
+  if [ -d "$src/modules/hosts" ]; then
+    flake_store="$src"
+    break
+  fi
+done
+
+echo
+echo "════════════════════════════════════════════════════════════════════"
+echo "  ERROR ANALYSIS"
+echo "════════════════════════════════════════════════════════════════════"
+
+echo
+echo "▸ EVALUATION CHAIN  (option breadcrumbs → follow these to your config):"
+echo "─────────────────────────────────────────────────────────────────────"
+chain=$(grep "while evaluating the option" "$tmp" \
+  | sed -n 's/.*while evaluating the option `\([^`]*\)`.*/\1/p')
+if [ -n "$chain" ]; then
+  echo "$chain" | while IFS= read -r opt; do echo "  → $opt"; done
+else
+  echo "  (none — error is in nixpkgs internals, not triggered by a specific option)"
+fi
+
+echo
+echo "▸ ROOT CAUSE:"
+echo "─────────────"
+grep -E "^       error:|^error:" "$tmp" | sed 's/^[[:space:]]*//' | sort -u | while IFS= read -r line; do
+  echo "  $line"
+done
+
+echo
+echo "▸ FAILED AT  (file : line : col):"
+echo "──────────────────────────────────"
+grep -E "^       at /" "$tmp" | sed 's/^[[:space:]]*//' | sort -u | while IFS= read -r line; do
+  path=$(echo "$line" | sed -n 's/at \([^:]*\):.*/\1/p')
+  lineno=$(echo "$line" | sed -n 's/at [^:]*:\([0-9]*\):.*/\1/p')
+  if [ -n "$flake_store" ] && [[ "$path" == "$flake_store"* ]]; then
+    rel="${path#$flake_store/}"
+    echo "  ./$rel:$lineno  ⟵ in your flake source"
+  else
+    base=$(basename "$path")
+    parent=$(basename "$(dirname "$path")")
+    echo "  $parent/$base:$lineno  ⟵ in ${parent}"
+  fi
+  if [ -f "$path" ] && [ -n "$lineno" ]; then
+    sed -n "${lineno}p" "$path" 2>/dev/null | sed 's/^/      /'
+  fi
+done
+
+echo
+echo "▸ DERIVATIONS IN TRACE:"
+echo "────────────────────────"
+grep "derivation " "$tmp" | sed 's/^[[:space:]]*//' | sort -u | while IFS= read -r line; do
+  echo "  $line"
+done
+
+echo
+echo "▸ REFERENCES IN YOUR CONFIG:"
+echo "─────────────────────────────"
+keywords=$(grep -E "^       error:" "$tmp" \
+  | grep -oE "'[a-zA-Z_][a-zA-Z0-9_-]*'" \
+  | tr -d "'" | sort -u)
+pkgs_in_trace=$(grep -oE "/pkgs/by-name/[a-z]{2}/[a-z0-9_-]+/" "$tmp" \
+  | sed 's|.*/\([^/]*\)/$|\1|' | sort -u)
+found_any=0
+for kw in $keywords $pkgs_in_trace; do
+  [ -z "$kw" ] && continue
+  matches=$(grep -rln --include='*.nix' "$kw" modules/ 2>/dev/null || true)
+  if [ -n "$matches" ]; then
+    found_any=1
+    echo "  '$kw' →"
+    echo "$matches" | sed 's/^/    /'
+  fi
+done
+if [ "$found_any" -eq 0 ]; then
+  echo "  (no direct references found — error may originate from a flake input)"
+fi
+
+echo
+echo "════════════════════════════════════════════════════════════════════"
+echo "  Full trace:  nix build .#$attr --show-trace"
+echo "════════════════════════════════════════════════════════════════════"

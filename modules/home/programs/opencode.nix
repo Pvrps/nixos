@@ -39,7 +39,7 @@ in {
       pname = "opencode-pinned-tools";
       version = "1.0.0";
       src = ./opencode;
-      npmDepsHash = "sha256-i9BUvJSAZjTWIhqdmMi6b8kpxTfCSMWrTeLvR3WyLEo=";
+      npmDepsHash = "sha256-vb5YAdo/rgSMuHic31kiC0aE+TJncwS+6axded21ysI=";
       dontNpmBuild = true;
       nativeBuildInputs = [pkgs.makeWrapper];
       installPhase = ''

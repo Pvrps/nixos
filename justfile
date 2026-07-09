@@ -28,6 +28,10 @@ switch host=`hostname`:
 build host=`hostname`:
     nh os build . -H {{ host }}
 
+# Analyze build errors with full trace and formatted output
+analyze host=`hostname`:
+    @scripts/analyze {{ host }}
+
 # Delete old generations and perform garbage collection
 cleanup:
     nh clean all -k 3
