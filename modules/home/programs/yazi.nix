@@ -31,7 +31,13 @@ in {
       enableBashIntegration = true;
       enableZshIntegration = true;
       enableFishIntegration = true;
-      package = patched-yazi;
+      # The Sixel patch only matters when foot is the terminal in use; skip
+      # it everywhere else so those hosts get the cached, unmodified
+      # pkgs.yazi build instead of compiling it from source.
+      package =
+        if config.custom.programs.foot.enable
+        then patched-yazi
+        else pkgs.yazi;
     };
   };
 }
