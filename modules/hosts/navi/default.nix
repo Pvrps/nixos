@@ -18,6 +18,10 @@
     ../../../modules/nixos/secureboot.nix
   ];
 
+  # roc-toolkit mic stream from ciela (Inori) — receiver ports for the RTP
+  # source/repair/control endpoints, scoped to the tailscale interface only.
+  networking.firewall.interfaces."tailscale0".allowedUDPPorts = [10001 10002 10003];
+
   custom = {
     audio.lowLatency.enable = true;
     flatpak.enable = true;

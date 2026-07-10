@@ -329,6 +329,20 @@
       presetSource = "/persist/etc/nixos/modules/users/purps/files/blue_yeti.json";
     };
     openrgb.enable = true;
+
+    # Receives ciela's mic stream into a "ciela-inori-mic" PipeWire node, which
+    # OBS's PipeWire Audio Capture plugin can pick up as an independent audio source.
+    micStream = {
+      enable = true;
+      mode = "receiver";
+      sinkNode = "ciela-inori-mic";
+      sinkDescription = "Ciela (Inori) Mic";
+      ports = {
+        source = 10001;
+        repair = 10002;
+        control = 10003;
+      };
+    };
     liquidctl = {
       enable = true;
       lcdImage = ./assets/master-sword.gif;

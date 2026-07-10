@@ -242,6 +242,21 @@
       presetSource = "/persist/etc/nixos/modules/users/inori/files/blue_yeti.json";
     };
     openrgb.enable = true;
+
+    # Streams her processed mic (post-EasyEffects) to navi over Tailscale so
+    # purps can capture her voice in OBS without unmuting her on Discord
+    # (she stays muted there to avoid a room-echo loop for remote friends).
+    micStream = {
+      enable = true;
+      mode = "sender";
+      sourceNode = "easyeffects_source";
+      remoteHost = "navi";
+      ports = {
+        source = 10001;
+        repair = 10002;
+        control = 10003;
+      };
+    };
   };
 
   custom.scripts.micsave = {
