@@ -100,13 +100,18 @@
   };
 
   # ---------------------------------------------------------------------------
-  # mkRustdeskConfigScript: shell that writes RustDesk2.toml once (if absent)
-  # from a server address and a key, BOTH read from files at runtime. This is
-  # the shared writer for the NixOS system daemon and the home-manager program.
+  # mkRustdeskConfigScript: shell that enforces the server settings in
+  # RustDesk2.toml, with server address and key BOTH read from files at
+  # runtime. This is the shared writer for the NixOS system daemon and the
+  # home-manager program.
   #
-  # FIX: previously `server` was interpolated literally while callers passed a
-  # sops *path*, so the config ended up with `/run/secrets/...` instead of the
-  # address. Now both serverFile and keyFile are read at runtime.
+  # The file is rewritten whenever it is missing OR does not contain the
+  # expected custom-rendezvous-server value. Previously this was write-once
+  # (only if absent), which silently skipped hosts where RustDesk had already
+  # created a default config pointing at the public rs-ny.rustdesk.com server
+  # (the ciela/inori failure mode, and why mickey needed manual toml edits).
+  # When the server value is already correct we leave the file alone so
+  # RustDesk keeps ownership of its other runtime settings.
   #
   #   configFile  - target RustDesk2.toml path
   #   serverFile  - file containing the relay/rendezvous address
@@ -118,9 +123,9 @@
     keyFile,
   }: ''
     config_file="${configFile}"
-    if [ ! -f "$config_file" ]; then
-      server=$(tr -d '\n' < ${serverFile})
-      key=$(tr -d '\n' < ${keyFile})
+    server=$(tr -d '\n' < ${serverFile})
+    key=$(tr -d '\n' < ${keyFile})
+    if [ ! -f "$config_file" ] || ! grep -qF "custom-rendezvous-server = \"$server\"" "$config_file"; then
       mkdir -p "$(dirname "$config_file")"
       cat > "$config_file" <<EOF
     rendezvous_server = "$server"
