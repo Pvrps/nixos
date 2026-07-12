@@ -320,7 +320,7 @@
       enable = true;
       plugins = {
         pipewireAudioCapture.enable = true;
-        backgroundRemoval.enable = true;
+        backgroundRemoval.enable = false;
       };
     };
 
