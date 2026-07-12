@@ -19,6 +19,11 @@ in {
       default = null;
       description = "Path to a file containing the RustDesk server public key. Read at runtime.";
     };
+    passwordFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Path to a file containing the RustDesk permanent password (e.g. a sops secret path). Applied via `rustdesk --password` before each daemon start.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -50,17 +55,26 @@ in {
         XDG_DATA_HOME = "/root/.local/share";
         XDG_CONFIG_HOME = "/root/.config";
       };
-      serviceConfig = {
-        Type = "simple";
-        Restart = "always";
-        RestartSec = "5s";
-        ExecStart = let
-          script = pkgs.writeShellScript "rustdesk-system" ''
-            export DISPLAY=:0
-            exec ${pkgs.rustdesk-flutter}/bin/rustdesk --server
-          '';
-        in "${script}";
-      };
+      serviceConfig =
+        {
+          Type = "simple";
+          Restart = "always";
+          RestartSec = "5s";
+          ExecStart = let
+            script = pkgs.writeShellScript "rustdesk-system" ''
+              export DISPLAY=:0
+              exec ${pkgs.rustdesk-flutter}/bin/rustdesk --server
+            '';
+          in "${script}";
+        }
+        # Enforce the permanent password before the daemon starts. Read at
+        # runtime from the sops-managed file; only the path is in the store.
+        // lib.optionalAttrs (cfg.passwordFile != null) {
+          ExecStartPre = "${pkgs.writeShellScript "rustdesk-set-password" ''
+            pw=$(tr -d '\n' < ${cfg.passwordFile})
+            exec ${pkgs.rustdesk-flutter}/bin/rustdesk --password "$pw"
+          ''}";
+        };
     };
   };
 }

@@ -20,6 +20,11 @@ in {
       default = null;
       description = "Path to a file containing the RustDesk server public key. Read at runtime.";
     };
+    passwordFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Path to a file containing the RustDesk permanent password (e.g. a sops secret path). Applied via `rustdesk --password` before each service start. Requires autoStart.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -40,11 +45,20 @@ in {
         After = ["graphical-session.target"];
         PartOf = ["graphical-session.target"];
       };
-      Service = {
-        ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --server";
-        Restart = "on-failure";
-        RestartSec = 3;
-      };
+      Service =
+        {
+          ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --server";
+          Restart = "on-failure";
+          RestartSec = 3;
+        }
+        # Enforce the permanent password before the server starts. Read at
+        # runtime from the sops-managed file; only the path is in the store.
+        // lib.optionalAttrs (cfg.passwordFile != null) {
+          ExecStartPre = "${pkgs.writeShellScript "rustdesk-set-password" ''
+            pw=$(tr -d '\n' < ${cfg.passwordFile})
+            exec ${pkgs.rustdesk-flutter}/bin/rustdesk --password "$pw"
+          ''}";
+        };
       Install = {
         WantedBy = ["graphical-session.target"];
       };

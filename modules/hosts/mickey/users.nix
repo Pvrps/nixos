@@ -43,5 +43,10 @@
       group = "root";
       mode = "0600";
     };
+    "rustdesk-password" = {
+      owner = "root";
+      group = "root";
+      mode = "0600";
+    };
   };
 }
