@@ -218,6 +218,7 @@
     linux-wallpaperengine.enable = true;
     rustdesk = {
       enable = true;
+      autoStart = true;
       serverFile = osConfig.sops.secrets."rustdesk-server".path;
       keyFile = osConfig.sops.secrets."rustdesk-key".path;
     };
