@@ -47,6 +47,12 @@
       mode = "0600";
     };
 
+    "rustdesk-password" = {
+      owner = "inori";
+      group = "users";
+      mode = "0600";
+    };
+
     "beszel-agent-token" = {
       owner = "beszel-agent";
       group = "root";

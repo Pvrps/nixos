@@ -221,6 +221,7 @@
       autoStart = true;
       serverFile = osConfig.sops.secrets."rustdesk-server".path;
       keyFile = osConfig.sops.secrets."rustdesk-key".path;
+      passwordFile = osConfig.sops.secrets."rustdesk-password".path;
     };
 
     flatpak = {

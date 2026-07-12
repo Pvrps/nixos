@@ -80,5 +80,6 @@
     enable = true;
     serverFile = config.sops.secrets."rustdesk-server".path;
     keyFile = config.sops.secrets."rustdesk-key".path;
+    passwordFile = config.sops.secrets."rustdesk-password".path;
   };
 }
