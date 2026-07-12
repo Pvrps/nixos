@@ -22,7 +22,7 @@ in {
     passwordFile = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
-      description = "Path to a file containing the RustDesk permanent password (e.g. a sops secret path). Applied via `rustdesk --password` before each daemon start.";
+      description = "Path to a file containing the RustDesk permanent password (e.g. a sops secret path). Seeded into RustDesk.toml before each daemon start.";
     };
   };
 
@@ -70,10 +70,10 @@ in {
         # Enforce the permanent password before the daemon starts. Read at
         # runtime from the sops-managed file; only the path is in the store.
         // lib.optionalAttrs (cfg.passwordFile != null) {
-          ExecStartPre = "${pkgs.writeShellScript "rustdesk-set-password" ''
-            pw=$(tr -d '\n' < ${cfg.passwordFile})
-            exec ${pkgs.rustdesk-flutter}/bin/rustdesk --password "$pw"
-          ''}";
+          ExecStartPre = "${pkgs.writeShellScript "rustdesk-set-password" (lib.custom.mkRustdeskPasswordScript {
+            configFile = "/root/.config/rustdesk/RustDesk.toml";
+            inherit (cfg) passwordFile;
+          })}";
         };
     };
   };

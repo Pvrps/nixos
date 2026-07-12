@@ -142,6 +142,46 @@
   '';
 
   # ---------------------------------------------------------------------------
+  # mkRustdeskPasswordScript: shell that seeds the RustDesk permanent password
+  # into RustDesk.toml, read at runtime from a sops-managed file.
+  #
+  # We write the password as plaintext into the `password` field: RustDesk's
+  # config loader has decrypt-or-original semantics, so it accepts the value
+  # and re-encrypts it on its next save. This is the only reliable headless
+  # mechanism: `rustdesk --password` requires root AND an "installed" layout
+  # and silently exits 0 without doing anything otherwise (bit us on ciela).
+  #
+  # Only the `password` line is touched; the rest of RustDesk.toml (client
+  # identity keypair, salt, ...) is preserved. Runs before each service start
+  # so secret rotations propagate on restart.
+  #
+  #   configFile   - target RustDesk.toml path
+  #   passwordFile - file containing the permanent password
+  # ---------------------------------------------------------------------------
+  mkRustdeskPasswordScript = {
+    configFile,
+    passwordFile,
+  }: ''
+    config_file="${configFile}"
+    pw=$(tr -d '\n' < ${passwordFile})
+    # TOML basic-string escaping (backslash, double quote)
+    pw=''${pw//\\/\\\\}
+    pw=''${pw//\"/\\\"}
+    mkdir -p "$(dirname "$config_file")"
+    tmp="$config_file.tmp"
+    if [ -f "$config_file" ] && grep -q '^password = ' "$config_file"; then
+      RD_PW="$pw" awk '/^password = / { print "password = \"" ENVIRON["RD_PW"] "\""; next } { print }' \
+        "$config_file" > "$tmp"
+    else
+      # password belongs to the TOML root table: prepend, never append
+      # (appending would land inside a [section]).
+      { printf 'password = "%s"\n' "$pw"; cat "$config_file" 2>/dev/null || true; } > "$tmp"
+    fi
+    chmod 600 "$tmp"
+    mv "$tmp" "$config_file"
+  '';
+
+  # ---------------------------------------------------------------------------
   # mkTerminalPalette: map a stylix base16 color set to the 16 ANSI slots.
   # Returns an attrset { normal = { black = ...; ... }; bright = { ... }; }
   # consumed by foot/ghostty (each formats it to its own syntax).
