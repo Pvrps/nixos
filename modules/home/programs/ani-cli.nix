@@ -5,6 +5,55 @@
   ...
 }: let
   cfg = config.custom.programs.ani-cli;
+
+  # mpv wrapper that resumes an episode at the last watched timestamp.
+  #
+  # mpv's built-in watch-later keys saved positions on the stream URL, but
+  # ani-cli scrapes a fresh URL every run, so positions would never match.
+  # Instead we key on the media title ("<anime> Episode <n>"), which is
+  # stable across runs, by giving each episode its own watch-later directory.
+  #
+  # The name must start with "mpv" so ani-cli's player dispatch matches the
+  # "mpv*" branch and passes the required --referrer flag.
+  mpvResume = pkgs.writeShellScriptBin "mpv-ani-cli" ''
+    title=""
+    for arg in "$@"; do
+      case "$arg" in
+        --force-media-title=*) title="''${arg#--force-media-title=}" ;;
+      esac
+    done
+    key=$(printf '%s' "$title" | tr -cs '[:alnum:]._-' '_')
+    dir="''${XDG_STATE_HOME:-$HOME/.local/state}/ani-cli/watch-later/''${key:-default}"
+    mkdir -p "$dir"
+
+    # Resume from the most recent saved position, if any. Files are removed
+    # after reading; mpv rewrites one on quit (or not, if watched to the end).
+    latest=$(ls -t "$dir" 2>/dev/null | head -n1)
+    if [ -n "$latest" ]; then
+      pos=$(sed -n 's/^start=//p' "$dir/$latest" | head -n1)
+      rm -f "$dir"/*
+      [ -n "$pos" ] && set -- --start="$pos" "$@"
+    fi
+
+    exec ${lib.getExe pkgs.mpv} \
+      --save-position-on-quit \
+      --watch-later-options=start \
+      --watch-later-directory="$dir" \
+      "$@"
+  '';
+
+  # Bake env defaults into the binary instead of home.sessionVariables so
+  # they work in any context without re-login (still overridable per-run).
+  ani-cli-wrapped = pkgs.symlinkJoin {
+    name = "ani-cli-wrapped";
+    paths = [pkgs.ani-cli];
+    nativeBuildInputs = [pkgs.makeWrapper];
+    postBuild = ''
+      wrapProgram $out/bin/ani-cli \
+        --set-default ANI_CLI_QUALITY ${lib.escapeShellArg cfg.quality} \
+        ${lib.optionalString cfg.resumePlayback "--set-default ANI_CLI_PLAYER mpv-ani-cli"}
+    '';
+  };
 in {
   options.custom.programs.ani-cli = {
     enable = lib.mkEnableOption "ani-cli anime streaming tool";
@@ -19,9 +68,9 @@ in {
       type = lib.types.bool;
       default = true;
       description = ''
-        Save playback position on quit and resume the same episode at that
-        timestamp when replayed (mpv watch-later, scoped to ani-cli only).
-        Resume works as long as the provider returns the same stream URL.
+        Save playback position when mpv quits and resume the same episode at
+        that timestamp when it is played again. Positions are keyed on the
+        episode title, so resuming survives ani-cli's changing stream URLs.
       '';
     };
   };
@@ -30,15 +79,6 @@ in {
     # Default nixpkgs build bundles mpv as the playback backend (withMpv = true).
     # Clapper can't receive the HTTP Referer header ani-cli streams require,
     # so mpv is used only for ani-cli playback; Clapper stays the MIME default.
-    home.packages = [pkgs.ani-cli];
-
-    home.sessionVariables =
-      {
-        ANI_CLI_QUALITY = cfg.quality;
-      }
-      // lib.optionalAttrs cfg.resumePlayback {
-        # ani-cli matches "mpv*" in its player dispatch, so extra flags pass through.
-        ANI_CLI_PLAYER = "mpv --save-position-on-quit";
-      };
+    home.packages = [ani-cli-wrapped] ++ lib.optional cfg.resumePlayback mpvResume;
   };
 }
