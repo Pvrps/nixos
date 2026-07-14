@@ -42,6 +42,27 @@
       "$@"
   '';
 
+  # "Continue watching" that, unlike `ani-cli -c`, replays the last watched
+  # episode when it was quit midway (mpv-ani-cli then resumes the timestamp).
+  # Falls back to `ani-cli -c` (next episode) when the episode was finished.
+  #
+  # The last watched episode is derived from the newest watch-later directory;
+  # a watch_later file inside it means playback stopped before the end.
+  aniResume = pkgs.writeShellScriptBin "ani-resume" ''
+    state="''${XDG_STATE_HOME:-$HOME/.local/state}/ani-cli/watch-later"
+    latest=$(ls -t "$state" 2>/dev/null | head -n1)
+
+    if [ -n "$latest" ] && [ -n "$(ls -A "$state/$latest" 2>/dev/null)" ]; then
+      # Key format: <anime_title>_Episode_<n> (see mpv-ani-cli).
+      ep="''${latest##*_Episode_}"
+      query=$(printf '%s' "''${latest%_Episode_*}" | tr '_' ' ')
+      printf 'Resuming: %s - episode %s\n' "$query" "$ep"
+      exec ani-cli -e "$ep" "$query"
+    fi
+
+    exec ani-cli -c
+  '';
+
   # Bake env defaults into the binary instead of home.sessionVariables so
   # they work in any context without re-login (still overridable per-run).
   ani-cli-wrapped = pkgs.symlinkJoin {
@@ -71,6 +92,8 @@ in {
         Save playback position when mpv quits and resume the same episode at
         that timestamp when it is played again. Positions are keyed on the
         episode title, so resuming survives ani-cli's changing stream URLs.
+        Also provides `ani-resume`: replays the last watched episode if it
+        was quit midway, otherwise continues with the next one (like -c).
       '';
     };
   };
@@ -79,6 +102,6 @@ in {
     # Default nixpkgs build bundles mpv as the playback backend (withMpv = true).
     # Clapper can't receive the HTTP Referer header ani-cli streams require,
     # so mpv is used only for ani-cli playback; Clapper stays the MIME default.
-    home.packages = [ani-cli-wrapped] ++ lib.optional cfg.resumePlayback mpvResume;
+    home.packages = [ani-cli-wrapped] ++ lib.optionals cfg.resumePlayback [mpvResume aniResume];
   };
 }
