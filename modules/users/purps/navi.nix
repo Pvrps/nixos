@@ -295,6 +295,7 @@
 
     stremio.enable = true;
     clapper.enable = true;
+    ani-cli.enable = true;
     spotify.enable = true;
     okular.enable = true;
     pinta.enable = true;
