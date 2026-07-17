@@ -11,9 +11,19 @@
   };
 
   config = {
+    # Declarative default applications (collected from all modules'
+    # xdg.mimeApps.defaultApplications) act as a *baseline* placed at the
+    # lower-precedence XDG data location. ~/.config/mimeapps.list is left
+    # unmanaged and writable so GUI tools / Steam / xdg-mime can set
+    # per-mimetype overrides that persist across rebuilds.
     xdg.mimeApps.enable = true;
 
-    xdg.configFile."mimeapps.list".force = true;
+    # Stop home-manager from owning ~/.config/mimeapps.list...
+    xdg.configFile."mimeapps.list".enable = lib.mkForce false;
+    # ...and mirror the generated content to the fallback location instead.
+    xdg.dataFile."applications/mimeapps.list".source =
+      config.xdg.configFile."mimeapps.list".source;
+
     gtk.gtk2.force = true;
 
     # Tell Chromium/Electron apps to use the native Wayland backend.
