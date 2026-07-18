@@ -1,3 +1,4 @@
+# Mickey: low-end kiosk-style desktop (Plasma X11) administered via RustDesk.
 {
   config,
   pkgs,
@@ -8,9 +9,6 @@
     ./_disko.nix
     ./_persist.nix
     ./users.nix
-
-    ../../../modules/nixos/secureboot.nix
-    ../../../modules/nixos/services/rustdesk.nix
   ];
 
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [22 5600];
@@ -26,9 +24,24 @@
     extraPackages = [pkgs.intel-media-driver];
   };
 
-  #custom.secureboot.enable = true;
+  custom = {
+    audio.enable = true;
 
-  # Enable Services
+    remoteAdmin = {
+      enable = true;
+      openFirewall = false; # SSH reachable via tailscale only (see above)
+    };
+
+    #secureboot.enable = true;
+
+    services.rustdesk = {
+      enable = true;
+      serverFile = config.sops.secrets."rustdesk-server".path;
+      keyFile = config.sops.secrets."rustdesk-key".path;
+      passwordFile = config.sops.secrets."rustdesk-password".path;
+    };
+  };
+
   services = {
     xserver = {
       enable = true;
@@ -46,40 +59,10 @@
     displayManager.sddm = {
       enable = true;
       wayland.enable = false;
-      settings = {
-        Users = {
-          HideUsers = "purps";
-        };
-      };
+      settings.Users.HideUsers = "purps";
     };
 
     desktopManager.plasma6.enable = true;
     displayManager.defaultSession = "plasmax11";
-
-    pipewire = {
-      enable = true;
-      alsa.enable = true;
-      alsa.support32Bit = true;
-      pulse.enable = true;
-      jack.enable = true;
-    };
-
-    openssh = {
-      enable = true;
-      openFirewall = false;
-      settings = {
-        PermitRootLogin = "prohibit-password";
-        PasswordAuthentication = false;
-      };
-    };
-  };
-
-  security.sudo.wheelNeedsPassword = false;
-
-  custom.services.rustdesk = {
-    enable = true;
-    serverFile = config.sops.secrets."rustdesk-server".path;
-    keyFile = config.sops.secrets."rustdesk-key".path;
-    passwordFile = config.sops.secrets."rustdesk-password".path;
   };
 }

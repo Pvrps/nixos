@@ -11,7 +11,8 @@ in {
 
     key = lib.mkOption {
       type = lib.types.str;
-      default = "";
+      # Deployment-wide default: the public key of the beszel hub on windwaker.
+      default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQAj+3OR1B8cBF0GrVs1jmTuy5snr6zoRaK67v+j42D";
       description = "Hub SSH public key for hub→agent SSH connections. Not secret.";
       example = "ssh-ed25519 AAAA...";
     };

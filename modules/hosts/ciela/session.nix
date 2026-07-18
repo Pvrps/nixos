@@ -1,3 +1,4 @@
+# Ciela session: SDDM (astronaut theme) + Plasma 6 on Wayland.
 {pkgs, ...}: let
   sddm-astronaut = pkgs.sddm-astronaut.override {
     # Available themes: astronaut, black_hole, cyberpunk, hyprland_kath,
@@ -6,8 +7,6 @@
     embeddedTheme = "hyprland_kath";
   };
 in {
-  fonts.packages = [pkgs.geist-font];
-
   services = {
     displayManager.sddm = {
       enable = true;
@@ -20,8 +19,6 @@ in {
       ];
     };
     desktopManager.plasma6.enable = true;
-    upower.enable = true;
-    gnome.gnome-keyring.enable = true;
 
     # Fix the "log out, then can't log back in for several tries" race.
     # On logout, plasma's `systemd --user` manager (user@1000) takes ~20s to
@@ -50,8 +47,5 @@ in {
 
   security.pam.services.sddm.enableGnomeKeyring = true;
 
-  environment.systemPackages = with pkgs; [
-    nix-your-shell
-    sddm-astronaut
-  ];
+  environment.systemPackages = [sddm-astronaut];
 }

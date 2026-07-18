@@ -152,10 +152,10 @@
               hostName = host;
             };
             modules = [
+              # All shared system modules are auto-imported and option-gated
+              # (custom.*); hosts only declare what they enable.
+              (import-tree ./modules/nixos)
               ./modules/hosts/${host}
-              ./modules/nixos/core.nix
-              ./modules/nixos/common.nix
-              ./modules/nixos/tailscale.nix
               disko.nixosModules.disko
               sops-nix.nixosModules.sops
               home-manager.nixosModules.home-manager

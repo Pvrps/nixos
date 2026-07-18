@@ -1,6 +1,7 @@
 {
   pkgs,
   config,
+  lib,
   ...
 }: {
   users.users = {
@@ -11,7 +12,7 @@
       # wheel: sudo for anything requiring root
       extraGroups = ["wheel" "docker" "networkmanager" "video" "audio" "input"];
       shell = pkgs.fish;
-      hashedPasswordFile = "!";
+      hashedPassword = "!"; # SSH-key-only login
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKXahrPYpFxiNEPA+IFJYRnn6DwABTtHy0H26HkoWbEw purps@navi"
       ];
@@ -26,21 +27,11 @@
     };
   };
 
-  sops.secrets = {
-    "purps-password" = {
-      neededForUsers = true;
-    };
-
-    "podman-admin-password" = {
-      neededForUsers = true;
-    };
-
+  sops.secrets =
+    {"podman-admin-password".neededForUsers = true;}
     # Added post-install via `just secrets windwaker`
-    # Provides the GitHub SSH private key path to purps/general.nix
-    "github-ssh-key" = {
+    // lib.custom.mkUserSecrets {
       owner = "purps";
-      group = "users";
-      mode = "0600";
+      secrets = ["github-ssh-key"];
     };
-  };
 }

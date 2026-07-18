@@ -100,6 +100,23 @@
   };
 
   # ---------------------------------------------------------------------------
+  # mkUserSecrets: collapse the repeated sops-nix secret boilerplate for
+  # user-owned secrets. Returns an attrset for `sops.secrets`:
+  #
+  #   sops.secrets = lib.custom.mkUserSecrets {
+  #     owner = "purps";
+  #     secrets = ["github-ssh-key" "rustdesk-server"];
+  #   } // { "purps-password".neededForUsers = true; };
+  # ---------------------------------------------------------------------------
+  mkUserSecrets = {
+    owner,
+    group ? "users",
+    mode ? "0600",
+    secrets,
+  }:
+    lib.genAttrs secrets (_: {inherit owner group mode;});
+
+  # ---------------------------------------------------------------------------
   # mkRustdeskConfigScript: shell that enforces the server settings in
   # RustDesk2.toml, with server address and key BOTH read from files at
   # runtime. This is the shared writer for the NixOS system daemon and the

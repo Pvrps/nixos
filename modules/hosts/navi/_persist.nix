@@ -1,23 +1,13 @@
-{inputs, ...}: {
-  imports = [inputs.impermanence.nixosModules.impermanence];
-
-  # System-level persistence only
+# Host-specific persistence on top of the shared base (modules/nixos/persist.nix).
+# User-level persistence for purps lives in home-manager (modules/users/purps/navi.nix).
+{
   environment.persistence."/persist" = {
-    hideMounts = true;
-
     directories = [
-      "/var/log"
-      "/var/lib/nixos"
       "/var/lib/systemd/coredump"
       "/var/lib/NetworkManager"
       "/var/lib/greetd"
-      "/var/lib/tailscale"
       "/var/lib/bluetooth"
       "/etc/NetworkManager/system-connections"
-    ];
-
-    files = [
-      "/etc/machine-id"
     ];
   };
 
@@ -27,6 +17,4 @@
     options = ["defaults" "mode=755"];
     neededForBoot = true;
   };
-
-  programs.fuse.userAllowOther = true;
 }

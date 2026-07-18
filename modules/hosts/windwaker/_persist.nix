@@ -1,20 +1,13 @@
-{inputs, ...}: {
-  imports = [inputs.impermanence.nixosModules.impermanence];
-
+# Host-specific persistence on top of the shared base (modules/nixos/persist.nix).
+{
   environment.persistence."/persist" = {
-    hideMounts = true;
-
     directories = [
-      "/var/log"
-      "/var/lib/nixos"
       "/var/lib/systemd/coredump"
       # Podman state and layer cache (grows over time; lives on sda btrfs)
       "/var/lib/containers"
-      "/var/lib/tailscale"
     ];
 
     files = [
-      "/etc/machine-id"
       "/etc/ssh/ssh_host_ed25519_key"
       "/etc/ssh/ssh_host_ed25519_key.pub"
       "/etc/ssh/ssh_host_rsa_key"
@@ -22,14 +15,8 @@
     ];
 
     users.purps = {
-      directories = [
-        ".ssh"
-      ];
-      files = [
-        ".local/share/fish/fish_history"
-      ];
+      directories = [".ssh"];
+      files = [".local/share/fish/fish_history"];
     };
   };
-
-  programs.fuse.userAllowOther = true;
 }

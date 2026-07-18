@@ -20,9 +20,12 @@
     #./services/dragonwilds.nix
     ./services/beszel-hub.nix
     ./services/qbittorrent.nix
-
-    ../../../modules/nixos/beszel-agent.nix
   ];
+
+  custom.remoteAdmin = {
+    enable = true;
+    openFirewall = false; # SSH exposed only on the LAN interface below
+  };
 
   networking = {
     # Disable NetworkManager — use systemd-networkd for static VLAN sub-interfaces
@@ -77,15 +80,6 @@
     trustedInterfaces = ["podman0" "podman1" "podman2" "tailscale0"];
   };
 
-  services.openssh = {
-    enable = true;
-    openFirewall = false; # Controlled manually above
-    settings = {
-      PermitRootLogin = "prohibit-password"; # SSH key only for root
-      PasswordAuthentication = false; # Keys only for all users
-    };
-  };
-
   # Podman — quadlet-nix enables virtualisation.podman automatically;
   # these options layer on top for the docker socket and auto-pruning.
   virtualisation.podman = {
@@ -113,9 +107,6 @@
     9090
   ];
 
-  # SSH-key-only host — passwords are random and unknown, so wheel must not need one for sudo
-  security.sudo.wheelNeedsPassword = false;
-
   # Allow podman-admin to run cockpit-bridge --privileged as root without a password.
   # This is the minimum needed for Cockpit to show system services and containers.
   # The command path is pinned to the exact cockpit store path to prevent privilege escalation.
@@ -133,9 +124,9 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  # Agent and hub are co-located: no hubUrl/tokenFile needed.
   custom.services.beszel-agent = {
     enable = true;
-    key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQAj+3OR1B8cBF0GrVs1jmTuy5snr6zoRaK67v+j42D";
     extraFilesystems = ["sda" "sdb"];
     gpuPackages = [pkgs.intel-gpu-tools];
     capPerfmon = true;

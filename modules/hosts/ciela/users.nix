@@ -1,6 +1,7 @@
 {
   pkgs,
   config,
+  lib,
   ...
 }: {
   users.users = {
@@ -24,39 +25,14 @@
     };
   };
 
-  sops.secrets = {
-    "inori-password" = {
-      neededForUsers = true;
-    };
-
-    "github-ssh-key" = {
+  sops.secrets =
+    {"inori-password".neededForUsers = true;}
+    // lib.custom.mkUserSecrets {
       owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-
-    "rustdesk-server" = {
+      secrets = ["github-ssh-key"];
+    }
+    // lib.custom.mkUserSecrets {
       owner = "inori";
-      group = "users";
-      mode = "0600";
+      secrets = ["rustdesk-server" "rustdesk-key" "rustdesk-password"];
     };
-
-    "rustdesk-key" = {
-      owner = "inori";
-      group = "users";
-      mode = "0600";
-    };
-
-    "rustdesk-password" = {
-      owner = "inori";
-      group = "users";
-      mode = "0600";
-    };
-
-    "beszel-agent-token" = {
-      owner = "beszel-agent";
-      group = "root";
-      mode = "0600";
-    };
-  };
 }

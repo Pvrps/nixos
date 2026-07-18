@@ -19,4 +19,12 @@
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+
+  # USB SSD — existing data, not managed by disko.
+  # Podman depends on it: containers bind-mount from /mnt.
+  fileSystems."/mnt" = {
+    device = "/dev/disk/by-uuid/3b95b690-13a1-4052-bc81-ade5b51f2de1";
+    fsType = "ext4";
+    options = ["nofail" "x-systemd.device-timeout=90" "x-systemd.automount"];
+  };
 }

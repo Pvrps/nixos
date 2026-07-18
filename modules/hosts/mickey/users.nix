@@ -1,6 +1,7 @@
 {
   pkgs,
   config,
+  lib,
   ...
 }: {
   users.users = {
@@ -10,6 +11,7 @@
       extraGroups = ["networkmanager" "video" "audio" "input"];
       hashedPasswordFile = config.sops.secrets."mike-password".path;
     };
+
     purps = {
       isNormalUser = true;
       uid = 1000;
@@ -22,31 +24,15 @@
     };
   };
 
-  sops.secrets = {
-    "mike-password" = {
-      neededForUsers = true;
-    };
-
-    "github-ssh-key" = {
+  sops.secrets =
+    {"mike-password".neededForUsers = true;}
+    // lib.custom.mkUserSecrets {
       owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-
-    "rustdesk-server" = {
-      owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-    "rustdesk-key" = {
+      secrets = ["github-ssh-key" "rustdesk-server"];
+    }
+    // lib.custom.mkUserSecrets {
       owner = "root";
       group = "root";
-      mode = "0600";
+      secrets = ["rustdesk-key" "rustdesk-password"];
     };
-    "rustdesk-password" = {
-      owner = "root";
-      group = "root";
-      mode = "0600";
-    };
-  };
 }

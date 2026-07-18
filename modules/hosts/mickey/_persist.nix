@@ -1,17 +1,10 @@
-{inputs, ...}: {
-  imports = [inputs.impermanence.nixosModules.impermanence];
-
-  # System-level persistence only
+# Host-specific persistence on top of the shared base (modules/nixos/persist.nix).
+{
   environment.persistence."/persist" = {
-    hideMounts = true;
-
     directories = [
-      "/var/log"
-      "/var/lib/nixos"
       "/var/lib/systemd/coredump"
       "/var/lib/NetworkManager"
       "/var/lib/bluetooth"
-      "/var/lib/tailscale"
       "/etc/NetworkManager/system-connections"
       "/etc/rustdesk"
       "/root/.config/rustdesk"
@@ -19,7 +12,6 @@
     ];
 
     files = [
-      "/etc/machine-id"
       "/etc/ssh/ssh_host_ed25519_key"
       "/etc/ssh/ssh_host_ed25519_key.pub"
       "/etc/ssh/ssh_host_rsa_key"
@@ -41,15 +33,9 @@
       };
 
       purps = {
-        directories = [
-          ".ssh"
-        ];
-        files = [
-          ".local/share/fish/fish_history"
-        ];
+        directories = [".ssh"];
+        files = [".local/share/fish/fish_history"];
       };
     };
   };
-
-  programs.fuse.userAllowOther = true;
 }

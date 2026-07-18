@@ -1,4 +1,5 @@
-# Low-latency PipeWire audio with a virtual cable sink. Shared by desktop hosts.
+# PipeWire audio. `enable` is the plain stack; `lowLatency.enable` layers
+# rtkit, low-latency quantum settings, and a virtual cable sink on top.
 {
   config,
   lib,
@@ -6,20 +7,32 @@
 }: let
   cfg = config.custom.audio;
 in {
-  options.custom.audio.lowLatency.enable =
-    lib.mkEnableOption "Low-latency PipeWire audio stack with a virtual cable sink";
+  options.custom.audio = {
+    enable = lib.mkEnableOption "PipeWire audio stack";
+    lowLatency.enable =
+      lib.mkEnableOption "Low-latency PipeWire settings with a virtual cable sink";
+  };
 
-  config = lib.mkIf cfg.lowLatency.enable {
-    security.rtkit.enable = true;
+  config = lib.mkMerge [
+    (lib.mkIf cfg.lowLatency.enable {
+      custom.audio.enable = true;
+    })
 
-    services.pipewire = {
-      enable = true;
-      alsa.enable = true;
-      alsa.support32Bit = true;
-      pulse.enable = true;
-      jack.enable = true;
+    (lib.mkIf cfg.enable {
+      services.pipewire = {
+        enable = true;
+        alsa.enable = true;
+        alsa.support32Bit = true;
+        pulse.enable = true;
+        jack.enable = true;
+      };
+    })
 
-      wireplumber = {
+    (lib.mkIf cfg.lowLatency.enable {
+      security.rtkit.enable = true;
+
+      services.pipewire = {
+        wireplumber = {
         enable = true;
         extraConfig = {
           "10-disable-suspension" = {
@@ -64,6 +77,7 @@ in {
           ];
         };
       };
-    };
-  };
+      };
+    })
+  ];
 }

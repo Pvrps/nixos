@@ -1,6 +1,7 @@
 {
   pkgs,
   config,
+  lib,
   ...
 }: {
   users.users = {
@@ -13,59 +14,19 @@
     };
   };
 
-  sops.secrets = {
-    "purps-password" = {
-      neededForUsers = true;
-    };
-
-    "ciela-purps-key" = {
+  sops.secrets =
+    {"purps-password".neededForUsers = true;}
+    // lib.custom.mkUserSecrets {
       owner = "purps";
-      group = "users";
-      mode = "0600";
+      secrets = [
+        "ciela-purps-key"
+        "windwaker-purps-key"
+        "mickey-purps-key"
+        "github-ssh-key"
+        "github-token"
+        "context7-api-key"
+        "rustdesk-server"
+        "rustdesk-key"
+      ];
     };
-    "windwaker-purps-key" = {
-      owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-    "mickey-purps-key" = {
-      owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-
-    "github-ssh-key" = {
-      owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-    "github-token" = {
-      owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-
-    "context7-api-key" = {
-      owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-
-    "rustdesk-server" = {
-      owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-    "rustdesk-key" = {
-      owner = "purps";
-      group = "users";
-      mode = "0600";
-    };
-
-    "beszel-agent-token" = {
-      owner = "beszel-agent";
-      group = "root";
-      mode = "0600";
-    };
-  };
 }
