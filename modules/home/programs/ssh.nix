@@ -6,17 +6,17 @@
   cfg = config.custom.programs.ssh;
 in {
   options.custom.programs.ssh = {
-      enable = lib.mkEnableOption "SSH client configuration";
-      githubKeyPath = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = "Path to the SSH key for github.com";
-      };
-      extraHosts = lib.mkOption {
-        type = lib.types.attrsOf lib.types.attrs;
-        default = {};
-        description = "Additional SSH host entries";
-      };
+    enable = lib.mkEnableOption "SSH client configuration";
+    githubKeyPath = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Path to the SSH key for github.com";
+    };
+    extraHosts = lib.mkOption {
+      type = lib.types.attrsOf lib.types.attrs;
+      default = {};
+      description = "Additional SSH host entries";
+    };
   };
 
   config = lib.mkIf cfg.enable {

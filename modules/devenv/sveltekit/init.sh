@@ -34,14 +34,14 @@ ADAPTER=$(gum choose --header "SvelteKit adapter" node static vercel)
 # ---------------------------------------------------------------------------
 # devenv.yaml
 # ---------------------------------------------------------------------------
-cat > devenv.yaml <<EOF
+cat >devenv.yaml <<EOF
 imports: [path:${MODULES_DIR}/sveltekit]
 EOF
 
 # ---------------------------------------------------------------------------
 # devenv.nix
 # ---------------------------------------------------------------------------
-cat > devenv.nix <<EOF
+cat >devenv.nix <<EOF
 {pkgs, ...}: {
   profile.sveltekit = {
     enable = true;
@@ -52,7 +52,7 @@ EOF
 # ---------------------------------------------------------------------------
 # .envrc
 # ---------------------------------------------------------------------------
-cat > .envrc <<'EOF'
+cat >.envrc <<'EOF'
 eval "$(devenv direnvrc)"
 use devenv
 EOF
@@ -60,7 +60,7 @@ EOF
 # ---------------------------------------------------------------------------
 # .gitignore
 # ---------------------------------------------------------------------------
-cat > .gitignore <<'EOF'
+cat >.gitignore <<'EOF'
 # Devenv
 .devenv
 devenv.lock
@@ -92,7 +92,7 @@ EOF
 # .vscode/extensions.json
 # ---------------------------------------------------------------------------
 mkdir -p .vscode
-cat > .vscode/extensions.json <<'EOF'
+cat >.vscode/extensions.json <<'EOF'
 {
   "recommendations": [
     "svelte.svelte-vscode",
@@ -107,7 +107,7 @@ EOF
 # ---------------------------------------------------------------------------
 # justfile
 # ---------------------------------------------------------------------------
-cat > justfile <<EOF
+cat >justfile <<EOF
 default:
     @just --list
 
@@ -179,11 +179,11 @@ fi
 
 gum spin --spinner dot --title "Scaffolding SvelteKit project (sv create)..." -- \
   devenv shell -- bunx sv create . \
-    --template minimal \
-    --types ts \
-    --add "${ADD_ONS[@]}" \
-    --install bun \
-    --no-dir-check
+  --template minimal \
+  --types ts \
+  --add "${ADD_ONS[@]}" \
+  --install bun \
+  --no-dir-check
 
 # ---------------------------------------------------------------------------
 # Add adapter (sv defaults to adapter-auto, so always add the chosen one)

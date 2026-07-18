@@ -6,23 +6,23 @@
   cfg = config.custom.programs.git;
 in {
   options.custom.programs.git = {
-      enable = lib.mkEnableOption "Git version control";
-      userName = lib.mkOption {
-        type = lib.types.str;
-        default = "Anonymous";
-        description = "Git user name";
-      };
-      userEmail = lib.mkOption {
-        type = lib.types.str;
-        default = "anonymous@localhost";
-        description = "Git user email";
-      };
-      safeDirectories = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        example = ["/persist/etc/nixos"];
-        description = "Directories to mark as safe (git safe.directory), e.g. root-owned repos.";
-      };
+    enable = lib.mkEnableOption "Git version control";
+    userName = lib.mkOption {
+      type = lib.types.str;
+      default = "Anonymous";
+      description = "Git user name";
+    };
+    userEmail = lib.mkOption {
+      type = lib.types.str;
+      default = "anonymous@localhost";
+      description = "Git user email";
+    };
+    safeDirectories = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      example = ["/persist/etc/nixos"];
+      description = "Directories to mark as safe (git safe.directory), e.g. root-owned repos.";
+    };
   };
 
   config = lib.mkIf cfg.enable {

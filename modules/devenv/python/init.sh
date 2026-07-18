@@ -26,10 +26,10 @@ PROJECT_NAME=$(gum input --placeholder "Project name" --value "$(basename "$PWD"
 
 PYTHON_VERSION=$(gum choose --header "Python version" 3.13 3.12 3.11 3.10)
 case "$PYTHON_VERSION" in
-  3.13) PYTHON_PKG="python313" ;;
-  3.12) PYTHON_PKG="python312" ;;
-  3.11) PYTHON_PKG="python311" ;;
-  3.10) PYTHON_PKG="python310" ;;
+3.13) PYTHON_PKG="python313" ;;
+3.12) PYTHON_PKG="python312" ;;
+3.11) PYTHON_PKG="python311" ;;
+3.10) PYTHON_PKG="python310" ;;
 esac
 
 PROJECT_TYPE=$(gum choose --header "Project type" app library script)
@@ -39,7 +39,7 @@ USE_RUFF=$(gum choose --header "Enable ruff?" yes no)
 # ---------------------------------------------------------------------------
 # devenv.yaml
 # ---------------------------------------------------------------------------
-cat > devenv.yaml <<EOF
+cat >devenv.yaml <<EOF
 imports: [path:${MODULES_DIR}/python]
 EOF
 
@@ -47,7 +47,7 @@ EOF
 # devenv.nix
 # ---------------------------------------------------------------------------
 if [ "$USE_RUFF" = "yes" ]; then
-cat > devenv.nix <<EOF
+  cat >devenv.nix <<EOF
 {pkgs, ...}: {
   profile.python = {
     enable = true;
@@ -56,7 +56,7 @@ cat > devenv.nix <<EOF
 }
 EOF
 else
-cat > devenv.nix <<EOF
+  cat >devenv.nix <<EOF
 {pkgs, ...}: {
   profile.python = {
     enable = true;
@@ -70,7 +70,7 @@ fi
 # ---------------------------------------------------------------------------
 # .envrc
 # ---------------------------------------------------------------------------
-cat > .envrc <<'EOF'
+cat >.envrc <<'EOF'
 eval "$(devenv direnvrc)"
 use devenv
 EOF
@@ -78,7 +78,7 @@ EOF
 # ---------------------------------------------------------------------------
 # .gitignore
 # ---------------------------------------------------------------------------
-cat > .gitignore <<'EOF'
+cat >.gitignore <<'EOF'
 # Devenv
 .devenv
 devenv.lock
@@ -103,7 +103,7 @@ EOF
 # .vscode/extensions.json
 # ---------------------------------------------------------------------------
 mkdir -p .vscode
-cat > .vscode/extensions.json <<'EOF'
+cat >.vscode/extensions.json <<'EOF'
 {
   "recommendations": [
     "ms-python.python",
@@ -116,7 +116,7 @@ EOF
 # ---------------------------------------------------------------------------
 # justfile
 # ---------------------------------------------------------------------------
-cat > justfile <<EOF
+cat >justfile <<EOF
 default:
     @just --list
 
@@ -143,14 +143,14 @@ install:
 EOF
 
 if [ "$PROJECT_TYPE" = "script" ]; then
-cat >> justfile <<EOF
+  cat >>justfile <<EOF
 
 # Run the script
 run:
     devenv shell -- uv run main.py
 EOF
 else
-cat >> justfile <<EOF
+  cat >>justfile <<EOF
 
 # Run tests
 test:
@@ -177,18 +177,18 @@ gum spin --spinner dot --title "Building devenv environment (first run)..." -- \
 # Scaffold the project using uv init
 # ---------------------------------------------------------------------------
 case "$PROJECT_TYPE" in
-  app)
-    gum spin --spinner dot --title "Scaffolding uv app project..." -- \
-      devenv shell -- uv init --app --name "$PROJECT_NAME" --no-readme
-    ;;
-  library)
-    gum spin --spinner dot --title "Scaffolding uv library project..." -- \
-      devenv shell -- uv init --lib --name "$PROJECT_NAME" --no-readme
-    ;;
-  script)
-    gum spin --spinner dot --title "Scaffolding uv script..." -- \
-      devenv shell -- uv init --script --name "$PROJECT_NAME"
-    ;;
+app)
+  gum spin --spinner dot --title "Scaffolding uv app project..." -- \
+    devenv shell -- uv init --app --name "$PROJECT_NAME" --no-readme
+  ;;
+library)
+  gum spin --spinner dot --title "Scaffolding uv library project..." -- \
+    devenv shell -- uv init --lib --name "$PROJECT_NAME" --no-readme
+  ;;
+script)
+  gum spin --spinner dot --title "Scaffolding uv script..." -- \
+    devenv shell -- uv init --script --name "$PROJECT_NAME"
+  ;;
 esac
 
 # Sync deps (creates .venv)

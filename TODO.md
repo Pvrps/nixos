@@ -11,7 +11,7 @@
 
 ## Intentionally Kept
 
-- Shared *opinions* (Discord plugins, Steam millennium plugins, Zen mods, fish
+- Shared _opinions_ (Discord plugins, Steam millennium plugins, Zen mods, fish
   aliases) are **option defaults** in the program modules. Per-user divergence
   is a single override in the user's own file; no shared file needs editing.
 - EasyEffects presets are intentionally **mutable and per-user**: the

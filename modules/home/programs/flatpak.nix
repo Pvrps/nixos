@@ -12,12 +12,12 @@ in {
   ];
 
   options.custom.programs.flatpak = {
-      enable = lib.mkEnableOption "Flatpak via nix-flatpak";
-      packages = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "List of Flatpak packages to install";
-      };
+    enable = lib.mkEnableOption "Flatpak via nix-flatpak";
+    packages = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = "List of Flatpak packages to install";
+    };
   };
 
   config = lib.mkIf cfg.enable {

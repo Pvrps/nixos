@@ -16,24 +16,24 @@
   npmDeps = (builtins.fromJSON (builtins.readFile ./opencode/package.json)).dependencies;
 in {
   options.custom.programs.opencode = {
-      enable = lib.mkEnableOption "OpenCode AI coding assistant";
-      context7 = {
-        enable = lib.mkEnableOption "Context7 MCP Server";
-        apiKeyPath = lib.mkOption {
-          type = lib.types.str;
-          default = "";
-          description = "Path to the Context7 API key secret";
-        };
+    enable = lib.mkEnableOption "OpenCode AI coding assistant";
+    context7 = {
+      enable = lib.mkEnableOption "Context7 MCP Server";
+      apiKeyPath = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        description = "Path to the Context7 API key secret";
       };
-      superpowers = {
-        enable = lib.mkEnableOption "Superpowers skills and plugin for OpenCode";
-      };
-      claudeAuth = {
-        enable = lib.mkEnableOption "opencode-claude-auth plugin (use Claude Code credentials in OpenCode)";
-      };
-      mcp-nixos = {
-        enable = lib.mkEnableOption "MCP-NixOS server for NixOS packages, options, and resources";
-      };
+    };
+    superpowers = {
+      enable = lib.mkEnableOption "Superpowers skills and plugin for OpenCode";
+    };
+    claudeAuth = {
+      enable = lib.mkEnableOption "opencode-claude-auth plugin (use Claude Code credentials in OpenCode)";
+    };
+    mcp-nixos = {
+      enable = lib.mkEnableOption "MCP-NixOS server for NixOS packages, options, and resources";
+    };
   };
 
   config = lib.mkIf cfg.enable (let

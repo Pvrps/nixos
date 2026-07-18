@@ -86,15 +86,15 @@
     });
 in {
   options.custom.programs.obs = {
-      enable = lib.mkEnableOption "OBS Studio via Flatpak with plugin management";
-      plugins = {
-        pipewireAudioCapture = {
-          enable = lib.mkEnableOption "PipeWire Audio Capture plugin";
-        };
-        backgroundRemoval = {
-          enable = lib.mkEnableOption "Background Removal plugin";
-        };
+    enable = lib.mkEnableOption "OBS Studio via Flatpak with plugin management";
+    plugins = {
+      pipewireAudioCapture = {
+        enable = lib.mkEnableOption "PipeWire Audio Capture plugin";
       };
+      backgroundRemoval = {
+        enable = lib.mkEnableOption "Background Removal plugin";
+      };
+    };
   };
 
   config = lib.mkIf cfg.enable {

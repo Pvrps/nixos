@@ -7,27 +7,27 @@
   cfg = config.custom.programs.firefox;
 in {
   options.custom.programs.firefox = {
-      enable = lib.mkEnableOption "Firefox browser";
-      profiles = lib.mkOption {
-        type = lib.types.attrsOf lib.types.anything;
-        default = {};
-        description = "Firefox browser profiles configuration";
-      };
-      extensionSettings = lib.mkOption {
-        type = lib.types.attrsOf lib.types.anything;
-        default = {};
-        description = "Firefox browser extension settings";
-      };
-      extensionPolicies = lib.mkOption {
-        type = lib.types.attrsOf lib.types.anything;
-        default = {};
-        description = "Firefox 3rdparty extension policies (e.g. pre-accepting consent dialogs)";
-      };
-      homepage = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = "Firefox browser homepage URL";
-      };
+    enable = lib.mkEnableOption "Firefox browser";
+    profiles = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = {};
+      description = "Firefox browser profiles configuration";
+    };
+    extensionSettings = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = {};
+      description = "Firefox browser extension settings";
+    };
+    extensionPolicies = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = {};
+      description = "Firefox 3rdparty extension policies (e.g. pre-accepting consent dialogs)";
+    };
+    homepage = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Firefox browser homepage URL";
+    };
   };
 
   config = lib.mkIf cfg.enable {

@@ -26,7 +26,7 @@ How it fits together:
 - Hosts enable a profile (`custom.profiles.workstation.enable`) plus their
   genuine deltas. Profiles set everything with `mkDefault`, so any line can be
   overridden per-host.
-- Shared *opinions* (Discord plugin set, Steam millennium plugins, Zen mods,
+- Shared _opinions_ (Discord plugin set, Steam millennium plugins, Zen mods,
   fish aliases) live as **overridable option defaults** inside the program
   modules. A user diverges by overriding the option in their own file — no
   shared file needs editing.
@@ -84,15 +84,15 @@ Secrets are managed with `sops-nix`. Encrypted host secret files live beside eac
 The nightly CI updates branch-tracking flake inputs only. These pins need
 manual attention (each site carries a `MAINTENANCE:` or bump comment):
 
-| Pin | Where | How to bump |
-| --- | --- | --- |
-| arrpc PR #143 commit | `modules/home/programs/arrpc.nix` | `git ls-remote ... refs/pull/143/head` + `nix-prefetch-github`; drop when merged upstream |
-| Millennium plugin zips | `modules/home/programs/steam.nix` | new release URL + `just hash <url>` (nix32 via `nix-prefetch-url`) |
-| OpenCode npm tools (context7, claude-auth) | `modules/home/programs/opencode/package.json` | `just update` handles it |
-| Valkey image digest | `modules/hosts/windwaker/services/immich.nix` | update digest manually |
-| wallpaperengine-gui commit | `modules/home/programs/linux-wallpaperengine.nix` | check nixpkgs first; bump rev+hash |
-| `noctalia` input on `legacy-v4` | `flake.nix` | deliberate; migrating also touches the noctalia plugin manifest |
-| `nix-flatpak` / `lanzaboote` tags | `flake.nix` | bump tag when upstream releases |
+| Pin                                        | Where                                             | How to bump                                                                               |
+| ------------------------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| arrpc PR #143 commit                       | `modules/home/programs/arrpc.nix`                 | `git ls-remote ... refs/pull/143/head` + `nix-prefetch-github`; drop when merged upstream |
+| Millennium plugin zips                     | `modules/home/programs/steam.nix`                 | new release URL + `just hash <url>` (nix32 via `nix-prefetch-url`)                        |
+| OpenCode npm tools (context7, claude-auth) | `modules/home/programs/opencode/package.json`     | `just update` handles it                                                                  |
+| Valkey image digest                        | `modules/hosts/windwaker/services/immich.nix`     | update digest manually                                                                    |
+| wallpaperengine-gui commit                 | `modules/home/programs/linux-wallpaperengine.nix` | check nixpkgs first; bump rev+hash                                                        |
+| `noctalia` input on `legacy-v4`            | `flake.nix`                                       | deliberate; migrating also touches the noctalia plugin manifest                           |
+| `nix-flatpak` / `lanzaboote` tags          | `flake.nix`                                       | bump tag when upstream releases                                                           |
 
 ## Notes
 

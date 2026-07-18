@@ -13,22 +13,28 @@
   modulesDir = toString ../../devenv;
   profileEntries = builtins.attrNames (builtins.readDir modulesDir);
 
-  profilesWithInit = lib.filter (dir:
-    builtins.pathExists "${modulesDir}/${dir}/init.sh"
-  ) profileEntries;
+  profilesWithInit =
+    lib.filter (
+      dir:
+        builtins.pathExists "${modulesDir}/${dir}/init.sh"
+    )
+    profileEntries;
 
   # For each profile with an init.sh, create a dev-init-<lang> binary.
   # The @MODULES_DIR@ placeholder in init.sh is replaced with the absolute
   # path to modules/devenv/ so the script can write correct devenv.yaml imports.
-  initPackages = map (lang:
-    pkgs.writeShellApplication {
-      name = "dev-init-${lang}";
-      runtimeInputs = [pkgs.devenv pkgs.direnv pkgs.git pkgs.gum];
-      text = lib.replaceStrings ["@MODULES_DIR@"] [modulesDir] (
-        builtins.readFile "${modulesDir}/${lang}/init.sh"
-      );
-    }
-  ) profilesWithInit;
+  initPackages =
+    map (
+      lang:
+        pkgs.writeShellApplication {
+          name = "dev-init-${lang}";
+          runtimeInputs = [pkgs.devenv pkgs.direnv pkgs.git pkgs.gum];
+          text = lib.replaceStrings ["@MODULES_DIR@"] [modulesDir] (
+            builtins.readFile "${modulesDir}/${lang}/init.sh"
+          );
+        }
+    )
+    profilesWithInit;
 in {
   options.custom.programs.devenv = {
     enable = lib.mkEnableOption "devenv.sh per-project developer environments";

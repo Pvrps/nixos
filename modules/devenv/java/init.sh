@@ -26,10 +26,10 @@ PROJECT_NAME=$(gum input --placeholder "Project name" --value "$(basename "$PWD"
 
 JDK_VERSION=$(gum choose --header "JDK version" 21 17 11 8)
 case "$JDK_VERSION" in
-  21) JDK_PKG="zulu21" ;;
-  17) JDK_PKG="zulu17" ;;
-  11) JDK_PKG="zulu11" ;;
-  8)  JDK_PKG="zulu8"  ;;
+21) JDK_PKG="zulu21" ;;
+17) JDK_PKG="zulu17" ;;
+11) JDK_PKG="zulu11" ;;
+8) JDK_PKG="zulu8" ;;
 esac
 
 BUILD_TOOL=$(gum choose --header "Build tool" gradle maven)
@@ -40,14 +40,14 @@ PKG_NAME="com.example.$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr -
 # ---------------------------------------------------------------------------
 # devenv.yaml
 # ---------------------------------------------------------------------------
-cat > devenv.yaml <<EOF
+cat >devenv.yaml <<EOF
 imports: [path:${MODULES_DIR}/java]
 EOF
 
 # ---------------------------------------------------------------------------
 # devenv.nix
 # ---------------------------------------------------------------------------
-cat > devenv.nix <<EOF
+cat >devenv.nix <<EOF
 {pkgs, ...}: {
   profile.java = {
     enable = true;
@@ -59,7 +59,7 @@ EOF
 # ---------------------------------------------------------------------------
 # .envrc
 # ---------------------------------------------------------------------------
-cat > .envrc <<'EOF'
+cat >.envrc <<'EOF'
 eval "$(devenv direnvrc)"
 use devenv
 EOF
@@ -67,7 +67,7 @@ EOF
 # ---------------------------------------------------------------------------
 # .gitignore
 # ---------------------------------------------------------------------------
-cat > .gitignore <<'EOF'
+cat >.gitignore <<'EOF'
 # Devenv
 .devenv
 devenv.lock
@@ -87,7 +87,7 @@ EOF
 # .vscode/extensions.json
 # ---------------------------------------------------------------------------
 mkdir -p .vscode
-cat > .vscode/extensions.json <<'EOF'
+cat >.vscode/extensions.json <<'EOF'
 {
   "recommendations": [
     "vscjava.vscode-java-pack",
@@ -105,7 +105,7 @@ EOF
 # justfile
 # ---------------------------------------------------------------------------
 if [ "$BUILD_TOOL" = "gradle" ]; then
-cat > justfile <<EOF
+  cat >justfile <<EOF
 default:
     @just --list
 
@@ -138,7 +138,7 @@ run:
     devenv shell -- ./gradlew run
 EOF
 else
-cat > justfile <<EOF
+  cat >justfile <<EOF
 default:
     @just --list
 
@@ -191,23 +191,23 @@ if [ "$BUILD_TOOL" = "gradle" ]; then
   # The JDK version is determined by devenv (whatever zulu is on PATH).
   gum spin --spinner dot --title "Scaffolding Gradle project..." -- \
     devenv shell -- gradle init \
-      --type java-application \
-      --dsl kotlin \
-      --test-framework junit-jupiter \
-      --project-name "$PROJECT_NAME" \
-      --package "$PKG_NAME" \
-      --use-defaults \
-      --overwrite
+    --type java-application \
+    --dsl kotlin \
+    --test-framework junit-jupiter \
+    --project-name "$PROJECT_NAME" \
+    --package "$PKG_NAME" \
+    --use-defaults \
+    --overwrite
 else
   # Maven: use archetype:generate in batch mode (non-interactive).
   # archetype creates a subdirectory — flatten it into the project root.
   gum spin --spinner dot --title "Scaffolding Maven project..." -- \
     devenv shell -- mvn archetype:generate -B \
-      -DarchetypeGroupId=org.apache.maven.archetypes \
-      -DarchetypeArtifactId=maven-archetype-quickstart \
-      -DgroupId=com.example \
-      -DartifactId="$PROJECT_NAME" \
-      -Dversion=1.0
+    -DarchetypeGroupId=org.apache.maven.archetypes \
+    -DarchetypeArtifactId=maven-archetype-quickstart \
+    -DgroupId=com.example \
+    -DartifactId="$PROJECT_NAME" \
+    -Dversion=1.0
 
   # Move files from the created subdirectory up to the project root
   if [ -d "$PROJECT_NAME" ]; then
