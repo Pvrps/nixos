@@ -6,8 +6,7 @@
 }: let
   cfg = config.custom.programs.easyeffects;
 in {
-  options.custom = {
-    programs.easyeffects = {
+  options.custom.programs.easyeffects = {
       enable = lib.mkEnableOption "EasyEffects audio processor";
       preset = lib.mkOption {
         type = lib.types.str;
@@ -18,7 +17,6 @@ in {
         type = lib.types.str;
         description = "Absolute string path to the EasyEffects preset JSON file";
       };
-    };
   };
 
   config = lib.mkIf cfg.enable {

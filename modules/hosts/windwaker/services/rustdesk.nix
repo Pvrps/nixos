@@ -1,14 +1,17 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   dockerVolumeDir = "/mnt/docker";
 in {
   sops.secrets."rustdesk-env".sopsFile = ./_secrets.yaml;
 
   virtualisation.quadlet.containers = {
-    tailscale-rustdesk = {
-      autoStart = true;
+    tailscale-rustdesk = lib.custom.mkContainer {
+      tz = null;
       containerConfig = {
         image = "tailscale/tailscale:latest";
-        networks = ["lan_bridge"];
         addCapabilities = [
           "NET_ADMIN"
           "NET_RAW"
@@ -32,26 +35,19 @@ in {
           "${dockerVolumeDir}/tailscale-rustdesk:/var/lib/tailscale"
         ];
       };
-      unitConfig.RequiresMountsFor = ["/mnt/docker"];
-      serviceConfig = {
-        Restart = "always";
-        RestartSec = "10";
-      };
     };
 
     # hbbs and hbbr share the tailscale-rustdesk network namespace.
     # Quadlet does not have a first-class option for --network=container:,
     # so it is passed through podmanArgs. No publishPorts here — traffic
     # flows through the tailscale-rustdesk container's network stack.
-    hbbs = {
-      autoStart = true;
+    # networks=[] because the netns is inherited via podmanArgs.
+    hbbs = lib.custom.mkContainer {
+      networks = [];
       containerConfig = {
         image = "rustdesk/rustdesk-server:latest";
         exec = "hbbs";
         podmanArgs = ["--network=container:tailscale-rustdesk"];
-        environments = {
-          TZ = "America/Toronto";
-        };
         volumes = [
           "${dockerVolumeDir}/rustdesk:/root"
         ];
@@ -59,23 +55,15 @@ in {
       unitConfig = {
         After = ["tailscale-rustdesk.service"];
         Requires = ["tailscale-rustdesk.service"];
-        RequiresMountsFor = ["/mnt/docker"];
-      };
-      serviceConfig = {
-        Restart = "always";
-        RestartSec = "10";
       };
     };
 
-    hbbr = {
-      autoStart = true;
+    hbbr = lib.custom.mkContainer {
+      networks = [];
       containerConfig = {
         image = "rustdesk/rustdesk-server:latest";
         exec = "hbbr";
         podmanArgs = ["--network=container:tailscale-rustdesk"];
-        environments = {
-          TZ = "America/Toronto";
-        };
         volumes = [
           "${dockerVolumeDir}/rustdesk:/root"
         ];
@@ -89,11 +77,6 @@ in {
           "tailscale-rustdesk.service"
           "hbbs.service"
         ];
-        RequiresMountsFor = ["/mnt/docker"];
-      };
-      serviceConfig = {
-        Restart = "always";
-        RestartSec = "10";
       };
     };
   };

@@ -1,6 +1,7 @@
 {lib, ...}:
 lib.custom.mkScript {
   name = "hist-clean";
+  optionName = "histClean";
   description = "hist-clean interactive shell history cleaner";
   runtimeInputs = pkgs: with pkgs; [coreutils gawk gnugrep fzf];
   text = ''

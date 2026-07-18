@@ -5,8 +5,7 @@
 }: let
   cfg = config.custom.programs.git;
 in {
-  options.custom = {
-    programs.git = {
+  options.custom.programs.git = {
       enable = lib.mkEnableOption "Git version control";
       userName = lib.mkOption {
         type = lib.types.str;
@@ -24,7 +23,6 @@ in {
         example = ["/persist/etc/nixos"];
         description = "Directories to mark as safe (git safe.directory), e.g. root-owned repos.";
       };
-    };
   };
 
   config = lib.mkIf cfg.enable {

@@ -85,8 +85,7 @@
       pkg = obs-backgroundremoval;
     });
 in {
-  options.custom = {
-    programs.obs = {
+  options.custom.programs.obs = {
       enable = lib.mkEnableOption "OBS Studio via Flatpak with plugin management";
       plugins = {
         pipewireAudioCapture = {
@@ -96,7 +95,6 @@ in {
           enable = lib.mkEnableOption "Background Removal plugin";
         };
       };
-    };
   };
 
   config = lib.mkIf cfg.enable {

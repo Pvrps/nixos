@@ -26,7 +26,7 @@
     };
     discord.enable = true;
     arrpc.enable = true;
-    discord-rpc.enable = true;
+    discordRpc.enable = true;
     bolt.enable = true;
     prismlauncher.enable = true;
 
@@ -36,7 +36,7 @@
     okular.enable = true;
     pinta.enable = true;
 
-    linux-wallpaperengine.enable = true;
+    linuxWallpaperengine.enable = true;
     rustdesk = {
       enable = true;
       autoStart = true;

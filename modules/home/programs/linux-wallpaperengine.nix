@@ -4,7 +4,7 @@
   config,
   ...
 }: let
-  cfg = config.custom.programs.linux-wallpaperengine;
+  cfg = config.custom.programs.linuxWallpaperengine;
 
   wallpaperengine-gui = pkgs.stdenv.mkDerivation {
     pname = "wallpaperengine-gui";
@@ -22,7 +22,7 @@
     ];
   };
 in {
-  options.custom.programs.linux-wallpaperengine.enable =
+  options.custom.programs.linuxWallpaperengine.enable =
     lib.mkEnableOption "linux-wallpaperengine (Wallpaper Engine renderer)";
 
   config = lib.mkIf cfg.enable {
@@ -32,11 +32,11 @@ in {
     in [
       {
         assertion = config.custom.programs.steam.enable;
-        message = "custom.programs.linux-wallpaperengine requires custom.programs.steam.enable = true (Wallpaper Engine workshop assets are provided via Steam).";
+        message = "custom.programs.linuxWallpaperengine requires custom.programs.steam.enable = true (Wallpaper Engine workshop assets are provided via Steam).";
       }
       {
         assertion = noctaliaPath || kdePath;
-        message = "custom.programs.linux-wallpaperengine requires either custom.programs.noctalia.enable (Noctalia plugin) or custom.programs.kde.enable (GUI app).";
+        message = "custom.programs.linuxWallpaperengine requires either custom.programs.noctalia.enable (Noctalia plugin) or custom.programs.kde.enable (GUI app).";
       }
     ];
 

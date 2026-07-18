@@ -11,15 +11,13 @@ in {
     inputs.nix-flatpak.homeManagerModules.nix-flatpak
   ];
 
-  options.custom = {
-    programs.flatpak = {
+  options.custom.programs.flatpak = {
       enable = lib.mkEnableOption "Flatpak via nix-flatpak";
       packages = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [];
         description = "List of Flatpak packages to install";
       };
-    };
   };
 
   config = lib.mkIf cfg.enable {

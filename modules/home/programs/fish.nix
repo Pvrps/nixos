@@ -19,9 +19,9 @@
     (f: "--exclude \"${baseNameOf f}\" \\\n            ")
     persistedFiles;
 in {
-  options.custom = {
-    programs.fish.enable = lib.mkEnableOption "Fish shell";
-    programs.fish.aliases = lib.mkOption {
+  options.custom.programs.fish = {
+    enable = lib.mkEnableOption "Fish shell";
+    aliases = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = {
         cp = "cp -i";

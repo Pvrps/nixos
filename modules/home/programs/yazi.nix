@@ -19,10 +19,8 @@
     });
   };
 in {
-  options.custom = {
-    programs.yazi = {
+  options.custom.programs.yazi = {
       enable = lib.mkEnableOption "Yazi terminal file manager";
-    };
   };
 
   config = lib.mkIf cfg.enable {

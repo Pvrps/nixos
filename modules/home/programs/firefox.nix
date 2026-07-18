@@ -6,8 +6,7 @@
 }: let
   cfg = config.custom.programs.firefox;
 in {
-  options.custom = {
-    programs.firefox = {
+  options.custom.programs.firefox = {
       enable = lib.mkEnableOption "Firefox browser";
       profiles = lib.mkOption {
         type = lib.types.attrsOf lib.types.anything;
@@ -29,7 +28,6 @@ in {
         default = null;
         description = "Firefox browser homepage URL";
       };
-    };
   };
 
   config = lib.mkIf cfg.enable {

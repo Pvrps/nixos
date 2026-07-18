@@ -5,8 +5,7 @@
 }: let
   cfg = config.custom.programs.ssh;
 in {
-  options.custom = {
-    programs.ssh = {
+  options.custom.programs.ssh = {
       enable = lib.mkEnableOption "SSH client configuration";
       githubKeyPath = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
@@ -18,7 +17,6 @@ in {
         default = {};
         description = "Additional SSH host entries";
       };
-    };
   };
 
   config = lib.mkIf cfg.enable {

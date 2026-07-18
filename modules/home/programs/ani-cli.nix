@@ -4,7 +4,7 @@
   config,
   ...
 }: let
-  cfg = config.custom.programs.ani-cli;
+  cfg = config.custom.programs.aniCli;
 
   # mpv wrapper that resumes an episode at the last watched timestamp.
   #
@@ -76,7 +76,7 @@
     '';
   };
 in {
-  options.custom.programs.ani-cli = {
+  options.custom.programs.aniCli = {
     enable = lib.mkEnableOption "ani-cli anime streaming tool";
 
     quality = lib.mkOption {

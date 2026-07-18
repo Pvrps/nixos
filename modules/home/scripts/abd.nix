@@ -1,13 +1,8 @@
-{
-  pkgs,
-  lib,
-  config,
-  ...
-}: let
-  cfg = config.custom.scripts.abd;
-
+# abd — Audiobook Downloader: scrape a supported page, download the MP3s and
+# convert them to a single M4B (via the 2m4b script).
+{lib, ...}: let
   # Python strings use double quotes throughout to avoid Nix '' string conflicts
-  extractorPy = pkgs.writeText "abd-extractor.py" ''
+  extractorSrc = ''
     import re
     import sys
     import html
@@ -53,12 +48,19 @@
     for u in mp3s:
         print(f"MP3={u}")
   '';
-
-  abd-tool = pkgs.writeShellApplication {
+in
+  lib.custom.mkScript {
     name = "abd";
-    runtimeInputs = with pkgs; [curl python3 (ffmpeg-full.override {withUnfree = true;}) coreutils gnugrep gnused];
-    text = ''
-      EXTRACTOR="${extractorPy}"
+    description = "Audiobook Downloader - download and convert audiobooks to M4B";
+    runtimeInputs = pkgs: with pkgs; [curl python3 (ffmpeg-full.override {withUnfree = true;}) coreutils gnugrep gnused];
+    extraAssertions = config: [
+      {
+        assertion = config.custom.scripts."2m4b".enable;
+        message = "abd requires the 2m4b script (custom.scripts.\"2m4b\".enable = true).";
+      }
+    ];
+    text = {pkgs, ...}: ''
+      EXTRACTOR="${pkgs.writeText "abd-extractor.py" extractorSrc}"
       UA="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0"
 
       usage() {
@@ -166,18 +168,4 @@
       echo ""
       echo "Done: $FINAL_OUTPUT"
     '';
-  };
-in {
-  options.custom.scripts.abd.enable = lib.mkEnableOption "Audiobook Downloader - download and convert audiobooks to M4B";
-
-  config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.custom.scripts."2m4b".enable;
-        message = "abd requires the 2m4b script (custom.scripts.\"2m4b\".enable = true).";
-      }
-    ];
-
-    home.packages = [abd-tool];
-  };
-}
+  }

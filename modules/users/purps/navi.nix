@@ -113,15 +113,15 @@
     steam.enable = true;
     discord.enable = true;
     arrpc.enable = true;
-    discord-rpc.enable = true;
-    discord-rpc-noctalia.enable = true;
+    discordRpc.enable = true;
+    discordRpcNoctalia.enable = true;
     bolt.enable = true;
     prismlauncher.enable = true;
     osu.enable = true;
 
     stremio.enable = true;
     clapper.enable = true;
-    ani-cli.enable = true;
+    aniCli.enable = true;
     spotify.enable = true;
     okular.enable = true;
     pinta.enable = true;
@@ -200,9 +200,9 @@
       edit.enable = true;
       ocr.enable = true;
     };
-    hist-clean.enable = true;
+    histClean.enable = true;
     gitingest.enable = true;
-    ports-summary.enable = true;
+    portsSummary.enable = true;
     dir2clip.enable = true;
     "2m4b".enable = true;
     abd.enable = true;

@@ -4,7 +4,7 @@
   lib,
   ...
 }: let
-  cfg = config.custom.programs.discord-rpc;
+  cfg = config.custom.programs.discordRpc;
 
   # Python daemon: connects to arRPC bridge WebSocket (ws://127.0.0.1:1337),
   # sends the active profile's activity JSON, and keeps the connection alive
@@ -29,7 +29,7 @@
     text = builtins.readFile ./discord-rpc/drpc.sh;
   };
 in {
-  options.custom.programs.discord-rpc = {
+  options.custom.programs.discordRpc = {
     enable = lib.mkEnableOption "Custom Discord RPC CLI with profiles via arRPC";
   };
 
@@ -37,7 +37,7 @@ in {
     assertions = [
       {
         assertion = config.custom.programs.arrpc.enable;
-        message = "custom.programs.discord-rpc requires custom.programs.arrpc.enable = true.";
+        message = "custom.programs.discordRpc requires custom.programs.arrpc.enable = true.";
       }
     ];
 

@@ -1,4 +1,8 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   dockerVolumeDir = "/mnt/docker";
 in {
   sops.secrets."network-env".sopsFile = ./_secrets.yaml;
@@ -28,12 +32,11 @@ in {
     };
 
     containers = {
-      cloudflared-tunnel = {
-        autoStart = true;
+      cloudflared-tunnel = lib.custom.mkContainer {
+        tz = null;
         containerConfig = {
           image = "cloudflare/cloudflared";
           exec = "tunnel run";
-          networks = ["lan_bridge"];
           environmentFiles = [config.sops.secrets."network-env".path];
           environments = {
             TUNNEL_DNS_UPSTREAM = "1.1.1.2";
@@ -42,18 +45,12 @@ in {
           };
           volumes = ["${dockerVolumeDir}/cloudflared:/etc/cloudflared"];
         };
-        unitConfig.RequiresMountsFor = ["/mnt/docker"];
-        serviceConfig = {
-          Restart = "always";
-          RestartSec = "10";
-        };
       };
 
-      nginx-proxy-manager = {
-        autoStart = true;
+      nginx-proxy-manager = lib.custom.mkContainer {
+        tz = null;
         containerConfig = {
           image = "jc21/nginx-proxy-manager:latest";
-          networks = ["lan_bridge"];
           publishPorts = [
             "80:80"
             "443:443"
@@ -67,19 +64,12 @@ in {
         unitConfig = {
           After = ["cloudflared-tunnel.service"];
           Requires = ["cloudflared-tunnel.service"];
-          RequiresMountsFor = ["/mnt/docker"];
-        };
-        serviceConfig = {
-          Restart = "always";
-          RestartSec = "10";
         };
       };
 
-      pihole = {
-        autoStart = true;
+      pihole = lib.custom.mkContainer {
         containerConfig = {
           image = "pihole/pihole:latest";
-          networks = ["lan_bridge"];
           publishPorts = [
             "10.0.10.16:53:53/tcp"
             "10.0.10.16:53:53/udp"
@@ -90,7 +80,6 @@ in {
           ];
           environmentFiles = [config.sops.secrets."network-env".path];
           environments = {
-            TZ = "America/Toronto";
             FTLCONF_dns_upstreams = "1.1.1.2";
           };
           volumes = [
@@ -98,23 +87,14 @@ in {
             "${dockerVolumeDir}/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
           ];
         };
-        unitConfig.RequiresMountsFor = ["/mnt/docker"];
-        serviceConfig = {
-          Restart = "always";
-          RestartSec = "10";
-        };
       };
 
-      playit-agent = {
-        autoStart = true;
+      playit-agent = lib.custom.mkContainer {
+        tz = null;
+        requiresMounts = false;
         containerConfig = {
           image = "ghcr.io/playit-cloud/playit-agent:0.17";
-          networks = ["lan_bridge"];
           environmentFiles = [config.sops.secrets."playit-env".path];
-        };
-        serviceConfig = {
-          Restart = "always";
-          RestartSec = "10";
         };
       };
     };

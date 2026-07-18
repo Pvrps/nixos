@@ -36,7 +36,9 @@
   #   optionName    - dotted option path under custom.scripts (default: name)
   #   description   - mkEnableOption description
   #   runtimeInputs - list of packages (function pkgs -> [pkg]) on the PATH
-  #   text          - the shell script body
+  #   text          - the shell script body; either a string or a function
+  #                   ({pkgs, config}: "...") for scripts that embed store
+  #                   paths or option values
   #   requiresWayland - bool, adds the Wayland assertion (default false)
   #   keybind       - nullable niri keybind line, e.g. ''Mod+Shift+O { spawn "ocr-tool"; }''
   #   extraConfig   - extra home-manager config merged into the module
@@ -66,7 +68,11 @@
       }: let
         cfg = lib.getAttrFromPath (lib.splitString "." optionName) config.custom.scripts;
         tool = pkgs.writeShellApplication {
-          inherit name text;
+          inherit name;
+          text =
+            if lib.isFunction text
+            then text {inherit pkgs config;}
+            else text;
           runtimeInputs = runtimeInputs pkgs;
         };
       in {

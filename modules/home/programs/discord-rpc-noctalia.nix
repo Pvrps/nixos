@@ -3,21 +3,21 @@
   lib,
   ...
 }: let
-  cfg = config.custom.programs.discord-rpc-noctalia;
+  cfg = config.custom.programs.discordRpcNoctalia;
 in {
-  options.custom.programs.discord-rpc-noctalia = {
+  options.custom.programs.discordRpcNoctalia = {
     enable = lib.mkEnableOption "Noctalia bar widget + panel for Discord RPC management";
   };
 
   config = lib.mkIf cfg.enable {
     assertions = [
       {
-        assertion = config.custom.programs.discord-rpc.enable;
-        message = "custom.programs.discord-rpc-noctalia requires custom.programs.discord-rpc.enable = true.";
+        assertion = config.custom.programs.discordRpc.enable;
+        message = "custom.programs.discordRpcNoctalia requires custom.programs.discordRpc.enable = true.";
       }
       {
         assertion = config.custom.programs.noctalia.enable;
-        message = "custom.programs.discord-rpc-noctalia requires custom.programs.noctalia.enable = true.";
+        message = "custom.programs.discordRpcNoctalia requires custom.programs.noctalia.enable = true.";
       }
     ];
 

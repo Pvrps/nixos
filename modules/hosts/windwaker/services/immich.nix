@@ -1,18 +1,19 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   dockerVolumeDir = "/mnt/docker";
 in {
   sops.secrets."immich-env".sopsFile = ./_secrets.yaml;
 
   virtualisation.quadlet = {
     containers = {
-      immich-server = {
-        autoStart = true;
+      immich-server = lib.custom.mkContainer {
+        tz = null;
+        networks = ["immich_internal" "lan_bridge"];
         containerConfig = {
           image = "ghcr.io/immich-app/immich-server:release";
-          networks = [
-            "immich_internal"
-            "lan_bridge"
-          ];
           publishPorts = ["62283:2283"];
           environments = {
             IMMICH_HOST = "0.0.0.0";
@@ -31,44 +32,34 @@ in {
             "redis.service"
             "database.service"
           ];
-          RequiresMountsFor = ["/mnt/docker"];
-        };
-        serviceConfig = {
-          Restart = "always";
-          RestartSec = "10";
         };
       };
 
-      immich-machine-learning = {
-        autoStart = true;
+      immich-machine-learning = lib.custom.mkContainer {
+        tz = null;
+        requiresMounts = false;
+        networks = ["immich_internal"];
         containerConfig = {
           image = "ghcr.io/immich-app/immich-machine-learning:release";
-          networks = ["immich_internal"];
           volumes = ["model-cache:/cache"];
         };
-        serviceConfig = {
-          Restart = "always";
-          RestartSec = "10";
-        };
       };
 
-      redis = {
-        autoStart = true;
+      redis = lib.custom.mkContainer {
+        tz = null;
+        requiresMounts = false;
+        networks = ["immich_internal"];
         containerConfig = {
+          # MAINTENANCE: image pinned by digest; bump manually.
           image = "docker.io/valkey/valkey:8-bookworm@sha256:fec42f399876eb6faf9e008570597741c87ff7662a54185593e74b09ce83d177";
-          networks = ["immich_internal"];
-        };
-        serviceConfig = {
-          Restart = "always";
-          RestartSec = "10";
         };
       };
 
-      database = {
-        autoStart = true;
+      database = lib.custom.mkContainer {
+        tz = null;
+        networks = ["immich_internal"];
         containerConfig = {
           image = "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0";
-          networks = ["immich_internal"];
           environmentFiles = [config.sops.secrets."immich-env".path];
           environments = {
             POSTGRES_INITDB_ARGS = "--data-checksums";
@@ -77,11 +68,6 @@ in {
           volumes = [
             "${dockerVolumeDir}/immich/postgres:/var/lib/postgresql/data"
           ];
-        };
-        unitConfig.RequiresMountsFor = ["/mnt/docker"];
-        serviceConfig = {
-          Restart = "always";
-          RestartSec = "10";
         };
       };
     };

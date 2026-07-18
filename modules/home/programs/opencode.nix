@@ -11,8 +11,7 @@
   # Write the config file if any feature that needs it is enabled
   needsConfigFile = context7.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
 in {
-  options.custom = {
-    programs.opencode = {
+  options.custom.programs.opencode = {
       enable = lib.mkEnableOption "OpenCode AI coding assistant";
       context7 = {
         enable = lib.mkEnableOption "Context7 MCP Server";
@@ -31,7 +30,6 @@ in {
       mcp-nixos = {
         enable = lib.mkEnableOption "MCP-NixOS server for NixOS packages, options, and resources";
       };
-    };
   };
 
   config = lib.mkIf cfg.enable (let

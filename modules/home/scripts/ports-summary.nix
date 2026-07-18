@@ -1,6 +1,7 @@
 {lib, ...}:
 lib.custom.mkScript {
   name = "ports-summary";
+  optionName = "portsSummary";
   description = "ports-summary open port viewer";
   runtimeInputs = pkgs: with pkgs; [lsof coreutils gawk gnugrep];
   text = ''
