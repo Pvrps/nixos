@@ -107,16 +107,6 @@ in {
 
     custom.programs.flatpak.packages = lib.mkAfter ["com.obsproject.Studio"];
 
-    # Clear stale latency env vars from previous config iterations. These
-    # inflated the graph-wide quantum to 2048 whenever OBS was open, killing
-    # low-latency playback for rhythm games. OBS inherits the system quantum.
-    home.activation.obsClearLatencyEnv = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      run ${pkgs.flatpak}/bin/flatpak override --user \
-        --unset-env=PULSE_LATENCY_MSEC \
-        --unset-env=PIPEWIRE_LATENCY \
-        com.obsproject.Studio
-    '';
-
     # Expose CUDA runtime libs to the Flatpak sandbox so onnxruntime can
     # dlopen() libonnxruntime_providers_cuda.so at runtime.
     # LD_PRELOAD ensures libnvrtc and providers_shared are in the global symbol

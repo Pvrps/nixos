@@ -17,11 +17,12 @@
     src = pkgs.fetchFromGitHub {
       owner = "OpenAsar";
       repo = "arrpc";
-      # Pinned to the exact commit matching the hash below. refs/pull/143/head
-      # has since moved — using the mutable ref would cause a hash mismatch on
-      # the next fetch. Update rev+hash together when bumping.
-      rev = "95cf61d2e24ca63111bcf0d45d8338d94743cd31";
-      hash = "sha256-TBVrQN/QoBRKZOgN8Yr0gP0Fn0M+BeojoL3RpKOo5NU=";
+      # MAINTENANCE: pinned to the head of refs/pull/143/head at last bump.
+      # Update rev+hash together (git ls-remote https://github.com/OpenAsar/arrpc
+      # refs/pull/143/head; nix-prefetch-github OpenAsar arrpc --rev <rev>).
+      # Drop this override entirely once PR #143 lands in nixpkgs' arrpc.
+      rev = "d2ecb61697f3986149350078dd9853592a9086ea";
+      hash = "sha256-wDNt9kTccDTn1nQb8KCMhrSJ3YPfhxikuZBzBV8/EWo=";
     };
 
     patches = [../patches/arrpc.patch];

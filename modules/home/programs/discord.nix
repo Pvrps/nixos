@@ -113,9 +113,6 @@ in {
   config = lib.mkIf cfg.enable {
     programs.nixcord = {
       enable = true;
-      #equibop.enable = true;
-      #equibop.package = fixed-equibop;
-
       discord.enable = false;
       vesktop = {
         enable = true;

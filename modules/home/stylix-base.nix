@@ -59,10 +59,9 @@ in {
           base0F = "A08AA2"; # pinkSaturated   (Misc / Numbers)
         };
 
-        image = pkgs.fetchurl {
-          url = "https://github.com/noctalia-dev/noctalia/blob/legacy-v4/Assets/Wallpaper/noctalia.png?raw=true";
-          sha256 = "sha256-Qq6Qbcs8ngDCGZs9C4SWhI2P9/gDCirx11VGrbYmWb4=";
-        };
+        # Vendored from noctalia's legacy-v4 branch so theming doesn't depend
+        # on an upstream branch URL staying alive.
+        image = ./assets/noctalia-wallpaper.png;
 
         polarity = "dark";
 

@@ -129,12 +129,11 @@
   # home-manager program.
   #
   # The file is rewritten whenever it is missing OR does not contain the
-  # expected custom-rendezvous-server value. Previously this was write-once
-  # (only if absent), which silently skipped hosts where RustDesk had already
-  # created a default config pointing at the public rs-ny.rustdesk.com server
-  # (the ciela/inori failure mode, and why mickey needed manual toml edits).
-  # When the server value is already correct we leave the file alone so
-  # RustDesk keeps ownership of its other runtime settings.
+  # expected custom-rendezvous-server value (must be rewrite-if-wrong, not
+  # write-once: RustDesk creates a default config pointing at the public
+  # rs-ny.rustdesk.com server if it starts first). When the server value is
+  # already correct we leave the file alone so RustDesk keeps ownership of
+  # its other runtime settings.
   #
   #   configFile  - target RustDesk2.toml path
   #   serverFile  - file containing the relay/rendezvous address
@@ -172,7 +171,7 @@
   # config loader has decrypt-or-original semantics, so it accepts the value
   # and re-encrypts it on its next save. This is the only reliable headless
   # mechanism: `rustdesk --password` requires root AND an "installed" layout
-  # and silently exits 0 without doing anything otherwise (bit us on ciela).
+  # and silently exits 0 without doing anything otherwise.
   #
   # Only the `password` line is touched; the rest of RustDesk.toml (client
   # identity keypair, salt, ...) is preserved. Runs before each service start
@@ -277,9 +276,8 @@
       "unitConfig"
       "autoStart"
     ];
-    # Always carry the caller's environments through; layer TZ on top only when
-    # a timezone is requested. (A previous version only kept environments when
-    # tz != null, silently dropping PUID/PGID/etc. on tz = null containers.)
+    # Always carry the caller's environments through; layer TZ on top only
+    # when a timezone is requested (environments must survive tz = null).
     mergedEnvironments =
       lib.optionalAttrs (tz != null) {TZ = tz;}
       // (containerConfig.environments or {});

@@ -10,6 +10,10 @@
 
   # Write the config file if any feature that needs it is enabled
   needsConfigFile = context7.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
+
+  # Single source of truth for pinned npm tool versions: package.json,
+  # which `just update` bumps (and which also feeds the store-built bundle).
+  npmDeps = (builtins.fromJSON (builtins.readFile ./opencode/package.json)).dependencies;
 in {
   options.custom.programs.opencode = {
       enable = lib.mkEnableOption "OpenCode AI coding assistant";
@@ -79,7 +83,10 @@ in {
               "$schema" = "https://opencode.ai/config.json";
             }
             // lib.optionalAttrs claudeAuth.enable {
-              plugin = ["opencode-claude-auth@1.5.4"];
+              # OpenCode installs npm plugins itself at startup (cached in
+              # ~/.cache/opencode); the version tracks package.json so
+              # `just update` bumps it.
+              plugin = ["opencode-claude-auth@${npmDeps."opencode-claude-auth"}"];
             }
             // lib.optionalAttrs (context7.enable || cfg.mcp-nixos.enable) {
               mcp =

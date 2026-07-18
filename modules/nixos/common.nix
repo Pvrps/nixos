@@ -1,7 +1,5 @@
-# Common system base, injected into every host by mkHost (see flake.nix).
-# Holds settings that were previously copy-pasted into each host's
-# default.nix / users.nix: nh, fish, immutable users, disabled root password,
-# the sops age key location, and the per-host default sops file convention.
+# Common system base for every host: nh, fish, immutable users, disabled
+# root password, sops age key location, and the per-host sops file convention.
 {
   lib,
   hostName,
