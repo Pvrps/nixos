@@ -70,7 +70,7 @@
     # purps can capture her voice in OBS without unmuting her on Discord
     # (she stays muted there to avoid a room-echo loop for remote friends).
     micStream = {
-      enable = false;
+      enable = true;
       mode = "sender";
       sourceNode = "easyeffects_source";
       remoteHost = "navi";

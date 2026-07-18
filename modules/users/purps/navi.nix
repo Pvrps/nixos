@@ -157,13 +157,14 @@
     };
     openrgb.enable = true;
 
-    # Receives ciela's mic stream into a "ciela-inori-mic" PipeWire node, which
-    # OBS's PipeWire Audio Capture plugin can pick up as an independent audio source.
+    # Receives ciela's mic stream as a "ciela-inori-mic" PipeWire source node,
+    # which OBS's PipeWire Audio Capture plugin can pick up as an independent
+    # audio source.
     micStream = {
       enable = true;
       mode = "receiver";
-      sinkNode = "ciela-inori-mic";
-      sinkDescription = "Ciela (Inori) Mic";
+      nodeName = "ciela-inori-mic";
+      nodeDescription = "Ciela (Inori) Mic";
     };
     liquidctl = {
       enable = true;

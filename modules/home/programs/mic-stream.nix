@@ -1,32 +1,33 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }: let
   cfg = config.custom.programs.micStream;
-
-  endpointArgs = host: ''-s rtp+rs8m://${host}:${toString cfg.ports.source} -r rs8m://${host}:${toString cfg.ports.repair} -c rtcp://${host}:${toString cfg.ports.control}'';
 in {
   options.custom.programs.micStream = {
-    enable = lib.mkEnableOption "roc-toolkit based network microphone stream (send or receive a mic over the LAN/Tailscale into PipeWire)";
+    enable = lib.mkEnableOption "network microphone stream over PipeWire's native ROC modules (send or receive a mic over the LAN/Tailscale)";
 
     mode = lib.mkOption {
       type = lib.types.enum ["sender" "receiver"];
       description = ''
-        "sender" captures a local PipeWire/PulseAudio source (see sourceNode) and
-        streams it to remoteHost. "receiver" listens for an incoming stream and
-        plays it into a dedicated null-sink (see sinkNode) that shows up as its
-        own node in the PipeWire graph (e.g. for OBS's PipeWire Audio Capture).
+        "sender" loads module-roc-sink plus a loopback that captures sourceNode
+        into it, streaming to remoteHost. "receiver" loads module-roc-source,
+        which shows up as a real Audio/Source node (see nodeName) in the
+        PipeWire graph (e.g. for OBS's PipeWire Audio Capture).
+
+        Both ends run inside the PipeWire daemon itself (realtime-scheduled via
+        rtkit), unlike external roc-send/roc-recv clients which can be starved
+        by CPU-heavy games and glitch the whole audio graph.
       '';
     };
 
     sourceNode = lib.mkOption {
       type = lib.types.str;
       description = ''
-        Sender-only. Name of the PulseAudio/PipeWire source node to capture,
-        passed to roc-send as `pulse://<sourceNode>` (e.g. "easyeffects_source"
-        to send EasyEffects' processed mic output).
+        Sender-only. node.name of the PipeWire source to capture, used as the
+        loopback's target.object (e.g. "easyeffects_source" to send
+        EasyEffects' processed mic output).
       '';
     };
 
@@ -35,17 +36,20 @@ in {
       description = "Sender-only. Hostname (e.g. Tailscale MagicDNS name) or IP of the receiver.";
     };
 
-    sinkNode = lib.mkOption {
+    nodeName = lib.mkOption {
       type = lib.types.str;
-      description = ''
-        Receiver-only. node.name of the null-sink created to receive the stream,
-        and the name roc-recv plays into via `pulse://<sinkNode>`.
-      '';
+      description = "Receiver-only. node.name of the Audio/Source node created by module-roc-source.";
     };
 
-    sinkDescription = lib.mkOption {
+    nodeDescription = lib.mkOption {
       type = lib.types.str;
       description = "Receiver-only. Human-readable node.description shown in audio pickers (e.g. OBS's source list).";
+    };
+
+    latencyMsec = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 100;
+      description = "Receiver-only. Target network latency in ms (jitter buffer). Higher is more robust, lower is snappier.";
     };
 
     # Defaults are shared by sender and receiver ends; the receiving host must
@@ -70,59 +74,71 @@ in {
   };
 
   config = lib.mkIf cfg.enable (lib.mkMerge [
-    {
-      home.packages = [pkgs.roc-toolkit];
-    }
-
     (lib.mkIf (cfg.mode == "sender") {
-      systemd.user.services.roc-send = {
-        Unit = {
-          Description = "roc-send: stream ${cfg.sourceNode} to ${cfg.remoteHost}";
-          After = ["pipewire-pulse.socket"];
-          Wants = ["pipewire-pulse.socket"];
-        };
-        Service = {
-          ExecStart = "${pkgs.roc-toolkit}/bin/roc-send -i pulse://${cfg.sourceNode} ${endpointArgs cfg.remoteHost}";
-          Restart = "on-failure";
-          RestartSec = "2s";
-        };
-        Install = {
-          WantedBy = ["default.target"];
-        };
-      };
-    })
-
-    (lib.mkIf (cfg.mode == "receiver") {
-      xdg.configFile."pipewire/pipewire.conf.d/94-${cfg.sinkNode}.conf".text = ''
-        context.objects = [
+      # module-roc-sink creates a sink node that streams whatever is played
+      # into it; the loopback pins the mic (sourceNode) to that sink. Both run
+      # in-daemon, so game load can't starve the stream and xrun the graph.
+      xdg.configFile."pipewire/pipewire.conf.d/94-mic-stream-send.conf".text = ''
+        context.modules = [
           {
-            factory = adapter
+            name = libpipewire-module-roc-sink
             args = {
-              factory.name    = support.null-audio-sink
-              node.name       = "${cfg.sinkNode}"
-              node.description = "${cfg.sinkDescription}"
-              media.class     = "Audio/Sink"
-              audio.position  = "FL,FR"
+              fec.code = rs8m
+              remote.ip = "${cfg.remoteHost}"
+              remote.source.port = ${toString cfg.ports.source}
+              remote.repair.port = ${toString cfg.ports.repair}
+              remote.control.port = ${toString cfg.ports.control}
+              sink.props = {
+                node.name = "mic-stream-roc-sink"
+                node.description = "Mic Stream (ROC send to ${cfg.remoteHost})"
+                audio.position = [ FL FR ]
+              }
+            }
+          }
+          {
+            name = libpipewire-module-loopback
+            args = {
+              node.description = "Mic Stream loopback"
+              capture.props = {
+                node.name = "mic-stream-loopback-capture"
+                node.passive = true
+                target.object = "${cfg.sourceNode}"
+                stream.dont-remix = true
+              }
+              playback.props = {
+                node.name = "mic-stream-loopback-playback"
+                target.object = "mic-stream-roc-sink"
+                node.dont-reconnect = true
+              }
             }
           }
         ]
       '';
+    })
 
-      systemd.user.services.roc-recv = {
-        Unit = {
-          Description = "roc-recv: receive mic stream into ${cfg.sinkNode}";
-          After = ["pipewire-pulse.socket"];
-          Wants = ["pipewire-pulse.socket"];
-        };
-        Service = {
-          ExecStart = "${pkgs.roc-toolkit}/bin/roc-recv -o pulse://${cfg.sinkNode} -s rtp+rs8m://0.0.0.0:${toString cfg.ports.source} -r rs8m://0.0.0.0:${toString cfg.ports.repair} -c rtcp://0.0.0.0:${toString cfg.ports.control}";
-          Restart = "on-failure";
-          RestartSec = "2s";
-        };
-        Install = {
-          WantedBy = ["default.target"];
-        };
-      };
+    (lib.mkIf (cfg.mode == "receiver") {
+      # module-roc-source creates a real Audio/Source node, directly usable as
+      # a mic-like input in OBS -- no null-sink + roc-recv pair needed.
+      xdg.configFile."pipewire/pipewire.conf.d/94-mic-stream-recv.conf".text = ''
+        context.modules = [
+          {
+            name = libpipewire-module-roc-source
+            args = {
+              fec.code = rs8m
+              local.ip = 0.0.0.0
+              local.source.port = ${toString cfg.ports.source}
+              local.repair.port = ${toString cfg.ports.repair}
+              local.control.port = ${toString cfg.ports.control}
+              sess.latency.msec = ${toString cfg.latencyMsec}
+              source.props = {
+                node.name = "${cfg.nodeName}"
+                node.description = "${cfg.nodeDescription}"
+                audio.position = [ FL FR ]
+              }
+            }
+          }
+        ]
+      '';
     })
   ]);
 }
