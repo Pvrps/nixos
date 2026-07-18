@@ -3,8 +3,6 @@
   osConfig,
   ...
 }: {
-  imports = [];
-
   home = {
     username = "purps";
     homeDirectory = "/home/purps";
@@ -26,14 +24,7 @@
   custom.programs = {
     helix.enable = true;
     yazi.enable = true;
-    fish = {
-      enable = true;
-      aliases = {
-        cp = "cp -i";
-        mv = "mv -i";
-        mkdir = "mkdir -p";
-      };
-    };
+    fish.enable = true;
     git = {
       enable = true;
       userName = "purps";

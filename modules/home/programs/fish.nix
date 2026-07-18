@@ -23,8 +23,12 @@ in {
     programs.fish.enable = lib.mkEnableOption "Fish shell";
     programs.fish.aliases = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
-      default = {};
-      description = "Custom aliases for fish shell";
+      default = {
+        cp = "cp -i";
+        mv = "mv -i";
+        mkdir = "mkdir -p";
+      };
+      description = "Custom aliases for fish shell. Override per-user to diverge from the shared defaults.";
     };
   };
 

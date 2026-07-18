@@ -48,17 +48,22 @@ in {
       description = "Receiver-only. Human-readable node.description shown in audio pickers (e.g. OBS's source list).";
     };
 
+    # Defaults are shared by sender and receiver ends; the receiving host must
+    # allow these UDP ports on its firewall (see navi's host config).
     ports = {
       source = lib.mkOption {
         type = lib.types.port;
+        default = 10001;
         description = "UDP port for the RTP source (audio) endpoint.";
       };
       repair = lib.mkOption {
         type = lib.types.port;
+        default = 10002;
         description = "UDP port for the FEC repair endpoint.";
       };
       control = lib.mkOption {
         type = lib.types.port;
+        default = 10003;
         description = "UDP port for the RTCP control endpoint.";
       };
     };

@@ -30,16 +30,20 @@ in {
           };
         };
       });
-      default = {};
-      example = lib.literalExpression ''
-        {
-          extendium = {
-            url = "https://github.com/.../Extendium-plugin-1.1.1.zip";
-            sha256 = "...";
-          };
-        }
-      '';
-      description = "Millennium plugins to install, keyed by plugin directory name under ~/.local/share/millennium/plugins.";
+      # Shared household plugin set. Setting this option in a user file
+      # replaces the whole set — per-user divergence is one override away.
+      # MAINTENANCE: version-pinned release zips; bump url+sha256 together.
+      default = {
+        extendium = {
+          url = "https://github.com/BossSloth/Extendium/releases/download/v1.1.1/Extendium-plugin-1.1.1.zip";
+          sha256 = "0dg7q27ppzri6vqk24s1v6d6q8d0iicw3igdqc55pc8g050v1pfx";
+        };
+        achievement-groups = {
+          url = "https://github.com/BossSloth/SteamHunter-plugin/releases/download/v2.0.2/Achievement-Groups-plugin-2.0.2.zip";
+          sha256 = "18g921w6idswwvbha9dyszki60pv1pvhlzsi817ddps8pifhwpwj";
+        };
+      };
+      description = "Millennium plugins to install, keyed by plugin directory name under ~/.local/share/millennium/plugins. Defaults to the shared household set.";
     };
   };
 

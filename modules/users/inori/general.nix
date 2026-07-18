@@ -1,6 +1,4 @@
 {pkgs, ...}: {
-  imports = [];
-
   home = {
     username = "inori";
     homeDirectory = "/home/inori";
@@ -14,14 +12,7 @@
   };
 
   custom.programs = {
-    fish = {
-      enable = true;
-      aliases = {
-        cp = "cp -i";
-        mv = "mv -i";
-        mkdir = "mkdir -p";
-      };
-    };
+    fish.enable = true;
     starship.enable = true;
   };
 }
