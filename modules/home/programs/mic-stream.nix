@@ -131,6 +131,10 @@ in {
               local.control.port = ${toString cfg.ports.control}
               sess.latency.msec = ${toString cfg.latencyMsec}
               source.props = {
+                # Without this the module defaults to a playback stream that
+                # plays the received audio out the default sink; we want a
+                # virtual mic-like source that OBS can capture instead.
+                media.class = "Audio/Source"
                 node.name = "${cfg.nodeName}"
                 node.description = "${cfg.nodeDescription}"
                 audio.position = [ FL FR ]
