@@ -27,6 +27,13 @@ in {
 
     home.packages = [pkgs.easyeffects];
 
+    # DeepFilterNet's worker runs as a plain SCHED_OTHER thread; under
+    # full CPU load (e.g. Overwatch) it falls behind realtime (RTF > 1)
+    # and the whole graph crackles. A negative nice keeps it scheduled
+    # ahead of game threads. Requires the RLIMIT_NICE bump granted by
+    # security.pam.loginLimits in modules/nixos/audio.nix.
+    systemd.user.services.easyeffects.Service.Nice = -11;
+
     custom.programs.niri.startupCommands = lib.mkIf config.custom.programs.niri.enable [
       ''"bash" "-c" "for i in {1..20}; do ${pkgs.pulseaudio}/bin/pactl list short sources | grep -q 'easyeffects_source' && { ${pkgs.pulseaudio}/bin/pactl set-default-source easyeffects_source; break; }; sleep 0.5; done"''
     ];

@@ -31,6 +31,19 @@ in {
     (lib.mkIf cfg.lowLatency.enable {
       security.rtkit.enable = true;
 
+      # Allow user services (EasyEffects) to raise their scheduling
+      # priority to Nice=-11 so DSP worker threads (DeepFilterNet) keep
+      # up when a game saturates the CPU. Without this, systemd --user
+      # cannot apply a negative Nice= (RLIMIT_NICE defaults to 0).
+      security.pam.loginLimits = [
+        {
+          domain = "@users";
+          item = "nice";
+          type = "-";
+          value = "-11";
+        }
+      ];
+
       services.pipewire = {
         wireplumber = {
           enable = true;
@@ -60,6 +73,11 @@ in {
               "default.clock.quantum" = 512;
               "default.clock.min-quantum" = 512;
               "default.clock.max-quantum" = 2048;
+              # Run two RT data loops so a heavy filter chain (e.g.
+              # DeepFilterNet on the mic path, kept hot 24/7 by roc-send)
+              # cannot stall the output driver's cycle and crackle all
+              # audio system-wide. Zero latency cost.
+              "context.num-data-loops" = 2;
             };
           };
           "93-virtual-cable" = {
