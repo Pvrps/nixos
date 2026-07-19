@@ -8,7 +8,7 @@
   hasServer = cfg.serverFile != null && cfg.keyFile != null;
 in {
   options.custom.services.rustdesk = {
-    enable = lib.mkEnableOption "RustDesk system-level daemon (pre-login access)";
+    enable = lib.mkEnableOption "RustDesk system-level daemon (pre-login access and Wayland input control)";
     serverFile = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
@@ -45,8 +45,15 @@ in {
       };
     };
 
+    # Runs `rustdesk --service` as root (upstream's packaging model). The
+    # daemon watches logind sessions and spawns the per-session server as
+    # the logged-in user (so Wayland screen capture still goes through the
+    # user's desktop portal), while providing the privileged uinput IPC
+    # services required for keyboard/mouse injection on Wayland. Without
+    # this daemon, a plain user-mode `rustdesk --server` on Wayland is
+    # view-only: input events are silently dropped.
     systemd.services.rustdesk = {
-      description = "RustDesk system daemon (pre-login remote access)";
+      description = "RustDesk system daemon (pre-login access, Wayland input)";
       after = ["display-manager.service"];
       wants = ["display-manager.service"];
       wantedBy = ["multi-user.target"];
@@ -60,12 +67,9 @@ in {
           Type = "simple";
           Restart = "always";
           RestartSec = "5s";
-          ExecStart = let
-            script = pkgs.writeShellScript "rustdesk-system" ''
-              export DISPLAY=:0
-              exec ${pkgs.rustdesk-flutter}/bin/rustdesk --server
-            '';
-          in "${script}";
+          KillMode = "mixed";
+          LimitNOFILE = 100000;
+          ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --service";
         }
         # Enforce the permanent password before the daemon starts. Read at
         # runtime from the sops-managed file; only the path is in the store.
