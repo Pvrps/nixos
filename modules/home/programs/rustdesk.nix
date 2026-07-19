@@ -9,7 +9,7 @@
 in {
   options.custom.programs.rustdesk = {
     enable = lib.mkEnableOption "RustDesk remote desktop";
-    autoStart = lib.mkEnableOption "Auto-start RustDesk server in background";
+    autoStart = lib.mkEnableOption "Auto-start the RustDesk tray GUI on login (the server itself should run via custom.services.rustdesk)";
     serverFile = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
@@ -39,20 +39,25 @@ in {
       pkgs.rustdesk-flutter
     ];
 
-    systemd.user.services.rustdesk = lib.mkIf cfg.autoStart {
+    # Tray/GUI only. Do NOT start `rustdesk --server` here: on Wayland a
+    # user-mode server is view-only and it conflicts with the session
+    # server spawned by the system-level daemon (custom.services.rustdesk).
+    systemd.user.services.rustdesk-tray = lib.mkIf cfg.autoStart {
       Unit = {
-        Description = "RustDesk Tray/Server Service";
+        Description = "RustDesk Tray";
         After = ["graphical-session.target"];
         PartOf = ["graphical-session.target"];
       };
       Service =
         {
-          ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --server";
+          ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --tray";
           Restart = "on-failure";
           RestartSec = 3;
         }
-        # Enforce the permanent password before the server starts. Read at
-        # runtime from the sops-managed file; only the path is in the store.
+        # Enforce the permanent password in the *user* config before the
+        # tray starts; the daemon-spawned session server runs as this user
+        # and authenticates against this config. Read at runtime from the
+        # sops-managed file; only the path is in the store.
         // lib.optionalAttrs (cfg.passwordFile != null) {
           ExecStartPre = "${pkgs.writeShellScript "rustdesk-set-password" (lib.custom.mkRustdeskPasswordScript {
             configFile = "$HOME/.config/rustdesk/RustDesk.toml";

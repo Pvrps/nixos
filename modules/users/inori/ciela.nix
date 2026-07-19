@@ -37,15 +37,16 @@
     pinta.enable = true;
 
     linuxWallpaperengine.enable = true;
-    # Client/GUI only. The server is the system-level daemon
+    # Tray/GUI autostart. The server is the system-level daemon
     # (custom.services.rustdesk in hosts/ciela) — required for input
     # control on Wayland; a user-mode server would be view-only and
     # conflict with the daemon-spawned session server.
     rustdesk = {
       enable = true;
-      autoStart = false;
+      autoStart = true;
       serverFile = osConfig.sops.secrets."rustdesk-server".path;
       keyFile = osConfig.sops.secrets."rustdesk-key".path;
+      passwordFile = osConfig.sops.secrets."rustdesk-password".path;
     };
 
     flatpak = {
