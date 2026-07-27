@@ -87,6 +87,16 @@
     autoPrune.enable = true;
   };
 
+  # Auto-update containers: the podman-auto-update timer pulls newer images for
+  # every container labelled io.containers.autoupdate=registry (mkContainer sets
+  # this by default) and restarts the unit, rolling back on failure. Images
+  # pinned by digest (e.g. immich's valkey) or by an exact version tag are left
+  # alone and must still be bumped manually in their service .nix.
+  virtualisation.quadlet.autoUpdate = {
+    enable = true;
+    calendar = "*-*-* 04:00:00"; # daily at 04:00 America/Toronto
+  };
+
   # Cockpit web UI with the Podman plugin.
   # NPM proxies to https://10.0.10.16:9090 (Cockpit keeps its own TLS).
   # In NPM: scheme=https, host=10.0.10.16, port=9090, websockets on.

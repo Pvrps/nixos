@@ -249,6 +249,12 @@
   #                      `networks` for the full list to override
   #   tz               - TZ env (default "America/Toronto"; set null to omit)
   #   requiresMounts   - add RequiresMountsFor for dockerVolumeDir (default true)
+  #   autoUpdate       - io.containers.autoupdate label: "registry" (default),
+  #                      "local", or null to opt out. Paired with
+  #                      virtualisation.quadlet.autoUpdate.enable, the
+  #                      podman-auto-update timer pulls newer images for
+  #                      tag-tracked containers and restarts them. Digest- or
+  #                      version-pinned images are left untouched by podman.
   #   containerConfig  - the rest of the quadlet containerConfig verbatim
   #   serviceConfig    - extra serviceConfig merged over the Restart defaults
   #   unitConfig       - extra unitConfig merged over RequiresMountsFor
@@ -259,6 +265,7 @@
     networks ? null,
     tz ? "America/Toronto",
     requiresMounts ? true,
+    autoUpdate ? "registry",
     containerConfig ? {},
     serviceConfig ? {},
     unitConfig ? {},
@@ -271,6 +278,7 @@
       "networks"
       "tz"
       "requiresMounts"
+      "autoUpdate"
       "containerConfig"
       "serviceConfig"
       "unitConfig"
@@ -291,6 +299,7 @@
             then networks
             else [network];
         }
+        // lib.optionalAttrs (autoUpdate != null) {inherit autoUpdate;}
         // lib.optionalAttrs (mergedEnvironments != {}) {
           environments = mergedEnvironments;
         }

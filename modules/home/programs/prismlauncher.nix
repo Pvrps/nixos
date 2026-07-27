@@ -10,7 +10,15 @@ in {
 
   config = lib.mkIf cfg.enable {
     home.packages = [
-      pkgs.prismlauncher
+      # Override Prism to bundle and expose specific Temurin Java versions internally
+      (pkgs.prismlauncher.override {
+        jdks = [
+          pkgs.temurin-bin-8
+          pkgs.temurin-bin-17
+          pkgs.temurin-bin-21
+          pkgs.temurin-bin-25
+        ];
+      })
     ];
   };
 }
