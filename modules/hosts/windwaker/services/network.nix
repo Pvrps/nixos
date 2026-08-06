@@ -35,7 +35,7 @@ in {
       cloudflared-tunnel = lib.custom.mkContainer {
         tz = null;
         containerConfig = {
-          image = "cloudflare/cloudflared";
+          image = "docker.io/cloudflare/cloudflared";
           exec = "tunnel run";
           environmentFiles = [config.sops.secrets."network-env".path];
           environments = {
@@ -50,7 +50,7 @@ in {
       nginx-proxy-manager = lib.custom.mkContainer {
         tz = null;
         containerConfig = {
-          image = "jc21/nginx-proxy-manager:latest";
+          image = "docker.io/jc21/nginx-proxy-manager:latest";
           publishPorts = [
             "80:80"
             "443:443"
@@ -69,7 +69,7 @@ in {
 
       pihole = lib.custom.mkContainer {
         containerConfig = {
-          image = "pihole/pihole:latest";
+          image = "docker.io/pihole/pihole:latest";
           publishPorts = [
             "10.0.10.16:53:53/tcp"
             "10.0.10.16:53:53/udp"

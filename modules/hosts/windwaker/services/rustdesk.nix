@@ -11,7 +11,7 @@ in {
     tailscale-rustdesk = lib.custom.mkContainer {
       tz = null;
       containerConfig = {
-        image = "tailscale/tailscale:latest";
+        image = "docker.io/tailscale/tailscale:latest";
         addCapabilities = [
           "NET_ADMIN"
           "NET_RAW"
@@ -45,7 +45,7 @@ in {
     hbbs = lib.custom.mkContainer {
       networks = [];
       containerConfig = {
-        image = "rustdesk/rustdesk-server:latest";
+        image = "docker.io/rustdesk/rustdesk-server:latest";
         exec = "hbbs";
         podmanArgs = ["--network=container:tailscale-rustdesk"];
         volumes = [
@@ -61,7 +61,7 @@ in {
     hbbr = lib.custom.mkContainer {
       networks = [];
       containerConfig = {
-        image = "rustdesk/rustdesk-server:latest";
+        image = "docker.io/rustdesk/rustdesk-server:latest";
         exec = "hbbr";
         podmanArgs = ["--network=container:tailscale-rustdesk"];
         volumes = [

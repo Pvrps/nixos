@@ -10,7 +10,7 @@ in {
   virtualisation.quadlet.containers.runescape-dragonwilds = lib.custom.mkContainer {
     tz = null;
     containerConfig = {
-      image = "indifferentbroccoli/runescape-dragonwilds-server-docker:latest";
+      image = "docker.io/indifferentbroccoli/runescape-dragonwilds-server-docker:latest";
       publishPorts = ["55180:55180/udp"];
       environmentFiles = [config.sops.secrets."dragonwilds-env".path];
       environments = {

@@ -5,7 +5,7 @@
     lib.custom.mkContainer {
       tz = null;
       containerConfig = {
-        image = "rdavidoff/twitch-channel-points-miner-v2";
+        image = "docker.io/rdavidoff/twitch-channel-points-miner-v2";
         publishPorts = ["${toString port}:5000"];
         environments = {
           TERM = "xterm-256color";

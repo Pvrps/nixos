@@ -9,7 +9,7 @@ in {
 
   virtualisation.quadlet.containers.calibre-web-automated = lib.custom.mkContainer {
     containerConfig = {
-      image = "crocodilestick/calibre-web-automated:latest";
+      image = "docker.io/crocodilestick/calibre-web-automated:latest";
       publishPorts = ["28083:8083"];
       # Disable the image's built-in HEALTHCHECK; its transient per-probe
       # systemd unit fails spuriously during startup. See homepage.nix.
