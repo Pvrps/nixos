@@ -7,6 +7,12 @@
     ./users.nix
   ];
 
+  # amd-pstate-epp defaults to powersave; gamemoded is supposed to flip this
+  # on demand but the Steam launch options aren't wired through gamemoderun,
+  # so the 5900X sits at powersave even mid-match. Pin performance here until
+  # gamemoded is actually invoked.
+  powerManagement.cpuFreqGovernor = "performance";
+
   custom = {
     profiles.workstation.enable = true;
     desktop.portals.backend = "kde";
