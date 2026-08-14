@@ -30,6 +30,7 @@ in {
           "Documents"
           # GPU shader caches — avoid recompiling shaders every boot.
           ".cache/nvidia"
+          ".cache/games"
           ".cache/mesa_shader_cache"
           ".cache/radv_builtin_shaders"
         ];
