@@ -1,14 +1,13 @@
 --- a/yazi-adapter/src/drivers/sixel.rs	2026-06-03 13:45:23.168287844 -0400
 +++ b/yazi-adapter/src/drivers/sixel.rs	2026-06-03 14:24:04.779645024 -0400
-@@ -2,7 +2,7 @@
+@@ -2,6 +2,6 @@
  
  use anyhow::{Result, bail};
- use crossterm::{cursor::MoveTo, queue};
 -use image::{DynamicImage, GenericImageView, RgbImage};
 +use image::{DynamicImage, GenericImageView, ImageBuffer, Rgb, RgbImage};
  use palette::{Srgb, cast::ComponentsAs};
  use quantette::{PaletteSize, color_map::IndexedColorMap, wu::{BinnerU8x3, WuU8x3}};
- use ratatui::layout::Rect;
+ use ratatui_core::layout::Rect;
 @@ -50,7 +50,13 @@
  
  		let (qo, img) = tokio::task::spawn_blocking(move || match &img {
