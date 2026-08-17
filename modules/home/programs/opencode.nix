@@ -128,7 +128,7 @@ in {
           ''
             ## Hard constraints
             - apt/brew/yum are unavailable on NixOS — use `nix-shell -p <package>` for missing tools
-            - Never push directly to `main`/`master`/`dev`; all changes on a `feature/<desc>` or `fix/<desc>` branch
+            - Never push directly to `main`/`master`/`dev`; all changes on a `feature/<desc>` or `fix/<desc>` branch. This can be overridden.
             - One logical task per session; ignore unrelated issues
           ''
           + lib.optionalString context7.enable ''
