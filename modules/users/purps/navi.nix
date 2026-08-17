@@ -120,7 +120,7 @@
     osu.enable = true;
 
     stremio.enable = true;
-    clapper.enable = true;
+    celluloid.enable = true;
     aniCli.enable = true;
     spotify.enable = true;
     okular.enable = true;

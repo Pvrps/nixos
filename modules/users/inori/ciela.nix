@@ -31,7 +31,7 @@
     prismlauncher.enable = true;
 
     stremio.enable = true;
-    clapper.enable = true;
+    celluloid.enable = true;
     spotify.enable = true;
     okular.enable = true;
     pinta.enable = true;

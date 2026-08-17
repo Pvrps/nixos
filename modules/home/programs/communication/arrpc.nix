@@ -25,7 +25,7 @@
       hash = "sha256-wDNt9kTccDTn1nQb8KCMhrSJ3YPfhxikuZBzBV8/EWo=";
     };
 
-    patches = [../patches/arrpc.patch];
+    patches = [../../patches/arrpc.patch];
   });
 in {
   options.custom.programs.arrpc.enable = lib.mkEnableOption "arRPC background service for Discord Rich Presence";

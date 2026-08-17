@@ -10,7 +10,7 @@
   # Path to the centralized devenv profiles directory (relative to this module).
   # toString forces it into the nix store so builtins.readDir and readFile work
   # during flake evaluation.
-  modulesDir = toString ../../devenv;
+  modulesDir = toString ../../../devenv;
   profileEntries = builtins.attrNames (builtins.readDir modulesDir);
 
   profilesWithInit =

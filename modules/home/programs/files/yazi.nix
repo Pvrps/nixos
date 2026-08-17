@@ -15,7 +15,7 @@
   # display transparency when the background colour is unknown.
   patched-yazi = pkgs.yazi.override {
     yazi-unwrapped = pkgs.yazi-unwrapped.overrideAttrs (old: {
-      patches = (old.patches or []) ++ [../patches/yazi-sixel-alpha.patch];
+      patches = (old.patches or []) ++ [../../patches/yazi-sixel-alpha.patch];
     });
   };
 in {
