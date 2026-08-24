@@ -5,16 +5,17 @@ This repository is public, but it is primarily written for my own machines. It m
 ## Layout
 
 ```text
-flake.nix                  # Flake inputs + mkHost (auto-imports all shared modules)
-justfile                   # Common maintenance commands
-modules/lib/               # lib.custom.* helpers (mkScript, mkContainer, mkUserSecrets, ...)
-modules/nixos/             # Shared NixOS modules — all option-gated, auto-imported
-modules/nixos/profiles/    # Host profiles (workstation) that bundle defaults
-modules/hosts/<host>/      # Host-specific: hardware, disko, persistence, users, deltas
-modules/hosts/_shared/     # Shared disko layout (parameterized)
-modules/home/              # Shared Home Manager modules — all option-gated, auto-imported
-modules/home/profiles/     # Home profiles (desktop) for cross-cutting user glue
-modules/users/<user>/      # Per-user composition (pure choice lists)
+flake.nix                # Flake inputs + mkHost (auto-imports all shared modules)
+justfile                 # Common maintenance commands
+modules/lib/             # lib.custom.* helpers (mkScript, mkContainer, mkUserSecrets, ...)
+modules/devenv/<lang>/   # Shared devenv.sh project templates, scaffolded via `dev-init-<lang>`
+modules/nixos/           # Shared NixOS modules — all option-gated, auto-imported
+modules/nixos/profiles/  # Host profiles (workstation) that bundle defaults
+modules/hosts/<host>/    # Host-specific: hardware, disko, persistence, users, deltas
+modules/hosts/_shared/   # Shared disko layout (parameterized)
+modules/home/            # Shared Home Manager modules — all option-gated, auto-imported
+modules/home/profiles/   # Home profiles (desktop) for cross-cutting user glue
+modules/users/<user>/    # Per-user composition (pure choice lists)
 ```
 
 How it fits together:
@@ -37,7 +38,7 @@ How it fits together:
 
 New modules should be small, self-contained, and opt-in by default. The usual pattern is:
 
-- Put Home Manager programs in `modules/home/programs/` and scripts in `modules/home/scripts/` (use `lib.custom.mkScript`).
+- Put Home Manager programs in `modules/home/programs/<category>/` (e.g. `gaming/`, `desktop/`, `development/`) and scripts in `modules/home/scripts/` (use `lib.custom.mkScript`).
 - Put shared system-level modules in `modules/nixos/`. They are auto-imported; just define `options.custom.*` and gate config behind `lib.mkIf`.
 - Put host-specific hardware, disks, persistence, and service wiring in `modules/hosts/<host>/`.
 - Put user composition in `modules/users/<user>/`, usually by enabling existing `custom.*` options.
@@ -84,21 +85,20 @@ Secrets are managed with `sops-nix`. Encrypted host secret files live beside eac
 The nightly CI updates branch-tracking flake inputs only. These pins need
 manual attention (each site carries a `MAINTENANCE:` or bump comment):
 
-| Pin                                        | Where                                             | How to bump                                                                               |
-| ------------------------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| arrpc PR #143 commit                       | `modules/home/programs/arrpc.nix`                 | `git ls-remote ... refs/pull/143/head` + `nix-prefetch-github`; drop when merged upstream |
-| Millennium plugin zips                     | `modules/home/programs/steam.nix`                 | new release URL + `just hash <url>` (nix32 via `nix-prefetch-url`)                        |
-| OpenCode npm tools (context7, claude-auth) | `modules/home/programs/opencode/package.json`     | `just update` handles it                                                                  |
-| Valkey image digest                        | `modules/hosts/windwaker/services/immich.nix`     | update digest manually                                                                    |
-| wallpaperengine-gui commit                 | `modules/home/programs/linux-wallpaperengine.nix` | check nixpkgs first; bump rev+hash                                                        |
-| `noctalia` input on `legacy-v4`            | `flake.nix`                                       | deliberate; migrating also touches the noctalia plugin manifest                           |
-| `nix-flatpak` / `lanzaboote` tags          | `flake.nix`                                       | bump tag when upstream releases                                                           |
+| Pin                                        | Where                                                     | How to bump                                                                               |
+| ------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| arrpc PR #143 commit                       | `modules/home/programs/communication/arrpc.nix`           | `git ls-remote ... refs/pull/143/head` + `nix-prefetch-github`; drop when merged upstream |
+| Millennium plugin zips                     | `modules/home/programs/gaming/steam.nix`                  | new release URL + `just hash <url>` (nix32 via `nix-prefetch-url`)                        |
+| OpenCode npm tools (context7, claude-auth) | `modules/home/programs/development/opencode/package.json` | `just update` handles it                                                                  |
+| Valkey image digest                        | `modules/hosts/windwaker/services/immich.nix`             | update digest manually                                                                    |
+| wallpaperengine-gui commit                 | `modules/home/programs/desktop/linux-wallpaperengine.nix` | check nixpkgs first; bump rev+hash                                                        |
+| `noctalia` input on `legacy-v4`            | `flake.nix`                                               | deliberate; migrating also touches the noctalia plugin manifest                           |
+| `nix-flatpak` / `lanzaboote` tags          | `flake.nix`                                               | bump tag when upstream releases                                                           |
 
 ## Notes
 
 - The systems use impermanence; the shared base is `modules/nixos/persist.nix`, host deltas live in `modules/hosts/<host>/_persist.nix`.
 - Some modules are convenience-first because this is a real daily-driver setup, not a minimal hardening benchmark.
-- `TODO.md` tracks known follow-ups, deferred hardening work, and intentional tradeoffs.
 
 ## Warning
 
