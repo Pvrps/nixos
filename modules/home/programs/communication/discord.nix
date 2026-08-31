@@ -1,37 +1,17 @@
 {
-  pkgs,
   config,
   inputs,
   lib,
-  osConfig,
   ...
 }: let
   cfg = config.custom.programs.discord;
-  fixed-vesktop = pkgs.vesktop.overrideAttrs (old: {
-    postFixup = let
-      libPath = with pkgs;
-        lib.makeLibraryPath [
-          libva
-          stdenv.cc.cc.lib
-        ];
-    in
-      (old.postFixup or "")
-      + ''
-        wrapProgram $out/bin/vesktop \
-          --prefix LD_LIBRARY_PATH : "${libPath}" \
-          --set LIBVA_DRIVER_NAME "nvidia" \
-          --set NVD_BACKEND "direct" \
-          --add-flags "--enable-features=VaapiVideoEncoder,VaapiVideoDecoder,VaapiIgnoreDriverChecks,VaapiOnNvidiaGPUs,CanvasOopRasterization" \
-          --add-flags "--disable-features=UseChromeOSDirectVideoDecoder"
-      '';
-  });
 in {
   imports = [
     inputs.nixcord.homeModules.nixcord
   ];
 
   options.custom.programs.discord = {
-    enable = lib.mkEnableOption "Discord via nixcord/vesktop";
+    enable = lib.mkEnableOption "Discord via nixcord/vencord";
     plugins = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
       # Shared household plugin set. Setting this option in a user file
@@ -113,15 +93,13 @@ in {
   config = lib.mkIf cfg.enable {
     programs.nixcord = {
       enable = true;
-      discord.enable = false;
-      vesktop = {
-        enable = true;
-        package = lib.mkIf (osConfig.hardware.nvidia.modesetting.enable or false) fixed-vesktop;
-        useSystemVencord = false;
+      discord = {
+        vencord.enable = true;
         settings = {
           arRPC = false;
         };
       };
+      vesktop.enable = false;
 
       config = {
         useQuickCss = true;
@@ -138,13 +116,13 @@ in {
     };
 
     custom.programs.niri.startupCommands = lib.mkIf config.custom.programs.niri.enable [
-      ''"bash" "-c" "nm-online -q --timeout=30 || true; vesktop --start-minimized > /dev/null 2>&1"''
+      ''"bash" "-c" "nm-online -q --timeout=30 || true; discord --start-minimized > /dev/null 2>&1"''
     ];
 
     custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
       window-rule {
-          match app-id="vesktop" title="Discord Updater"
-          match app-id="vesktop" title="Checking for updates..."
+          match app-id="discord" title="Discord Updater"
+          match app-id="discord" title="Checking for updates..."
           open-floating true
           open-maximized false
       }

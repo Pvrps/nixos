@@ -76,6 +76,10 @@ in {
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/ether-metamask/latest.xpi";
           installation_mode = "force_installed";
         };
+        "windscribe@windscribe.com" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/windscribe/latest.xpi";
+          installation_mode = "force_installed";
+        };
       };
       description = "Base extension policy set (shared household default).";
     };
