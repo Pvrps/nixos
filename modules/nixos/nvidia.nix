@@ -14,6 +14,8 @@
         enable32Bit = true;
       };
       nvidia = {
+        # Use the newest available driver branch (production or new_feature).
+        branch = "latest";
         modesetting.enable = true;
         open = true;
       };
