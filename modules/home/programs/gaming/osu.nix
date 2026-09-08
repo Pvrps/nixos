@@ -34,6 +34,12 @@ in {
   config = lib.mkIf cfg.enable {
     home.packages = [pkgs.osu-lazer-bin];
 
+    xdg.configFile."libinput/local-overrides.quirks".text = ''
+      [OpenTabletDriver Virtual Tablet]
+      MatchName=OpenTabletDriver*
+      AttrTabletSmoothing=0
+    '';
+
     # Drop the custom mime-info into the user mime DB so .osk etc. resolve to
     # the right MIME type. The freedesktop spec requires the package file to
     # live under $XDG_DATA_HOME/mime/packages/; update-mime-database then merges
@@ -56,7 +62,7 @@ in {
     xdg.desktopEntries.osu-lazer = {
       name = "osu!lazer";
       genericName = "Rhythm Game";
-      exec = "osu! %u";
+      exec = "env SDL_VIDEODRIVER=wayland osu! %u";
       icon = "osu";
       terminal = false;
       categories = ["Game"];

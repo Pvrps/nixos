@@ -110,6 +110,11 @@
       url = "github:AceSLS/SLSsteam";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Pinned to the last version before a regression broke X11 popup
+    # pointer-grabs (Steam context menus closing instantly under niri).
+    # Remove once fixed upstream: https://github.com/Supreeeme/xwayland-satellite/issues/468
+    nixpkgs-xwayland-satellite-fix.url = "github:nixos/nixpkgs/a5cbcfe954791221bfffe2307f7d1a1bf61a871e";
   };
 
   outputs = {
