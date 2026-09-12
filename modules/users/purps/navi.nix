@@ -196,10 +196,11 @@
   };
 
   custom.scripts = {
+    # screenshot/edit superseded by Noctalia's built-in screenshot+annotator
+    # (see modules/home/programs/desktop/noctalia.nix); kept for hosts
+    # without Noctalia.
     capture = {
-      screenshot.enable = true;
       recording.enable = true;
-      edit.enable = true;
       ocr.enable = true;
     };
     histClean.enable = true;
