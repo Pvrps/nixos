@@ -112,9 +112,9 @@
 
     steam.enable = true;
     discord.enable = true;
-    arrpc.enable = true;
-    discordRpc.enable = true;
-    discordRpcNoctalia.enable = true;
+    # arrpc.enable = true;
+    # discordRpc.enable = true;
+    # discordRpcNoctalia.enable = true;
     bolt.enable = true;
     prismlauncher.enable = true;
     osu.enable = true;

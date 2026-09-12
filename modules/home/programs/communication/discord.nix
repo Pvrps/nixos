@@ -67,7 +67,7 @@ in {
         startupTimings.enable = true;
         superReactionTweaks.enable = true;
         typingIndicator.enable = true;
-        typingTweaks.enable = false;
+        typingTweaks.enable = true;
         unlockedAvatarZoom.enable = true;
         whoReacted.enable = true;
         youtubeAdblock.enable = true;
@@ -96,7 +96,7 @@ in {
       discord = {
         vencord.enable = true;
         settings = {
-          arRPC = false;
+          arRPC = true;
         };
       };
       vesktop.enable = false;

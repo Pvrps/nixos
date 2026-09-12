@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT=$(git rev-parse --show-toplevel)
-PKG_DIR="$ROOT/modules/home/programs/opencode"
+PKG_DIR="$ROOT/modules/home/programs/development/opencode"
 PKG_JSON="$PKG_DIR/package.json"
-MODULE_FILE="$ROOT/modules/home/programs/opencode.nix"
+MODULE_FILE="$ROOT/modules/home/programs/development/opencode.nix"
 
 for cmd in node npm prefetch-npm-deps; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
