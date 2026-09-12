@@ -12,8 +12,7 @@
   # keeping all 7TV features (paints, personal emotes, animated avatars).
   #
   # MAINTENANCE: pinned to the head of the `002-polish-kick-integration`
-  # branch (the README references the older `001-kick-twitch-merge` branch,
-  # which has been superseded).  Update rev+hash together:
+  # branch. Update rev+hash together:
   #   git ls-remote https://github.com/sambegui/chatterino7 002-polish-kick-integration
   #   nix run nixpkgs#nix-prefetch -- --unpack \
   #     https://github.com/sambegui/chatterino7/archive/<rev>.tar.gz
