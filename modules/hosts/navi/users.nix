@@ -27,6 +27,8 @@
         "context7-api-key"
         "rustdesk-server"
         "rustdesk-key"
+        "chatterino7-kick-client"
+        "chatterino7-kick-secret"
       ];
     };
 }

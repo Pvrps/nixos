@@ -126,6 +126,8 @@
     okular.enable = true;
     pinta.enable = true;
     chatterino.enable = true;
+    chatterino.kickClientIdPath = osConfig.sops.secrets."chatterino7-kick-client".path;
+    chatterino.kickClientSecretPath = osConfig.sops.secrets."chatterino7-kick-secret".path;
     imv.enable = true;
 
     rustdesk = {
