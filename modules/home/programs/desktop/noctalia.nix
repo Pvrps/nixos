@@ -1,42 +1,20 @@
 {
-  pkgs,
   inputs,
   config,
   lib,
   ...
 }: let
   cfg = config.custom.programs.noctalia;
-  inherit (config.lib.stylix) colors;
 in {
   imports = [
     inputs.noctalia.homeModules.default
   ];
 
   options.custom.programs.noctalia = {
-    enable = lib.mkEnableOption "Noctalia shell";
+    enable = lib.mkEnableOption "Noctalia shell (v5, native/Luau)";
     primaryMonitor = lib.mkOption {
       type = lib.types.str;
-      description = "Wayland output name used for lock screen and notifications. Required when noctalia is enabled.";
-    };
-    plugins = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule ({name, ...}: {
-        options = {
-          enable = lib.mkEnableOption "Noctalia plugin ${name}";
-          sourceUrl = lib.mkOption {
-            type = lib.types.str;
-            default = "https://github.com/noctalia-dev/noctalia-plugins";
-            description = "Plugin registry source URL (composite key prefix).";
-          };
-          barWidget = lib.mkEnableOption "append this plugin's bar widget to the bar's right section";
-          settings = lib.mkOption {
-            type = lib.types.attrs;
-            default = {};
-            description = "Per-plugin settings written to plugins/<id>/settings.json.";
-          };
-        };
-      }));
-      default = {};
-      description = "Noctalia registry plugins to install/enable declaratively per user.";
+      description = "Wayland output name used for the lock screen and notifications. Required when noctalia is enabled.";
     };
   };
 
@@ -48,119 +26,64 @@ in {
       }
     ];
 
-    programs.noctalia-shell = {
+    programs.noctalia = {
       enable = true;
-      plugins = lib.optionalAttrs (cfg.plugins != {}) {
-        sources = [
-          {
-            enabled = true;
-            name = "Official Noctalia Plugins";
-            url = "https://github.com/noctalia-dev/noctalia-plugins";
-          }
-        ];
-        states =
-          lib.mapAttrs'
-          (name: plugin:
-            lib.nameValuePair name {
-              enabled = true;
-              inherit (plugin) sourceUrl;
-            })
-          (lib.filterAttrs (_: p: p.enable) cfg.plugins);
-        version = 2;
-      };
-      pluginSettings =
-        lib.mapAttrs'
-        (name: plugin: lib.nameValuePair name plugin.settings)
-        (lib.filterAttrs (_: p: p.enable && p.settings != {}) cfg.plugins);
+      # Started by niri's `spawn-at-startup` below, as a plain compositor
+      # child (not a systemd user unit) — leave the module's own service off.
+      systemd.enable = false;
+
       settings = {
-        dock = {
-          enabled = false;
+        dock.enabled = false;
+        wallpaper.enabled = true;
+
+        location.address = "Ontario";
+
+        # Theme mode/palette/opacity/font/wallpaper-path come from Stylix's
+        # own built-in `noctalia` target (auto-enabled; see
+        # home-manager's modules/noctalia/hm.nix), not set here — it maps
+        # the same base16 scheme to the same mPrimary/mOnPrimary/... roles
+        # v4's hand-written colorschemes/Stylix.json used, plus terminal
+        # colors, dock/notification/osd opacity, and the shell font.
+
+        # v4's four independent radiusRatio/iRadiusRatio/boxRadiusRatio/
+        # screenRadiusRatio knobs (all 0) collapse into one v5 scale.
+        shell = {
+          corner_radius_scale = 0;
+          card_borders = true; # v4: ui.boxBorderEnabled
+          # v4: appLauncher.overviewLayer — type-to-launch from niri overview.
+          niri_overview_type_to_launch_enabled = true;
+          launcher.sort_by_usage = true; # v4: appLauncher.sortByMostUsed
         };
-        wallpaper = {
-          enabled = true;
-        };
-        location = {
-          name = "Ontario";
-        };
-        general = {
-          radiusRatio = 0;
-          iRadiusRatio = 0;
-          boxRadiusRatio = 0;
-          screenRadiusRatio = 0;
-          scaleRatio = 0.75;
-          enableShadows = true;
-          lockScreenMonitors = [cfg.primaryMonitor];
-        };
-        ui = {
-          boxBorderEnabled = true;
-        };
-        systemMonitor = {
-          enableDgpuMonitoring = true;
-        };
-        notifications = {
-          location = "top_right";
+
+        accessibility.ui_scale = 0.75; # v4: general.scaleRatio
+
+        lockscreen.monitors = [cfg.primaryMonitor]; # v4: general.lockScreenMonitors
+
+        notification = {
+          position = "top_right";
           monitors = [cfg.primaryMonitor];
         };
-        appLauncher = {
-          sortByMostUsed = true;
-          overviewLayer = true;
+
+        bar.default = {
+          scale = 0.75;
+          start = ["launcher" "clock" "cpu" "gpu" "active_window" "media"];
+          center = ["workspaces"];
+          end = ["tray" "notifications" "battery" "volume" "control-center"];
         };
-        bar = {
-          widgets = {
-            left = [
-              {id = "Launcher";}
-              {id = "Clock";}
-              {
-                id = "SystemMonitor";
-                showGpuTemp = true;
-              }
-              {id = "ActiveWindow";}
-              {id = "MediaMini";}
-            ];
-            center = [
-              {id = "Workspace";}
-            ];
-            right =
-              [
-                {id = "Tray";}
-                {id = "NotificationHistory";}
-                {id = "Battery";}
-                {id = "Volume";}
-                {id = "ControlCenter";}
-              ]
-              ++ (lib.concatLists (lib.mapAttrsToList
-                (name: plugin:
-                  lib.optional plugin.barWidget {id = "plugin:${name}";})
-                (lib.filterAttrs (_: p: p.enable) cfg.plugins)));
+
+        widget = {
+          cpu = {
+            type = "sysmon";
+            stat = "cpu_usage";
+          };
+          # v4: SystemMonitor.showGpuTemp — dedicated GPU stat widget, since
+          # v5 shows one stat per sysmon instance (hover still surfaces the
+          # rest of the sampled stats on either widget).
+          gpu = {
+            type = "sysmon";
+            stat = "gpu_temp";
           };
         };
-      };
-    };
-
-    xdg.configFile."noctalia/colorschemes/Stylix.json".text = builtins.toJSON {
-      dark = {
-        mPrimary = "#${colors.base0D}"; # Blue
-        mOnPrimary = "#${colors.base00}"; # Background
-        mSecondary = "#${colors.base0E}"; # Purple
-        mOnSecondary = "#${colors.base00}";
-        mTertiary = "#${colors.base0C}"; # Cyan
-        mOnTertiary = "#${colors.base00}";
-        mError = "#${colors.base08}"; # Red
-        mOnError = "#${colors.base00}";
-        mSurface = "#${colors.base00}"; # Background
-        mOnSurface = "#${colors.base05}"; # Text
-        mHover = "#${colors.base02}"; # Selection
-        mOnHover = "#${colors.base05}";
-        mSurfaceVariant = "#${colors.base01}"; # Darker/Lighter BG
-        mOnSurfaceVariant = "#${colors.base05}";
-        mOutline = "#${colors.base03}"; # Grey
-        mShadow = "#${colors.base00}";
-      };
-      light = {
-        mPrimary = "#${colors.base0D}";
-        mOnPrimary = "#${colors.base00}";
-        mSurface = "#${colors.base00}";
-        mOnSurface = "#${colors.base05}";
       };
     };
 
@@ -168,19 +91,19 @@ in {
 
     custom.programs.niri = lib.mkIf config.custom.programs.niri.enable {
       startupCommands = [
-        ''"bash" "-c" "if command -v noctalia-shell >/dev/null; then noctalia-shell; else dms run --session; fi"''
+        ''"noctalia"''
         ''"blueman-applet"''
       ];
 
       keybinds = [
-        ''Mod+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }''
-        ''Mod+C { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }''
-        ''Mod+Shift+L { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }''
+        ''Mod+D { spawn "noctalia" "msg" "panel-toggle" "launcher"; }''
+        ''Mod+C { spawn "noctalia" "msg" "panel-toggle" "control-center"; }''
+        ''Mod+Shift+L { spawn "noctalia" "msg" "session" "lock"; }''
       ];
 
       layerRulesConfig = ''
         layer-rule {
-            match namespace=r#"^noctalia-notifications"#
+            match namespace=r#"^noctalia-notification"#
             block-out-from "screen-capture"
         }
       '';

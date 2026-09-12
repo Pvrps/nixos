@@ -35,10 +35,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    noctalia = {
-      url = "github:noctalia-dev/noctalia/legacy-v4";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # v5 rewrite: native C++/Wayland shell (no Qt/Quickshell), config in TOML,
+    # plugins in Luau. Not following nixpkgs here is required to hit the
+    # noctalia.cachix.org binary cache (see modules/nixos/core.nix); tracking
+    # the `cachix` branch instead of `main` guarantees the pinned commit has
+    # already been built by upstream CI, per docs.noctalia.dev/noctalia/getting-started/nixos.
+    noctalia.url = "github:noctalia-dev/noctalia/cachix";
 
     stylix = {
       url = "github:nix-community/stylix";

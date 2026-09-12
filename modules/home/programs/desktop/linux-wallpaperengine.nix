@@ -44,14 +44,13 @@ in {
       [pkgs.linux-wallpaperengine]
       ++ lib.optional config.custom.programs.kde.enable wallpaperengine-gui;
 
-    custom.programs.noctalia.plugins."linux-wallpaperengine-controller" =
-      lib.mkIf config.custom.programs.noctalia.enable
-      {
-        enable = true;
-        barWidget = true;
-        settings = {
-          wallpapersFolder = "${config.home.homeDirectory}/.local/share/Steam/steamapps/workshop/content/431960";
-        };
-      };
+    # NOTE: the Noctalia bar-widget/plugin control for this renderer
+    # (custom.programs.noctalia.plugins."linux-wallpaperengine-controller")
+    # was dropped during the v4->v5 Noctalia migration. v5's plugin system
+    # replaced QML plugins with sandboxed Luau scripts (see
+    # docs.noctalia.dev/noctalia/plugins/development/), so the old widget
+    # needs a full rewrite rather than a port — not done yet. The renderer
+    # and wallpaperengine-gui (KDE path) still work standalone in the
+    # meantime; only the Noctalia bar control is missing.
   };
 }
