@@ -71,13 +71,17 @@ in {
             compact = true;
           };
 
+          # Consulted by `noctalia msg screenshot-region`/`annotate`, which
+          # custom.scripts.capture.screenshot/edit (modules/home/scripts/
+          # capture-*.nix) call into themselves when this host has Noctalia
+          # enabled — those scripts own the actual Mod+Shift+S/E keybinds.
           screenshot = {
             directory = "${config.home.homeDirectory}/Pictures/Screenshots";
             filename_pattern = "%Y-%m-%d_%H-%M-%S";
             save_to_file = true;
             copy_to_clipboard = true;
             freeze_screen = true;
-            annotate = false; # kept fast for Mod+Shift+S; see screenshot-annotate below
+            annotate = false;
             close_on_copy = true;
           };
         };
@@ -145,15 +149,12 @@ in {
         ''Mod+D { spawn "noctalia" "msg" "panel-toggle" "launcher"; }''
         ''Mod+C { spawn "noctalia" "msg" "panel-toggle" "control-center"; }''
         ''Mod+Shift+L { spawn "noctalia" "msg" "session" "lock"; }''
-        # Replaces the grim/slurp screenshot-tool script: fast region
-        # capture, save + copy, no editor (see [shell.screenshot] above).
-        ''Mod+Shift+S { spawn "noctalia" "msg" "screenshot-region"; }''
-        # Replaces the satty-based editing-tool script for the image case:
-        # freezes every monitor and opens the built-in annotation editor
-        # (crop/draw/etc.), then Copy/Save applies the same output policy.
-        # No equivalent exists for editing-tool's clipboard-video branch
-        # (losslesscut) — that workflow has no noctalia counterpart.
-        ''Mod+Shift+E { spawn "noctalia" "msg" "screenshot-annotate"; }''
+        # Mod+Shift+S/E (screenshot/edit) are owned by
+        # custom.scripts.capture.screenshot/edit, not here — those scripts
+        # dispatch to `noctalia msg screenshot-region`/`annotate`
+        # themselves when this host has Noctalia enabled, while still
+        # handling non-screenshot clipboard content (e.g. a video) the
+        # same way they always have.
       ];
 
       layerRulesConfig = ''

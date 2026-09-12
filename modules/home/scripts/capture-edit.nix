@@ -5,37 +5,64 @@ lib.custom.mkScript {
   description = "Image/video editing tool";
   requiresWayland = true;
   keybind = ''Mod+Shift+E { spawn "editing-tool"; }'';
+  # satty stays installed unconditionally (small, ~6MB) even on Noctalia
+  # hosts that won't call it — avoids threading `config` into runtimeInputs
+  # (mkScript's signature there is pkgs-only) just to shave one binary.
   runtimeInputs = pkgs: with pkgs; [satty wl-clipboard libnotify losslesscut-bin coreutils];
-  text = ''
+  # Function form (see lib.custom.mkScript docs): keeps `config` access lazy,
+  # evaluated only when the tool derivation is actually built, instead of
+  # forcing it while the module system is still discovering imports.
+  text = {config, ...}: let
+    # For the image case, Noctalia's own annotate command (see
+    # modules/home/programs/desktop/noctalia.nix) can take over from satty.
+    # The video branch (losslesscut) has no Noctalia equivalent and is used
+    # unconditionally either way.
+    useNoctalia = config.custom.programs.noctalia.enable;
+  in ''
     set -uo pipefail
 
     LOSSLESSCUT_TMP="''${XDG_RUNTIME_DIR:-/tmp}/losslesscut-tmp"
 
-    OUTPUT_DIR="$HOME/Pictures/Screenshots"
-    mkdir -p "$OUTPUT_DIR"
-    OUTPUT_FILE="$OUTPUT_DIR/$(date +'%Y-%m-%d_%H-%M-%S')-edited.png"
+    ${
+      if useNoctalia
+      then ''
+        # noctalia annotate only accepts a path on disk (no stdin), and
+        # owns save/copy/notify itself once the editor opens.
+        NOCTALIA_EDIT_SCRATCH="''${XDG_RUNTIME_DIR:-/tmp}/noctalia-clipboard-edit.png"
 
-    run_satty_stdin() {
-      satty --filename - --output-filename "$OUTPUT_FILE"
-    }
+        annotate_image() {
+          local input="$1"
+          noctalia msg annotate "$input"
+        }
+      ''
+      else ''
+        OUTPUT_DIR="$HOME/Pictures/Screenshots"
+        mkdir -p "$OUTPUT_DIR"
+        OUTPUT_FILE="$OUTPUT_DIR/$(date +'%Y-%m-%d_%H-%M-%S')-edited.png"
 
-    run_satty_file() {
-      local input="$1"
-      satty --filename "$input" --output-filename "$OUTPUT_FILE"
-    }
+        run_satty_stdin() {
+          satty --filename - --output-filename "$OUTPUT_FILE"
+        }
 
-    handle_satty_save() {
-      if [[ -f "$OUTPUT_FILE" ]]; then
-        wl-copy --type image/png < "$OUTPUT_FILE"
-        RESULT=$(notify-send \
-          --action="copy-path=Copy Path" \
-          "Image Saved" "$OUTPUT_FILE")
-        if [[ "$RESULT" == "copy-path" ]]; then
-          printf '%s' "$OUTPUT_FILE" | wl-copy
-        fi
-      else
-        notify-send "Save Failed" "No image was saved"
-      fi
+        run_satty_file() {
+          local input="$1"
+          satty --filename "$input" --output-filename "$OUTPUT_FILE"
+        }
+
+        handle_satty_save() {
+          if [[ -f "$OUTPUT_FILE" ]]; then
+            wl-copy --type image/png < "$OUTPUT_FILE"
+            RESULT=$(notify-send \
+              --action="copy-path=Copy Path" \
+              "Image Saved" "$OUTPUT_FILE")
+            if [[ "$RESULT" == "copy-path" ]]; then
+              printf '%s' "$OUTPUT_FILE" | wl-copy
+            fi
+          else
+            notify-send "Save Failed" "No image was saved"
+          fi
+        }
+      ''
     }
 
     process_video() {
@@ -48,8 +75,17 @@ lib.custom.mkScript {
     VIDEO_EXT="mp4 webm mkv mov avi"
 
     if wl-paste --type image/png > /dev/null 2>&1; then
-      wl-paste --type image/png | run_satty_stdin
-      handle_satty_save
+      ${
+      if useNoctalia
+      then ''
+        wl-paste --type image/png > "$NOCTALIA_EDIT_SCRATCH"
+        annotate_image "$NOCTALIA_EDIT_SCRATCH"
+      ''
+      else ''
+        wl-paste --type image/png | run_satty_stdin
+        handle_satty_save
+      ''
+    }
       exit 0
     fi
 
@@ -60,8 +96,14 @@ lib.custom.mkScript {
         ext="''${CLIPBOARD_TEXT##*.}"
         for e in $IMAGE_EXT; do
           if [[ "$ext" == "$e" ]]; then
-            run_satty_file "$CLIPBOARD_TEXT"
-            handle_satty_save
+            ${
+      if useNoctalia
+      then ''annotate_image "$CLIPBOARD_TEXT"''
+      else ''
+        run_satty_file "$CLIPBOARD_TEXT"
+        handle_satty_save
+      ''
+    }
             exit 0
           fi
         done
