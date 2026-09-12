@@ -35,12 +35,12 @@ in {
       # MAINTENANCE: version-pinned release zips; bump url+sha256 together.
       default = {
         extendium = {
-          url = "https://github.com/BossSloth/Extendium/releases/download/v1.1.1/Extendium-plugin-1.1.1.zip";
-          sha256 = "0dg7q27ppzri6vqk24s1v6d6q8d0iicw3igdqc55pc8g050v1pfx";
+          url = "https://github.com/BossSloth/Extendium/releases/download/v2.0.4/extendium-2.0.4.zip";
+          sha256 = "sha256-ecchVQE6Syk+WJt+jMs1ZHk254Z/Gl2JArajsnyB26Q=";
         };
         achievement-groups = {
-          url = "https://github.com/BossSloth/SteamHunter-plugin/releases/download/v2.0.2/Achievement-Groups-plugin-2.0.2.zip";
-          sha256 = "18g921w6idswwvbha9dyszki60pv1pvhlzsi817ddps8pifhwpwj";
+          url = "https://github.com/BossSloth/SteamHunter-plugin/releases/download/v2.1.0/Achievement-Groups-plugin-2.1.0.zip";
+          sha256 = "sha256-Lu7ORsn9uRRb83FkbBOxH137ulJyohgwmqqvzJlqAx8=";
         };
       };
       description = "Millennium plugins to install, keyed by plugin directory name under ~/.local/share/millennium/plugins. Defaults to the shared household set.";
