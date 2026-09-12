@@ -44,6 +44,12 @@ in {
       description = "Packages added to the agent PATH for GPU monitoring (e.g. intel-gpu-tools, nvidia-smi).";
     };
 
+    openFirewall = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Open the agent's SSH port (default 45876) on all interfaces. Only needed for hub-initiated (SSH) connections from an untrusted interface; agent-initiated HUB_URL connections and hubs reachable via a trusted interface (e.g. a Podman bridge) don't need this.";
+    };
+
     capPerfmon = lib.mkEnableOption "Grant CAP_PERFMON to the agent service (required for intel_gpu_top)";
 
     gpuMonitoring = lib.mkEnableOption "GPU monitoring. Disables PrivateDevices so the agent can access /dev/dri and /dev/nvidia*.";
@@ -59,7 +65,7 @@ in {
   config = lib.mkIf cfg.enable {
     services.beszel.agent = {
       enable = true;
-      openFirewall = true;
+      inherit (cfg) openFirewall;
       extraPath = cfg.gpuPackages;
       environment =
         lib.optionalAttrs (cfg.key != "") {KEY = cfg.key;}

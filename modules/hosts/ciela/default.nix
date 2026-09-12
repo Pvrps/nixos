@@ -13,10 +13,17 @@
   # gamemoded is actually invoked.
   powerManagement.cpuFreqGovernor = "performance";
 
+  # SSH reachable only on the physical LAN interface, not on all interfaces.
+  networking.firewall.interfaces."enp9s0".allowedTCPPorts = [22];
+
   custom = {
     profiles.workstation.enable = true;
     desktop.portals.backend = "kde";
-    remoteAdmin.enable = true;
+
+    remoteAdmin = {
+      enable = true;
+      openFirewall = false; # SSH reachable via the LAN interface only (see above)
+    };
 
     # Root daemon so purps can *control* (not just view) inori's Wayland
     # session; it provides the privileged uinput input-injection services
