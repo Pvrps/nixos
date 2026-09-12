@@ -95,10 +95,9 @@ in {
           monitors = [cfg.primaryMonitor];
         };
 
-        # Disable the media (MPRIS track-change) OSD popup — it renders as
-        # an attached bubble that can overlap other windows (e.g. covering
-        # part of a browser window on track change). Everything else stays.
-        osd.kinds.media = false;
+        # Disable OSD popups entirely (volume/brightness/media/etc.) — they
+        # render as attached bubbles that can overlap other windows.
+        osd.enabled = false;
 
         bar.default = {
           scale = 1.0;
