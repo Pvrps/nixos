@@ -3,6 +3,9 @@
   programs = {
     niri = {
       enable = true;
+      # See niri-wrapped.nix: silences the import-environment deprecation
+      # warning printed on the TTY at login.
+      package = pkgs.callPackage ./niri-wrapped.nix {};
       useNautilus = false;
     };
     gpu-screen-recorder.enable = true;
