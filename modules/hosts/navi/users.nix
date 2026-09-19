@@ -8,7 +8,12 @@
     purps = {
       isNormalUser = true;
       uid = 1000;
-      extraGroups = ["wheel" "networkmanager" "video" "audio" "input" "hardware-control" "tailscale"];
+      # gamemode: required by the polkit rule shipped in the gamemode package
+      # (share/polkit-1/rules.d/gamemode.rules) which only grants the
+      # governor/gpu/cpu/procsys helpers to members of this group. Without it
+      # gamemoded's pkexec calls fail with "Not authorized" and every game
+      # silently loses the CPU governor and split-lock optimisations.
+      extraGroups = ["wheel" "networkmanager" "video" "audio" "input" "hardware-control" "tailscale" "gamemode"];
       shell = pkgs.fish;
       hashedPasswordFile = config.sops.secrets."purps-password".path;
     };

@@ -13,10 +13,11 @@
     };
     consoleLogLevel = 0; # Hide kernel output during boot
     initrd.verbose = false; # Hide initrd output
+    # `loglevel` is intentionally absent: consoleLogLevel = 0 above already
+    # appends loglevel=0, and the kernel honours the last one on the cmdline.
     kernelParams = [
       "quiet"
       "splash"
-      "loglevel=3"
       "rd.systemd.show_status=false"
       "rd.udev.log_level=3"
       "udev.log_priority=3"
@@ -39,10 +40,13 @@
       "firewire-ohci"
     ];
     kernel.sysctl = {
+      # kptr_restrict is omitted: nixpkgs already defaults it to 1.
       "kernel.yama.ptrace_scope" = 1;
-      "kernel.kptr_restrict" = 1;
       "kernel.unprivileged_bpf_disabled" = 1;
-      "net.core.bpf_jit_harden" = 2;
+      # 1 = harden unprivileged JIT only. 2 hardens root's BPF too, which taxes
+      # sched_ext schedulers (scx_lavd is a BPF program on the scheduling hot
+      # path) for no gain here, since unprivileged BPF is already disabled.
+      "net.core.bpf_jit_harden" = 1;
     };
   };
 
