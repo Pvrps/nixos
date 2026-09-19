@@ -95,6 +95,8 @@ manual attention (each site carries a `MAINTENANCE:` or bump comment):
 | chatterino7-kick fork branch               | `modules/home/programs/communication/chatterino.nix`      | `git ls-remote https://github.com/sambegui/chatterino7 002-polish-kick-integration` + `nix-prefetch`; bump rev+hash                                              |
 | `noctalia` input on `cachix`               | `flake.nix`                                               | deliberate (guarantees a cached build, see docs.noctalia.dev/noctalia/getting-started/nixos#binary-cache); `nix flake update` still auto-bumps within the branch |
 | `nix-flatpak` / `lanzaboote` tags          | `flake.nix`                                               | bump tag when upstream releases                                                                                                                                  |
+| `nixpkgs-xwayland-satellite-fix` rev       | `flake.nix` + `modules/nixos/overlays.nix`                | drop once nixpkgs ships a release with Supreeeme/xwayland-satellite#468 fixed                                                                                    |
+| niri-session import-environment patch      | `modules/hosts/navi/niri-wrapped.nix`                     | drop once niri-wm/niri#254 is fixed upstream; the build fails loudly if the patch stops applying                                                                 |
 
 ## Notes
 
