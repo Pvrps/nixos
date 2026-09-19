@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   imports = [
     ./_hardware.nix
     ./_disko.nix
@@ -6,6 +10,17 @@
     ./session.nix
     ./users.nix
   ];
+
+  # Track mainline rather than the 6.x LTS the nixpkgs default pins, matching
+  # mickey/windwaker. nvidia-open and v4l2loopback are both prebuilt against it
+  # on cache.nixos.org, so this costs nothing at build time.
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  # amd-pstate-epp defaults to powersave. gamemoded flips it on demand, but only
+  # for processes launched through gamemoderun -- anything started outside that
+  # path (and Steam's own shader compilation) stays on the low-power EPP hint.
+  # Pin performance instead; C-states still idle the cores on a desktop part.
+  powerManagement.cpuFreqGovernor = "performance";
 
   # roc-toolkit mic stream from ciela (Inori) — receiver ports for the RTP
   # source/repair/control endpoints, scoped to the tailscale interface only.
@@ -18,6 +33,11 @@
     opentabletdriver.enable = true;
     bluetooth.guiTools = true;
     hardwareControl.liquidctl = true;
+
+    # sched_ext is already compiled into the kernel; scx_lavd is a userspace BPF
+    # scheduler tuned for interactive/gaming latency. `systemctl stop scx`
+    # reverts to EEVDF live if it regresses anything.
+    gaming.scx.enable = true;
 
     #secureboot.enable = true;
 

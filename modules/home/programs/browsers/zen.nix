@@ -98,6 +98,13 @@ in {
   config = lib.mkIf cfg.enable {
     stylix.targets.zen-browser.profileNames = lib.mkIf config.stylix.enable [cfg.profileName];
 
+    # Force native Wayland rendering (not Xwayland auto-fallback), so we
+    # don't end up mixing an X11-composited GL surface with a Wayland/VRR
+    # compositor — a known source of intermittent GPU corruption on NVIDIA.
+    home.sessionVariables = lib.mkIf config.custom.system.wayland.enable {
+      MOZ_ENABLE_WAYLAND = "1";
+    };
+
     xdg.mimeApps.defaultApplications = {
       "text/html" = "zen.desktop";
       "x-scheme-handler/http" = "zen.desktop";

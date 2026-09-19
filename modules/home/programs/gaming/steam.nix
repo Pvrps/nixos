@@ -88,6 +88,10 @@ in {
         table_columns = 3;
         cell_padding_vertical = 8;
 
+        # Index 1 is the Raphael iGPU on the 7800X3D: permanently idle, and it
+        # contributed both the GPU1 and VRAM1 rows. Show the discrete card only.
+        gpu_list = 0;
+
         gpu_stats = true;
         gpu_temp = true;
 
@@ -102,6 +106,11 @@ in {
         frame_timing = 1;
 
         histogram_height = 24;
+
+        # The overlay is loaded into every Steam game (MANGOHUD=1 is set in
+        # programs.steam's FHS env), but stays off screen until asked for.
+        no_display = true;
+        toggle_hud = "Shift_R+F12";
       };
     };
 
