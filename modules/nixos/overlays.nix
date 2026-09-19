@@ -6,7 +6,7 @@
     # fixed upstream.
     # https://github.com/Supreeeme/xwayland-satellite/issues/468
     (final: prev: {
-      xwayland-satellite = inputs.nixpkgs-xwayland-satellite-fix.legacyPackages.${prev.system}.xwayland-satellite;
+      xwayland-satellite = inputs.nixpkgs-xwayland-satellite-fix.legacyPackages.${prev.stdenv.hostPlatform.system}.xwayland-satellite;
     })
   ];
 }

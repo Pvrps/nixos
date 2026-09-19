@@ -1,5 +1,13 @@
-{pkgs, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: {
   boot = {
+    # Track mainline rather than the LTS the nixpkgs default pins, on every
+    # host. nvidia-open and v4l2loopback are both prebuilt against it on
+    # cache.nixos.org, so this costs nothing at build time.
+    kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
     loader = {
       systemd-boot = {
         enable = true;

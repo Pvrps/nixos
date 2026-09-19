@@ -32,7 +32,11 @@
 
     nixcord = {
       url = "github:kaylorben/nixcord";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+        treefmt-nix.follows = "treefmt-nix";
+      };
     };
 
     # v5 rewrite: native C++/Wayland shell (no Qt/Quickshell), config in TOML,
@@ -54,7 +58,11 @@
 
     llm-agents = {
       url = "github:numtide/llm-agents.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-parts.follows = "flake-parts";
+        treefmt-nix.follows = "treefmt-nix";
+      };
     };
 
     superpowers = {
@@ -88,11 +96,6 @@
       url = "github:SEIAROTg/quadlet-nix";
     };
 
-    nh = {
-      url = "github:nix-community/nh";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -105,7 +108,11 @@
 
     xdp-termfilepickers = {
       url = "github:Guekka/xdg-desktop-portal-termfilepickers";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-parts.follows = "flake-parts";
+        treefmt-nix.follows = "treefmt-nix";
+      };
     };
 
     sls-steam = {
@@ -138,8 +145,6 @@
       systems = ["x86_64-linux"];
 
       flake = let
-        system = "x86_64-linux";
-
         # Extend nixpkgs lib with our helper library (lib.custom.*), available
         # in every NixOS and home-manager module via the `lib` argument.
         # Pure: helpers that need `pkgs` take it from the module's own args.
@@ -151,8 +156,10 @@
           host,
           users,
         }:
+        # The target platform comes from nixpkgs.hostPlatform in each host's
+        # _hardware.nix rather than the legacy `system` argument.
           nixpkgs.lib.nixosSystem {
-            inherit system lib;
+            inherit lib;
             specialArgs = {
               inherit inputs self;
               hostName = host;
@@ -172,9 +179,8 @@
                 home-manager = {
                   # Reuse the system nixpkgs instance instead of evaluating a
                   # private one per user (inherits allowUnfree from core.nix).
-                  # Trade-off: stylix's nixpkgs.overlays (recolored NixOS logo,
-                  # gtksourceview syntax theme) are ignored — all other stylix
-                  # theming is file-based and unaffected.
+                  # Home-manager modules must not set nixpkgs.* as a result;
+                  # see modules/home/stylix.nix for the stylix trade-off.
                   useGlobalPkgs = true;
                   useUserPackages = true;
                   backupFileExtension = "backup";
@@ -214,8 +220,6 @@
       };
 
       perSystem = {pkgs, ...}: {
-        devShells.default = pkgs.mkShell {};
-
         formatter = inputs.treefmt-nix.lib.mkWrapper pkgs {
           projectRootFile = "flake.nix";
           # sops-encrypted secrets are managed by sops, not the formatter.

@@ -88,7 +88,7 @@ in {
       # libgamemodeauto inside steamwebhelper breaks the CEF transport
       # (Steam error 0x3009). The two effects worth having globally are applied
       # unconditionally instead -- see the performance governor on navi and
-      # kernel.split_lock_mitigate in core.nix.
+      # kernel.split_lock_mitigate above in this module.
       gamemode = {
         enable = true;
         settings.general = {

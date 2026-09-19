@@ -132,8 +132,6 @@
     }
   ];
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
   # Agent and hub are co-located: no hubUrl/tokenFile needed.
   custom.services.beszel-agent = {
     enable = true;

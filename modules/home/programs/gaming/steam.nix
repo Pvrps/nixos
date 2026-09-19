@@ -50,7 +50,7 @@ in {
   config = lib.mkIf cfg.enable {
     home.packages = with pkgs;
       lib.optionals cfg.slsSteam.enable [
-        inputs.sls-steam.packages.${pkgs.system}.wrapped
+        inputs.sls-steam.packages.${pkgs.stdenv.hostPlatform.system}.wrapped
       ];
 
     xdg.desktopEntries = lib.mkIf cfg.slsSteam.enable {

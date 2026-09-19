@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{config, ...}: {
   imports = [
     ./_hardware.nix
     ./_disko.nix
@@ -10,11 +6,6 @@
     ./session.nix
     ./users.nix
   ];
-
-  # Track mainline rather than the 6.x LTS the nixpkgs default pins, matching
-  # mickey/windwaker. nvidia-open and v4l2loopback are both prebuilt against it
-  # on cache.nixos.org, so this costs nothing at build time.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # amd-pstate-epp defaults to powersave. gamemoded flips it on demand, but only
   # for processes launched through gamemoderun -- anything started outside that

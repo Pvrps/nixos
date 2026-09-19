@@ -10,7 +10,7 @@
       uid = 1000;
       # docker group: manage containers without sudo
       # wheel: sudo for anything requiring root
-      extraGroups = ["wheel" "docker" "networkmanager" "video" "audio" "input"];
+      extraGroups = ["wheel" "docker" "video" "audio" "input"];
       shell = pkgs.fish;
       hashedPassword = "!"; # SSH-key-only login
       openssh.authorizedKeys.keys = [
