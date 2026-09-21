@@ -115,6 +115,7 @@
     # arrpc.enable = true;
     # discordRpc.enable = true;
     bolt.enable = true;
+    bottles.enable = true;
     prismlauncher.enable = true;
     osu.enable = true;
 
