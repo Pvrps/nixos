@@ -244,7 +244,10 @@
   # ---------------------------------------------------------------------------
   # navi-specific niri layout (outputs/inputs/binds).
   # ---------------------------------------------------------------------------
-  custom.programs.noctalia.primaryMonitor = "DP-1";
+  custom.programs.noctalia = {
+    primaryMonitor = "DP-1";
+    lockscreenLoginBoxMonitors = ["DP-1" "DP-3"];
+  };
   custom.programs.niri = {
     xwaylandDisplay = ":11";
 

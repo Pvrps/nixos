@@ -17,6 +17,12 @@ in {
       type = lib.types.str;
       description = "Wayland output name used for the lock screen and notifications. Required when noctalia is enabled.";
     };
+    lockscreenLoginBoxMonitors = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      example = ["DP-1" "DP-3"];
+      description = "Outputs given a lock-screen login box. Geometry assumes 2560x1440 @ scale 1.5. Inert unless lockscreen_widgets.enabled is turned on.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -65,6 +71,9 @@ in {
           # v4: appLauncher.overviewLayer — type-to-launch from niri overview.
           niri_overview_type_to_launch_enabled = true;
 
+          # Inert until control_center_placement = "floating".
+          panel.control_center_position = "center";
+
           launcher = {
             sort_by_usage = true; # v4: appLauncher.sortByMostUsed
             categories = false;
@@ -90,6 +99,26 @@ in {
 
         lockscreen.monitors = [cfg.primaryMonitor]; # v4: general.lockScreenMonitors
 
+        # Login-box placement from the lock-screen layout editor. `enabled` is
+        # omitted (defaults false), so this is dormant layout state.
+        lockscreen_widgets = {
+          widget_order =
+            map (out: "lockscreen-login-box@${out}") cfg.lockscreenLoginBoxMonitors;
+          widget = lib.listToAttrs (map (out:
+            lib.nameValuePair "lockscreen-login-box@${out}" {
+              type = "login_box";
+              output = out;
+              cx = 854.0;
+              cy = 837.0;
+              box_width = 810.0;
+              box_height = 196.0;
+              placement_width = 1707.0;
+              placement_height = 960.0;
+              rotation = 0.0;
+            })
+          cfg.lockscreenLoginBoxMonitors);
+        };
+
         notification = {
           position = "top_right";
           monitors = [cfg.primaryMonitor];
@@ -105,9 +134,10 @@ in {
           radius = 0;
           capsule = true;
 
-          start = ["launcher" "group:info" "group:sysmon" "group:window"];
+          # `media` leads the end lane as its own pill, left of the tray.
+          start = ["launcher" "group:info" "group:sysmon" "active_window"];
           center = ["workspaces"];
-          end = ["tray" "notifications" "battery" "volume" "control-center"];
+          end = ["media" "tray" "notifications" "battery" "volume" "control-center"];
 
           capsule_group = [
             {
@@ -117,10 +147,6 @@ in {
             {
               id = "sysmon";
               members = ["cpu" "gpu"];
-            }
-            {
-              id = "window";
-              members = ["active_window" "media"];
             }
           ];
         };
@@ -137,6 +163,9 @@ in {
             type = "sysmon";
             stat = "gpu_temp";
           };
+
+          # Standalone pill — hide it rather than leave an empty capsule.
+          media.hide_when_no_media = true;
         };
       };
     };
