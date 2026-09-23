@@ -23,6 +23,24 @@ boot host=`hostname`:
 # Build and switch to the new configuration
 switch host=`hostname`:
     nh os switch . -H {{ host }}
+    @{{ just_executable() }} reactivate
+
+# home-manager activation lives entirely in home-manager-<user>.service, and
+# switch-to-configuration only restarts a unit whose *unit file* changed. That
+# file embeds the generation store path, so when the home-manager closure is
+# unchanged the unit is left alone and no activation script runs — silently
+# skipping the ones that reconcile app-owned files (bolt, easyeffects,
+# rustdesk, obs, osu). Restarting the unit is the only way to force them.
+#
+# Running this from a logged-in session is also strictly better than the
+# activation that happens at boot: hm-setup-env imports DBUS_SESSION_BUS_ADDRESS,
+# DISPLAY, WAYLAND_DISPLAY and XDG_RUNTIME_DIR from the live session, so
+# reloadSystemd actually reloads user units instead of logging
+# "User systemd daemon not running. Skipping reload."
+[doc("Re-run home-manager activation, even when nothing has changed")]
+reactivate user=`whoami`:
+    sudo systemctl restart home-manager-{{ user }}.service
+    @journalctl _SYSTEMD_INVOCATION_ID="$(systemctl show -p InvocationID --value home-manager-{{ user }}.service)" --no-pager -o cat
 
 # Dry build the configuration without switching
 build host=`hostname`:
