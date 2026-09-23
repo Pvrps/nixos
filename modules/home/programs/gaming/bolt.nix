@@ -2,11 +2,83 @@
   pkgs,
   lib,
   config,
+  osConfig,
   ...
 }: let
   cfg = config.custom.programs.bolt;
+
+  # Bolt's own settings file. It lives inside the Flatpak per-app tree, which
+  # is persisted wholesale via the ".var" entry in modules/home/profiles/
+  # desktop.nix, so nothing extra is needed to survive a reboot.
+  launcherJson = "$HOME/.var/app/com.adamcake.Bolt/config/bolt-launcher/launcher.json";
+
+  nvidiaWayland =
+    (osConfig.custom.nvidia.enable or false)
+    && config.custom.system.wayland.enable;
+
+  # Force the RS3 client's OpenGL onto zink (GL-on-Vulkan) instead of NVIDIA's
+  # native GL driver.  Under XWayland the NVIDIA GLX/EGL path mishandles the
+  # client's context, and zink — layered on top of the same NVIDIA Vulkan
+  # driver — renders correctly with no measurable loss.
+  #
+  #   MESA_LOADER_DRIVER_OVERRIDE=zink   pick the zink gallium driver
+  #   GALLIUM_DRIVER=zink                ...and again for the gallium loader
+  #   __GLX_VENDOR_LIBRARY_NAME=mesa     override the system-wide "nvidia"
+  #                                      value set in modules/nixos/nvidia.nix
+  #                                      so GLVND dispatches to Mesa, not to
+  #                                      NVIDIA's own GLX vendor library
+  #   LIBGL_KOPPER_DRI2=1                use the DRI2 path in kopper (zink's
+  #                                      window-system integration); DRI3 under
+  #                                      XWayland produces a black viewport
+  #   ZINK_DEBUG=flushsync               synchronous flushes; without it the
+  #                                      client races zink's command submission
+  #                                      and intermittently hangs on startup
+  #
+  # Only correct on NVIDIA: on AMD/Intel the native Mesa driver is already in
+  # use and forcing zink would be a pure regression.  Hence the nvidiaWayland
+  # gate on the option default below.
+  zinkLaunchCommand =
+    "/usr/bin/env MESA_LOADER_DRIVER_OVERRIDE=zink ZINK_DEBUG=flushsync "
+    + "__GLX_VENDOR_LIBRARY_NAME=mesa GALLIUM_DRIVER=zink LIBGL_KOPPER_DRI2=1 %command%";
 in {
-  options.custom.programs.bolt.enable = lib.mkEnableOption "Bolt launcher for RuneScape (Jagex Launcher + RuneLite) via Flatpak";
+  options.custom.programs.bolt = {
+    enable = lib.mkEnableOption "Bolt launcher for RuneScape (Jagex Launcher + RuneLite) via Flatpak";
+
+    rs3LaunchCommand = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default =
+        if nvidiaWayland
+        then zinkLaunchCommand
+        else null;
+      description = ''
+        Value enforced for `rs_launch_command` in Bolt's launcher.json, with
+        `%command%` standing in for the real client invocation.
+
+        This is the only launch hook Bolt scopes to RS3 specifically; RuneLite,
+        OSRS and HDOS have their own keys, which this module leaves alone.  A
+        Flatpak `[Environment]` override would apply to the whole sandbox (and
+        so to the launcher UI and every other client), which is why the value
+        is written into Bolt's config instead.
+
+        `null` disables management entirely and leaves the key untouched.
+      '';
+    };
+
+    requireResizableBar = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Only apply {option}`rs3LaunchCommand` when Resizable BAR is actually
+        active, probed at activation time from the GPU's PCI BAR1 size.
+
+        Resizable BAR cannot be detected during evaluation — it is firmware and
+        runtime state — so this is a runtime gate rather than part of the
+        option's default.
+
+        Set to false to apply the command regardless of the probe.
+      '';
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     assertions = [
@@ -64,6 +136,65 @@ in {
       [Context]
       filesystems=${config.stylix.cursor.package}/share/icons/${config.stylix.cursor.name}:ro
     '';
+
+    # launcher.json cannot be a home-manager-managed file: it is a store
+    # symlink (read-only) while Bolt rewrites it on every settings change, and
+    # it also carries state Bolt owns — selected game/client, account ids, UI
+    # toggles.  So we merge the single key we care about into the live file,
+    # the same way modules/nixos/services/rustdesk.nix handles RustDesk.toml.
+    home.activation.boltRs3LaunchCommand = lib.mkIf (cfg.rs3LaunchCommand != null) (lib.hm.dag.entryAfter ["writeBoundary"] ''
+      cfg_file="${launcherJson}"
+      want=${lib.escapeShellArg (builtins.toJSON cfg.rs3LaunchCommand)}
+
+      # Write $1 (a JSON value) to .rs_launch_command, leaving every other key
+      # alone. Creating the file with only this key is fine: Bolt fills in
+      # defaults for absent keys, so RS3 is correct on the very first launch.
+      boltSetRsLaunchCommand() {
+        mkdir -p "$(dirname "$cfg_file")"
+        local tmp="$cfg_file.tmp"
+        if [ -f "$cfg_file" ]; then
+          ${pkgs.jq}/bin/jq --argjson v "$1" '.rs_launch_command = $v' "$cfg_file" > "$tmp"
+        else
+          ${pkgs.jq}/bin/jq -n --argjson v "$1" '{rs_launch_command: $v}' > "$tmp"
+        fi
+        mv "$tmp" "$cfg_file"
+      }
+
+      boltRsLaunchCommandIs() {
+        [ -f "$cfg_file" ] \
+          && ${pkgs.jq}/bin/jq -e --argjson v "$1" '.rs_launch_command == $v' "$cfg_file" > /dev/null
+      }
+
+      # Without Resizable BAR the NVIDIA driver exposes only a 256 MiB
+      # DEVICE_LOCAL|HOST_VISIBLE heap, and that heap is exactly what zink
+      # streams its buffer uploads through; once it is exhausted zink spills to
+      # non-device-local memory and the RS3 client runs far worse than it would
+      # on NVIDIA's native GL driver.  So the override is worth applying only
+      # when ReBAR is actually on — which is runtime state, hence a probe here
+      # rather than a condition on the option default.
+      ${lib.custom.mkResizableBarCheck {}}
+
+      if [[ -v DRY_RUN ]]; then
+        echo "would ensure rs_launch_command in $cfg_file"
+      elif ${lib.boolToString cfg.requireResizableBar} && ! hasResizableBar; then
+        # Never apply without ReBAR, and revert the value if we are the ones
+        # who wrote it (e.g. ReBAR was since turned off in firmware).  A
+        # command set by hand in Bolt's UI is not ours to touch.
+        if boltRsLaunchCommandIs "$want"; then
+          boltSetRsLaunchCommand null
+          echo "Bolt: Resizable BAR is off — reverted the zink rs_launch_command for RS3"
+        else
+          echo "Bolt: Resizable BAR is off — not applying the zink rs_launch_command for RS3"
+        fi
+      elif boltRsLaunchCommandIs "$want"; then
+        : # already correct — leave Bolt's file alone so rebuilds are a no-op
+      else
+        boltSetRsLaunchCommand "$want"
+        echo "Bolt: set rs_launch_command in $cfg_file"
+      fi
+
+      unset -f boltSetRsLaunchCommand boltRsLaunchCommandIs hasResizableBar
+    '');
 
     home.persistence."/persist".directories = [".runelite"];
 

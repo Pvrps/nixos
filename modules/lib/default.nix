@@ -123,6 +123,57 @@
     lib.genAttrs secrets (_: {inherit owner group mode;});
 
   # ---------------------------------------------------------------------------
+  # mkResizableBarCheck: emit a bash function reporting whether Resizable BAR
+  # (AMD brands it Smart Access Memory) is active on a GPU.
+  #
+  # ReBAR is firmware and runtime state, invisible during evaluation, so
+  # anything conditional on it must probe at activation or run time rather than
+  # gate a Nix option.
+  #
+  # The probe reads BAR1 — the second entry of a device's sysfs `resource` file,
+  # formatted as "<start> <end> <flags>" in 0x literals — for every GPU matching
+  # vendorId. Without ReBAR that BAR is pinned to exactly 256 MiB; with ReBAR it
+  # grows to roughly the full VRAM size, so "larger than 256 MiB" is the test.
+  # Returns 0 as soon as one matching GPU qualifies.
+  #
+  # Pure bash and sysfs: no pkgs dependency, no driver load, no GPU wakeup.
+  #
+  #   funcName - name of the emitted shell function
+  #   vendorId - PCI vendor id; 0x10de NVIDIA, 0x1002 AMD, 0x8086 Intel
+  #
+  #   script = ''
+  #     ${lib.custom.mkResizableBarCheck {}}
+  #     if hasResizableBar; then ... fi
+  #   '';
+  # ---------------------------------------------------------------------------
+  mkResizableBarCheck = {
+    funcName ? "hasResizableBar",
+    vendorId ? "0x10de",
+  }: ''
+    ${funcName}() {
+      local dev line start end
+      for dev in /sys/bus/pci/devices/*; do
+        [ -r "$dev/vendor" ] && [ -r "$dev/class" ] && [ -r "$dev/resource" ] || continue
+        [ "$(< "$dev/vendor")" = "${vendorId}" ] || continue
+        # 0x0300 VGA controller, 0x0302 3D controller (hybrid graphics)
+        case "$(< "$dev/class")" in
+          0x0300* | 0x0302*) ;;
+          *) continue ;;
+        esac
+        { read -r _; read -r line; } < "$dev/resource"
+        start=''${line%% *}
+        end=''${line#* }
+        end=''${end%% *}
+        # bash reads the 0x prefixes; unused BARs read as 0 0, giving size 1.
+        if [ "$((end - start + 1))" -gt $((256 * 1024 * 1024)) ]; then
+          return 0
+        fi
+      done
+      return 1
+    }
+  '';
+
+  # ---------------------------------------------------------------------------
   # mkRustdeskConfigScript: shell that enforces the server settings in
   # RustDesk2.toml, with server address and key BOTH read from files at
   # runtime. This is the shared writer for the NixOS system daemon and the
