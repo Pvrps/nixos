@@ -71,8 +71,13 @@ in {
           # v4: appLauncher.overviewLayer — type-to-launch from niri overview.
           niri_overview_type_to_launch_enabled = true;
 
-          # Inert until control_center_placement = "floating".
-          panel.control_center_position = "center";
+          panel = {
+            # Open the control center under the bar widget that was clicked
+            # instead of centred along the bar.
+            open_near_click_control_center = true;
+            # Inert until control_center_placement = "floating".
+            control_center_position = "center";
+          };
 
           launcher = {
             sort_by_usage = true; # v4: appLauncher.sortByMostUsed
