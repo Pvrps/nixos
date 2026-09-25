@@ -136,6 +136,18 @@
       keyFile = osConfig.sops.secrets."rustdesk-key".path;
     };
 
+    # Downstairs TCL Google TV. It sits on the 10.0.20.0/24 VLAN, reachable
+    # from here but not on this L2 segment, so it must be an IP: adb's mDNS
+    # discovery is multicast and does not cross the subnet boundary.
+    scrcpy = {
+      enable = true;
+      address = "10.0.20.155:5555";
+      extraArgs = [
+        "--max-size=1280"
+        "--video-bit-rate=8M"
+      ];
+    };
+
     flatpak = {
       enable = true;
       packages = [

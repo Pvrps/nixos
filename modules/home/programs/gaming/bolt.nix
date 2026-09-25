@@ -30,15 +30,11 @@
   #   LIBGL_KOPPER_DRI2=1                use the DRI2 path in kopper (zink's
   #                                      window-system integration); DRI3 under
   #                                      XWayland produces a black viewport
-  #   ZINK_DEBUG=flushsync               synchronous flushes; without it the
-  #                                      client races zink's command submission
-  #                                      and intermittently hangs on startup
-  #
   # Only correct on NVIDIA: on AMD/Intel the native Mesa driver is already in
   # use and forcing zink would be a pure regression.  Hence the nvidiaWayland
   # gate on the option default below.
   zinkLaunchCommand =
-    "/usr/bin/env MESA_LOADER_DRIVER_OVERRIDE=zink ZINK_DEBUG=flushsync "
+    "/usr/bin/env MESA_LOADER_DRIVER_OVERRIDE=zink "
     + "__GLX_VENDOR_LIBRARY_NAME=mesa GALLIUM_DRIVER=zink LIBGL_KOPPER_DRI2=1 %command%";
 in {
   options.custom.programs.bolt = {
