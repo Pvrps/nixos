@@ -97,6 +97,7 @@ manual attention (each site carries a `MAINTENANCE:` or bump comment):
 | `nix-flatpak` / `lanzaboote` tags          | `flake.nix`                                               | bump tag when upstream releases                                                                                                                                  |
 | `nixpkgs-xwayland-satellite-fix` rev       | `flake.nix` + `modules/nixos/overlays.nix`                | drop once nixpkgs ships a release with Supreeeme/xwayland-satellite#468 fixed                                                                                    |
 | niri-session import-environment patch      | `modules/hosts/navi/niri-wrapped.nix`                     | drop once niri-wm/niri#254 is fixed upstream; the build fails loudly if the patch stops applying                                                                 |
+| Skyrim Together server image tag           | `modules/hosts/windwaker/services/skyrim-together.nix`    | match the clients' STR version; list tags with `nix shell nixpkgs#skopeo -c skopeo list-tags docker://docker.io/tiltedphoques/st-reborn-server`                  |
 
 ## Notes
 

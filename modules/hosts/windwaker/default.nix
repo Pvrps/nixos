@@ -20,6 +20,7 @@
     #./services/dragonwilds.nix
     ./services/beszel-hub.nix
     ./services/qbittorrent.nix
+    ./services/skyrim-together.nix
   ];
 
   custom.remoteAdmin = {
