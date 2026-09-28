@@ -25,8 +25,8 @@
       slsSteam.enable = true;
     };
     discord.enable = true;
-    arrpc.enable = true;
-    discordRpc.enable = true;
+    # arrpc.enable = true;
+    # discordRpc.enable = true;
     bolt.enable = true;
     prismlauncher.enable = true;
 
