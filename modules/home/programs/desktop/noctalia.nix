@@ -2,15 +2,12 @@
   inputs,
   config,
   lib,
+  pkgs,
   ...
 }: let
   cfg = config.custom.programs.noctalia;
   niriEnabled = config.custom.programs.niri.enable;
 in {
-  imports = [
-    inputs.noctalia.homeModules.default
-  ];
-
   options.custom.programs.noctalia = {
     enable = lib.mkEnableOption "Noctalia shell (v5, native/Luau)";
     primaryMonitor = lib.mkOption {
@@ -29,6 +26,8 @@ in {
 
     programs.noctalia = {
       enable = true;
+      package = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
       # Started by niri's `spawn-at-startup` below, as a plain compositor
       # child (not a systemd user unit) — leave the module's own service off.
       systemd.enable = false;
