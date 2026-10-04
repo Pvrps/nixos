@@ -5,13 +5,27 @@
   ...
 }: let
   cfg = config.custom.programs.discord;
+
+  autostartCommand = {
+    discord = "discord --start-minimized";
+    vesktop = "vesktop --start-minimized";
+  };
 in {
   imports = [
     inputs.nixcord.homeModules.nixcord
   ];
 
   options.custom.programs.discord = {
-    enable = lib.mkEnableOption "Discord via nixcord/vencord";
+    enable = lib.mkEnableOption "Discord and Vesktop via nixcord/vencord";
+    autostart = lib.mkOption {
+      type = lib.types.nullOr (lib.types.enum ["discord" "vesktop"]);
+      default = "discord";
+      description = ''
+        Client launched (minimized) at niri startup, or null for none. Both
+        clients are always installed; Vesktop is the one with per-application
+        stream audio (venmic/PipeWire).
+      '';
+    };
     plugins = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
       # Shared household plugin set. Setting this option in a user file
@@ -99,7 +113,26 @@ in {
           arRPC = true;
         };
       };
-      vesktop.enable = false;
+      # Installed alongside Discord: the official client only streams system
+      # audio on Linux, Vesktop can stream a single app's audio via venmic.
+      # Both share `config` below (same Vencord plugins). Both run an arRPC
+      # server on the same ports, so only the first one started gets Rich
+      # Presence if they run at the same time.
+      vesktop = {
+        enable = true;
+        # Managed settings.json is rewritten on each activation; anything not
+        # listed here falls back to Vesktop's defaults.
+        settings = {
+          arRPC = true;
+          tray = true;
+          minimizeToTray = true;
+          # The niri splash rule below matches title "Vesktop"; keep the
+          # splash on and the static title off so the main window never
+          # opens with that title.
+          enableSplashScreen = true;
+          staticTitle = false;
+        };
+      };
 
       config = {
         useQuickCss = true;
@@ -115,14 +148,16 @@ in {
       };
     };
 
-    custom.programs.niri.startupCommands = lib.mkIf config.custom.programs.niri.enable [
-      ''"bash" "-c" "nm-online -q --timeout=30 || true; discord --start-minimized > /dev/null 2>&1"''
+    custom.programs.niri.startupCommands = lib.mkIf (config.custom.programs.niri.enable && cfg.autostart != null) [
+      ''"bash" "-c" "nm-online -q --timeout=30 || true; ${autostartCommand.${cfg.autostart}} > /dev/null 2>&1"''
     ];
 
+    # Rules for both clients, since either may be launched at any time.
     custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
       window-rule {
           match app-id="discord" title="Discord Updater"
           match app-id="discord" title="Checking for updates..."
+          match app-id=r#"(?i)^vesktop$"# title=r#"^Vesktop$"#
           open-floating true
           open-maximized false
       }
