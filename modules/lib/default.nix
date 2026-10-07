@@ -228,6 +228,11 @@
   # identity keypair, salt, ...) is preserved. Runs before each service start
   # so secret rotations propagate on restart.
   #
+  # Uses only bash builtins + coreutils/grep (no awk): it runs as an
+  # ExecStartPre where PATH is minimal, and a missing tool used to leave an
+  # empty $tmp that was then mv'd over the config, wiping the device ID and
+  # keypair. With `set -eu` any failure aborts before the mv.
+  #
   #   configFile   - target RustDesk.toml path
   #   passwordFile - file containing the permanent password
   # ---------------------------------------------------------------------------
@@ -235,6 +240,7 @@
     configFile,
     passwordFile,
   }: ''
+    set -eu
     config_file="${configFile}"
     pw=$(tr -d '\n' < ${passwordFile})
     # TOML basic-string escaping (backslash, double quote)
@@ -243,8 +249,12 @@
     mkdir -p "$(dirname "$config_file")"
     tmp="$config_file.tmp"
     if [ -f "$config_file" ] && grep -q '^password = ' "$config_file"; then
-      RD_PW="$pw" awk '/^password = / { print "password = \"" ENVIRON["RD_PW"] "\""; next } { print }' \
-        "$config_file" > "$tmp"
+      while IFS= read -r line || [ -n "$line" ]; do
+        case "$line" in
+          "password = "*) printf 'password = "%s"\n' "$pw" ;;
+          *) printf '%s\n' "$line" ;;
+        esac
+      done < "$config_file" > "$tmp"
     else
       # password belongs to the TOML root table: prepend, never append
       # (appending would land inside a [section]).
