@@ -57,11 +57,27 @@ in {
       after = ["display-manager.service"];
       wants = ["display-manager.service"];
       wantedBy = ["multi-user.target"];
-      environment = {
-        HOME = "/root";
-        XDG_DATA_HOME = "/root/.local/share";
-        XDG_CONFIG_HOME = "/root/.config";
-      };
+      # The daemon shells out to bare command names: it spawns the session
+      # server via `sudo -E -u <user> <exe> --server` and probes the desktop
+      # with ps/awk/getent/xargs/w/pgrep/xrandr/which. None of those are on
+      # the default systemd unit PATH, and NixOS's setuid sudo only lives in
+      # /run/wrappers/bin. Without this the spawn fails with ENOENT forever,
+      # nothing registers with hbbs, and the ID shows offline.
+      path = [
+        "/run/wrappers"
+        pkgs.procps
+        pkgs.gawk
+        pkgs.getent
+        pkgs.which
+        pkgs.xrandr
+      ];
+      # HOME only. Do NOT set XDG_CONFIG_HOME/XDG_DATA_HOME: the session
+      # server is spawned with `sudo -E`, which leaks them into the user
+      # process. It then tries to read root's 0600 config, fails, falls back
+      # to defaults and registers with the public rs-ny.rustdesk.com instead
+      # of our server. (RustDesk overrides HOME for the child, so HOME is safe;
+      # root's config still resolves to /root/.config via HOME.)
+      environment.HOME = "/root";
       serviceConfig =
         {
           Type = "simple";
