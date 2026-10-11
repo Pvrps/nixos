@@ -20,6 +20,11 @@ in {
           lsp.display-messages = true;
           color-modes = true;
 
+          soft-wrap = {
+            enable = true;
+            wrap-indicator = "    ↪ ";
+          };
+
           statusline = {
             left = ["mode" "spinner"];
             center = ["file-name"];
