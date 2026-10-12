@@ -71,6 +71,9 @@ in {
           panel.open_near_click_control_center = true;
 
           launcher = {
+            # Open on All Apps (ranked by sort_by_usage) rather than the
+            # chronological Recent view, which became the default in 5.2.
+            default_view = "all_apps";
             sort_by_usage = true; # v4: appLauncher.sortByMostUsed
             categories = false;
             compact = true;
