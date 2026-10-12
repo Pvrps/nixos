@@ -1,5 +1,4 @@
 {
-  lib,
   pkgs,
   osConfig,
   ...
@@ -325,28 +324,16 @@
       }
     '';
 
-    windowRulesConfig =
-      ''
-        window-rule {
-            open-maximized true
-        }
+    windowRulesConfig = ''
+      window-rule {
+          open-maximized true
+      }
 
-        window-rule {
-            geometry-corner-radius 0
-            clip-to-geometry true
-        }
-      ''
-      # Steam games: present immediately (tear) instead of waiting for the next
-      # 144Hz vblank — lowest input latency at uncapped FPS. Only with the
-      # urayde/niri fork (custom.niri.tearingFork in hosts/navi/session.nix);
-      # stock niri rejects this property.
-      + lib.optionalString (osConfig.custom.niri.tearingFork.enable or false) ''
-
-        window-rule {
-            match app-id=r#"^steam_app_"#
-            allow-tearing true
-        }
-      '';
+      window-rule {
+          geometry-corner-radius 0
+          clip-to-geometry true
+      }
+    '';
 
     bindsConfig = ''
       Mod+Q { close-window; }

@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  osConfig,
   inputs,
   ...
 }: let
@@ -140,22 +141,35 @@ in {
       '';
     };
 
-    custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable ''
-      window-rule {
-          match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
-          open-floating true
-          open-maximized false
-          open-focused false
-          default-floating-position x=10 y=10 relative-to="bottom-right"
-          focus-ring { width 0; }
-          block-out-from "screencast"
-      }
+    custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable (
+      ''
+        window-rule {
+            match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
+            open-floating true
+            open-maximized false
+            open-focused false
+            default-floating-position x=10 y=10 relative-to="bottom-right"
+            focus-ring { width 0; }
+            block-out-from "screencast"
+        }
 
-      window-rule {
-          match app-id=r#"^steam$"# title=r#"^Friends List$"#
-          open-floating true
-      }
-    '';
+        window-rule {
+            match app-id=r#"^steam$"# title=r#"^Friends List$"#
+            open-floating true
+        }
+      ''
+      # Games: present immediately (tear) instead of waiting for the next
+      # vblank — lowest input latency at uncapped FPS. Only with the urayde/niri
+      # fork (custom.niri.tearingFork, hosts/navi/session.nix); stock niri
+      # rejects this property.
+      + lib.optionalString (osConfig.custom.niri.tearingFork.enable or false) ''
+
+        window-rule {
+            match app-id=r#"^steam_app_"#
+            allow-tearing true
+        }
+      ''
+    );
 
     custom.programs.mango = lib.mkIf config.custom.programs.mango.enable {
       startupCommands = [
