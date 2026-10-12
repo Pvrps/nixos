@@ -157,11 +157,20 @@ in {
             match app-id=r#"^steam$"# title=r#"^Friends List$"#
             open-floating true
         }
+
+        // Games: turn on VRR while visible, on outputs configured with
+        // `variable-refresh-rate on-demand=true` (desktop stays fixed-rate).
+        window-rule {
+            match app-id=r#"^steam_app_"#
+            variable-refresh-rate true
+        }
       ''
       # Games: present immediately (tear) instead of waiting for the next
-      # vblank — lowest input latency at uncapped FPS. Only with the urayde/niri
-      # fork (custom.niri.tearingFork, hosts/navi/session.nix); stock niri
-      # rejects this property.
+      # vblank. Combined with the VRR rule above this is "G-Sync + V-Sync off":
+      # below the max refresh VRR follows the game tear-free, above it frames
+      # tear instead of queueing. Only with the urayde/niri fork
+      # (custom.niri.tearingFork, hosts/navi/session.nix); stock niri rejects
+      # this property.
       + lib.optionalString (osConfig.custom.niri.tearingFork.enable or false) ''
 
         window-rule {
