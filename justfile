@@ -58,6 +58,22 @@ cleanup:
 hash url:
     @nix store prefetch-file --json "{{ url }}" | nix run nixpkgs#jq -- -r .hash
 
+# How the pinned urayde/niri tearing fork compares to upstream niri: commits
+# the fork adds, how far its base lags upstream main, and the rev in flake.lock
+# (bumped by the nightly `flake update`).
+[doc("Show how current the niri tearing fork is versus upstream")]
+niri-fork-status:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    jq() { nix run nixpkgs#jq -- "$@"; }
+    locked=$(jq -r '.nodes["niri-tearing"].locked | "\(.rev[0:9]) (\(.lastModified | todate))"' flake.lock)
+    echo "flake.lock pin : $locked"
+    curl -fsSL "https://api.github.com/repos/niri-wm/niri/compare/main...urayde:niri:main" \
+      | jq -r '"fork vs upstream main: \(.ahead_by) ahead, \(.behind_by) behind",
+               "fork base      : \(.merge_base_commit.commit.committer.date) \(.merge_base_commit.commit.message | split("\n")[0])",
+               "fork head      : \(.commits[-1].sha[0:9]) \(.commits[-1].commit.committer.date)"'
+    if command -v niri >/dev/null; then echo "running niri   : $(niri --version)"; fi
+
 # Format Nix/Shell/YAML/JSON/Markdown files
 format:
     nix fmt

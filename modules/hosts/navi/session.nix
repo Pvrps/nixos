@@ -1,10 +1,34 @@
-# Navi session: greetd/tuigreet + mango (default) or niri (pick with F3).
+# Navi session: greetd/tuigreet + niri (tearing fork by default).
+#
+# mango is kept configured but disabled (custom.mango.enable below, plus
+# custom.programs.mango.enable in users/purps/navi.nix): flip both back on to
+# get the mango session in tuigreet's F3 list again.
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
 }: let
+  cfg = config.custom.niri.tearingFork;
+  mangoEnabled = config.custom.mango.enable;
+
+  # urayde/niri, built against our nixpkgs through the fork's own overlay so
+  # it uses the same toolchain/libraries as the rest of the system. Tests are
+  # skipped: they only lengthen the (local, uncached) build.
+  niriTearing = (inputs.niri-tearing.overlays.default pkgs pkgs).niri.overrideAttrs (_: {
+    doCheck = false;
+  });
+
+  # See niri-wrapped.nix: silences the import-environment deprecation warning
+  # printed on the TTY at login. Applies to both stock niri and the fork.
+  niriPackage = pkgs.callPackage ./niri-wrapped.nix {
+    niri =
+      if cfg.enable
+      then niriTearing
+      else pkgs.niri;
+  };
+
   mango = config.programs.mango.package;
 
   # Launch mango as a login session. niri gets this from niri-session; mango
@@ -32,43 +56,60 @@
     exec ${pkgs.systemd}/bin/systemd-cat --identifier=mango ${lib.getExe mango}
   '';
 in {
-  programs = {
-    mango.enable = true;
-    niri = {
-      enable = true;
-      # See niri-wrapped.nix: silences the import-environment deprecation
-      # warning printed on the TTY at login.
-      package = pkgs.callPackage ./niri-wrapped.nix {};
-      useNautilus = false;
-    };
-    gpu-screen-recorder.enable = true;
+  options.custom = {
+    niri.tearingFork.enable = lib.mkEnableOption ''
+      the urayde/niri fork (screen tearing via the `allow-tearing` window rule,
+      explicit sync) instead of nixpkgs' niri. Built locally (no binary cache)'';
+
+    mango.enable = lib.mkEnableOption "the mango session (listed in tuigreet's session picker)";
   };
 
-  # nixpkgs' programs.mango module keys this as "ScreenShot", which
-  # xdg-desktop-portal doesn't recognise (interface names are case-sensitive).
-  xdg.portal.config.mango."org.freedesktop.impl.portal.Screenshot" = ["wlr"];
+  config = lib.mkMerge [
+    {
+      custom.niri.tearingFork.enable = true;
 
-  services.udev.extraRules = ''
-    SUBSYSTEM=="drm", KERNEL=="card[0-9]*", ATTRS{vendor}=="0x10de", SYMLINK+="dri/nvidia-card"
-  '';
+      programs = {
+        niri = {
+          enable = true;
+          package = niriPackage;
+          useNautilus = false;
+        };
+        gpu-screen-recorder.enable = true;
+      };
 
-  security.pam.services.greetd.enableGnomeKeyring = true;
+      security.pam.services.greetd.enableGnomeKeyring = true;
 
-  services.greetd = {
-    enable = true;
-    # Default to mango; F3 in tuigreet lists every installed session (niri
-    # included). --remember-session's choice lives in /var/cache/tuigreet,
-    # which is wiped every boot (ephemeral /), so each boot starts on mango.
-    settings.default_session = {
-      command = lib.concatStringsSep " " [
-        "${pkgs.tuigreet}/bin/tuigreet"
-        "--time --remember --remember-session"
-        "--sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions"
-        "--cmd ${lib.getExe mango-session}"
-      ];
-      user = "greeter";
-    };
-  };
+      services.greetd = {
+        enable = true;
+        # F3 in tuigreet lists every installed session.
+        # --remember-session's choice lives in /var/cache/tuigreet, which is
+        # wiped every boot (ephemeral /), so each boot starts on niri.
+        settings.default_session = {
+          command = lib.concatStringsSep " " [
+            "${pkgs.tuigreet}/bin/tuigreet"
+            "--time --remember --remember-session"
+            "--sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions"
+            "--cmd niri-session"
+          ];
+          user = "greeter";
+        };
+      };
 
-  environment.systemPackages = [pkgs.seahorse mango-session];
+      environment.systemPackages = [pkgs.seahorse];
+    }
+
+    (lib.mkIf mangoEnabled {
+      programs.mango.enable = true;
+
+      # nixpkgs' programs.mango module keys this as "ScreenShot", which
+      # xdg-desktop-portal doesn't recognise (interface names are case-sensitive).
+      xdg.portal.config.mango."org.freedesktop.impl.portal.Screenshot" = ["wlr"];
+
+      services.udev.extraRules = ''
+        SUBSYSTEM=="drm", KERNEL=="card[0-9]*", ATTRS{vendor}=="0x10de", SYMLINK+="dri/nvidia-card"
+      '';
+
+      environment.systemPackages = [mango-session];
+    })
+  ];
 }

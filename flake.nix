@@ -124,6 +124,16 @@
     # pointer-grabs (Steam context menus closing instantly under niri).
     # Remove once fixed upstream: https://github.com/Supreeeme/xwayland-satellite/issues/468
     nixpkgs-xwayland-satellite-fix.url = "github:nixos/nixpkgs/a5cbcfe954791221bfffe2307f7d1a1bf61a871e";
+
+    # niri fork with screen tearing (wp-tearing-control, `allow-tearing`
+    # window rule) plus explicit sync, rebased on upstream main periodically.
+    # Tracks the fork's latest commit via the nightly `flake update`; used on
+    # hosts with custom.niri.tearingFork.enable. Drop once upstream niri gets
+    # tearing (blocked on https://github.com/Smithay/smithay/pull/1948).
+    niri-tearing = {
+      url = "github:urayde/niri";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
