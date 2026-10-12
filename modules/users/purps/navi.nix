@@ -461,6 +461,20 @@
 
       # niri: hot-corners off.
       enable_hotarea=0
+
+      # X11 (Xwayland) apps get the physical 2560x1440 and are not upscaled,
+      # like niri's xwayland-satellite: sharp, and Java apps that scale
+      # themselves (RuneLite's uiScale=2, see bolt.nix) keep their niri size.
+      # Default (0) reports the logical 1707x960 and stretches 1.5x on top.
+      xwayland_ignore_scale=1
+    '';
+
+    # Runtime-managed window rules (written/removed by the XoBot client,
+    # MangoIntegration). Optional: a missing file is fine, and mango's watcher
+    # reloads when it appears, changes, or is removed — niri's
+    # `include optional=true` equivalent.
+    extraConfig = ''
+      source_optional=~/.config/mango/runtime-rules.conf
     '';
 
     # niri binds, translated. Unchanged keys:

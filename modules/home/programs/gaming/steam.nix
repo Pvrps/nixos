@@ -170,7 +170,7 @@ in {
       # layoutConfig) — and keep the pointer confined so it can't wander onto
       # the second monitor mid-match (Proton drops Xwayland pointer locks).
       windowRulesConfig = ''
-        window_rule=is_floating:1,is_open_silent:1,no_border:1,shield_when_capture:1,offset_x:100,offset_y:100,app_id:^steam$,title:^notificationtoasts_\d+_desktop$
+        window_rule=is_floating:1,is_open_silent:1,no_border:1,offset_x:100,offset_y:100,app_id:^steam$,title:^notificationtoasts_\d+_desktop$
         window_rule=is_floating:1,app_id:^steam$,title:^Friends List$
         window_rule=force_tearing:1,confine_pointer:1,app_id:^steam_app_
       '';

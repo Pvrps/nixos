@@ -190,11 +190,9 @@ in {
         "SUPER+SHIFT,l,spawn,noctalia msg session lock"
       ];
 
-      # Keep notifications out of screen captures (niri: block-out-from), and
-      # skip mango's layer animations on them so the shield isn't late.
-      layerRulesConfig = ''
-        layer_rule=shield_when_capture:1,no_animation:1,layer_name:^noctalia-notification
-      '';
+      # No capture shield on mango: its shield_when_capture paints a black
+      # box on the real screen while any capture (OBS) runs, not only in the
+      # capture (mangowm/mango#1418), so notifications stay capturable here.
     };
   };
 }

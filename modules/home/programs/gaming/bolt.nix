@@ -86,17 +86,20 @@ in {
 
     custom.programs.flatpak.packages = ["com.adamcake.Bolt"];
 
-    # Java AWT/Swing fixes for Wayland compositors:
+    # Java AWT/Swing fixes for Wayland compositors (niri and mango):
     #
-    # _JAVA_AWT_WM_NONREPARENTING=1 — tells AWT that the compositor does not
-    #   reparent windows (Wayland never does), so Java correctly tracks its own
-    #   window bounds and responds to resize events.  Without this the game
-    #   viewport stays at its initial small size and the rest of the window fills
-    #   with black bars regardless of the Niri window rule.
+    # _JAVA_AWT_WM_NONREPARENTING=1 — tells AWT that the window manager does
+    #   not reparent windows (neither Xwayland WM does), so Java correctly
+    #   tracks its own window bounds and responds to resize events.  Without
+    #   this the game viewport stays at its initial small size and the rest of
+    #   the window fills with black bars.  AWT reads it as an *environment
+    #   variable* (a -D system property has no effect); mango also exports it
+    #   to everything it spawns, niri does not.
     #
-    # sun.java2d.uiScale=2 — prevents Java from applying a second DPI-scaling
-    #   pass on top of XWayland's, which would otherwise produce an additional
-    #   resolution mismatch on HiDPI outputs.
+    # sun.java2d.uiScale=2 — Xwayland apps see the outputs' physical
+    #   resolution unscaled (niri via xwayland-satellite, mango via
+    #   xwayland_ignore_scale=1 in the host config), so Java scales its UI
+    #   itself to stay readable on the 1.5x-scaled HiDPI outputs.
     #
     # sun.java2d.opengl=false — disables the Java2D OpenGL pipeline.  When
     #   XWayland resizes a window the OpenGL context retains its old dimensions
@@ -124,7 +127,8 @@ in {
     # so XWayland falls back to the un-themed core font cursor.
     xdg.dataFile."flatpak/overrides/com.adamcake.Bolt".text = ''
       [Environment]
-      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2 -D_JAVA_AWT_WM_NONREPARENTING=1 -Dsun.java2d.opengl=false -Dsun.java2d.xrender=false
+      JAVA_TOOL_OPTIONS=-Dsun.java2d.uiScale=2 -Dsun.java2d.opengl=false -Dsun.java2d.xrender=false
+      _JAVA_AWT_WM_NONREPARENTING=1
       XCURSOR_THEME=${config.stylix.cursor.name}
       XCURSOR_SIZE=${toString config.stylix.cursor.size}
       XCURSOR_PATH=${config.stylix.cursor.package}/share/icons
