@@ -44,6 +44,23 @@ in {
     # reachable inside the sandbox.
     fonts.packages = [pkgs.geist-font];
 
+    # Compressed swap in RAM, used before the 8G btrfs swapfile (priority 5 vs
+    # -1). Under a spike (e.g. a game ballooning) cold pages compress into RAM
+    # instead of going to disk, so faulting them back in later doesn't stall.
+    zramSwap = {
+      enable = lib.mkDefault true;
+      algorithm = lib.mkDefault "zstd";
+      memoryPercent = lib.mkDefault 50;
+    };
+
+    boot.kernel.sysctl = lib.mkIf config.zramSwap.enable {
+      # zram swap-in is far cheaper than dropping and re-reading page cache, so
+      # bias reclaim toward swap (same values as Fedora/Pop!_OS with zram).
+      "vm.swappiness" = lib.mkDefault 180;
+      # Readahead is pointless on zram; swap in single pages.
+      "vm.page-cluster" = lib.mkDefault 0;
+    };
+
     services = {
       upower.enable = true;
       gnome.gnome-keyring.enable = true;

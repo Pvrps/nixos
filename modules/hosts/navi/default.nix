@@ -25,10 +25,9 @@
     bluetooth.guiTools = true;
     hardwareControl.liquidctl = true;
 
-    # sched_ext is already compiled into the kernel; scx_lavd is a userspace BPF
-    # scheduler tuned for interactive/gaming latency. `systemctl stop scx`
-    # reverts to EEVDF live if it regresses anything.
-    gaming.scx.enable = true;
+    # / and /home are btrfs subvolumes recreated on every boot (see _disko.nix),
+    # instead of RAM-backed tmpfs.
+    impermanence.btrfsRollback.enable = true;
 
     #secureboot.enable = true;
 

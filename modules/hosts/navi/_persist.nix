@@ -11,10 +11,5 @@
     ];
   };
 
-  fileSystems."/home" = {
-    device = "none";
-    fsType = "tmpfs";
-    options = ["defaults" "mode=755"];
-    neededForBoot = true;
-  };
+  # /home is a btrfs subvolume wiped on boot, declared in _disko.nix.
 }
