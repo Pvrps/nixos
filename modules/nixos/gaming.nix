@@ -34,7 +34,12 @@ in {
   config = lib.mkIf cfg.enable {
     # uinput is required for Steam Input to create virtual controller devices.
     # The input group is powerful; keep this only for trusted local users.
-    boot.kernelModules = ["uinput"];
+    # ntsync exposes NT sync primitives in-kernel (/dev/ntsync). Proton 10+
+    # wineservers use it automatically when the device exists (opt out per game
+    # with PROTON_NO_NTSYNC=1), replacing fsync/esync and cutting the wineserver
+    # round-trips that bottleneck CPU-bound titles. Built as a module (=m), so
+    # nothing creates the device unless it's loaded explicitly.
+    boot.kernelModules = ["uinput" "ntsync"];
 
     boot.kernelParams = lib.mkIf cfg.preemptFull ["preempt=full"];
 
@@ -49,6 +54,7 @@ in {
     # uinput must be writable by the input group for Steam Input to create virtual devices.
     services.udev.extraRules = ''
       KERNEL=="uinput", GROUP="input", MODE="0660"
+      KERNEL=="ntsync", MODE="0644"
     '';
 
     # xpadneo: advanced Xbox/8BitDo BT driver, fixes GET_REPORT timeouts and ERTM issues.
