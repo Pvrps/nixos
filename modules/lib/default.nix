@@ -29,7 +29,8 @@
   #   - installs a writeShellApplication (auto `set -euo pipefail` + PATH from
   #     runtimeInputs, so bare command names resolve and are guaranteed present)
   #   - optionally asserts Wayland
-  #   - optionally contributes a niri keybind (guarded behind niri.enable)
+  #   - optionally contributes niri/mango keybinds (guarded behind each
+  #     compositor's enable)
   #
   # Arguments:
   #   name          - binary name (also the option leaf unless optionName given)
@@ -41,6 +42,8 @@
   #                   paths or option values
   #   requiresWayland - bool, adds the Wayland assertion (default false)
   #   keybind       - nullable niri keybind line, e.g. ''Mod+Shift+O { spawn "ocr-tool"; }''
+  #   mangoKeybind  - nullable mango bind spec (no `bind=` prefix), e.g.
+  #                   "SUPER+SHIFT,o,spawn,ocr-tool"
   #   extraConfig   - extra home-manager config merged into the module
   #
   # Returns an attrset module { imports = [ <module fn> ]; }, so a script file
@@ -56,6 +59,7 @@
     text,
     requiresWayland ? false,
     keybind ? null,
+    mangoKeybind ? null,
     extraOptions ? {},
     extraAssertions ? (_config: []),
     extraConfig ? {},
@@ -94,6 +98,10 @@
           (lib.mkIf (keybind != null) {
             custom.programs.niri.keybinds =
               lib.mkIf config.custom.programs.niri.enable [keybind];
+          })
+          (lib.mkIf (mangoKeybind != null) {
+            custom.programs.mango.keybinds =
+              lib.mkIf config.custom.programs.mango.enable [mangoKeybind];
           })
           (
             if lib.isFunction extraConfig

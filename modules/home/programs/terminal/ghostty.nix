@@ -59,6 +59,7 @@ in {
     };
 
     custom.programs.niri.defaultTerminal = lib.mkDefault "ghostty";
+    custom.programs.mango.defaultTerminal = lib.mkDefault "ghostty";
 
     custom.programs.termfilepickers.terminal.command = lib.mkDefault [
       "${pkgs.ghostty}/bin/ghostty"

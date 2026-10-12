@@ -104,5 +104,8 @@ in {
           open-floating true
       }
     '';
+    custom.programs.mango.windowRulesConfig = lib.mkIf config.custom.programs.mango.enable ''
+      window_rule=is_floating:1,app_id:^file-chooser$
+    '';
   };
 }

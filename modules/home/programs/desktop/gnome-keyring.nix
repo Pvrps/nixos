@@ -13,5 +13,8 @@ in {
     custom.programs.niri.startupCommands = lib.mkIf config.custom.programs.niri.enable [
       ''"${pkgs.gnome-keyring}/bin/gnome-keyring-daemon" "--start" "--components=secrets"''
     ];
+    custom.programs.mango.startupCommands = lib.mkIf config.custom.programs.mango.enable [
+      "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=secrets"
+    ];
   };
 }

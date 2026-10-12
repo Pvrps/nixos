@@ -35,24 +35,25 @@
         PROTON_ENABLE_NVAPI = "1";
       };
 
-      # Work around an NVIDIA driver bug where VRAM freed by niri isn't
-      # released back to the pool (should stay ~100MiB; without this it
-      # climbs toward ~1GiB over a session). Left unmitigated this leads to
-      # GPU clients (e.g. Zen's WebRender) failing to allocate new EGL
-      # surfaces mid-session, producing visible rendering corruption until
-      # restart. Only relevant on hosts actually running niri.
+      # Work around an NVIDIA driver bug where VRAM freed by a GL-based
+      # Wayland compositor isn't released back to the pool (should stay
+      # ~100MiB; without this it climbs toward ~1GiB over a session). Left
+      # unmitigated this leads to GPU clients (e.g. Zen's WebRender) failing
+      # to allocate new EGL surfaces mid-session, producing visible rendering
+      # corruption until restart. Applied to niri and mango (scenefx/GLES).
       # https://github.com/NVIDIA/egl-wayland/issues/126#issuecomment-2379945259
-      etc = lib.mkIf config.programs.niri.enable {
+      etc = lib.mkIf (config.programs.niri.enable || config.programs.mango.enable) {
         "nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json".text = builtins.toJSON {
-          rules = [
-            {
+          rules =
+            map (proc: {
               pattern = {
                 feature = "procname";
-                matches = "niri";
+                matches = proc;
               };
               profile = "Limit Free Buffer Pool On Wayland Compositors";
-            }
-          ];
+            })
+            (lib.optional config.programs.niri.enable "niri"
+              ++ lib.optional config.programs.mango.enable "mango");
           profiles = [
             {
               name = "Limit Free Buffer Pool On Wayland Compositors";

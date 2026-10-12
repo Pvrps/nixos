@@ -5,6 +5,7 @@ lib.custom.mkScript {
   description = "Image/video editing tool";
   requiresWayland = true;
   keybind = ''Mod+Shift+E { spawn "editing-tool"; }'';
+  mangoKeybind = "SUPER+SHIFT,e,spawn,editing-tool";
   # satty stays installed unconditionally (small, ~6MB) even on Noctalia
   # hosts that won't call it — avoids threading `config` into runtimeInputs
   # (mkScript's signature there is pkgs-only) just to shave one binary.

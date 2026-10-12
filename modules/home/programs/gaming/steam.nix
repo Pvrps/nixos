@@ -156,5 +156,24 @@ in {
           open-floating true
       }
     '';
+
+    custom.programs.mango = lib.mkIf config.custom.programs.mango.enable {
+      startupCommands = [
+        "nm-online -q --timeout=30 || true; STEAM_DISABLE_BROWSER_COMPOSITOR_STEAM_HEADER=1 ${steamBin} -system-composer -silent > /dev/null 2>&1"
+      ];
+
+      # Same rules as niri. offset_x/offset_y are % from centre (100 = edge),
+      # i.e. bottom-right like niri's default-floating-position.
+      #
+      # Games (steam_app_<id>): tear instead of waiting for vblank — the
+      # whole point of running mango (needs allow_tearing, set in the host's
+      # layoutConfig) — and keep the pointer confined so it can't wander onto
+      # the second monitor mid-match (Proton drops Xwayland pointer locks).
+      windowRulesConfig = ''
+        window_rule=is_floating:1,is_open_silent:1,no_border:1,shield_when_capture:1,offset_x:100,offset_y:100,app_id:^steam$,title:^notificationtoasts_\d+_desktop$
+        window_rule=is_floating:1,app_id:^steam$,title:^Friends List$
+        window_rule=force_tearing:1,confine_pointer:1,app_id:^steam_app_
+      '';
+    };
   };
 }

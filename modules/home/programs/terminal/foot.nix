@@ -64,6 +64,7 @@ in {
       # defaultTerminal, Nix's module system raises a conflict error — the same
       # mutual-exclusion mechanism used by dankmaterialshell/noctalia.
       niri.defaultTerminal = lib.mkDefault "foot";
+      mango.defaultTerminal = lib.mkDefault "foot";
 
       termfilepickers.terminal = {
         command = lib.mkDefault [

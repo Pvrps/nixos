@@ -162,5 +162,15 @@ in {
           open-maximized false
       }
     '';
+
+    custom.programs.mango = lib.mkIf config.custom.programs.mango.enable {
+      startupCommands = lib.optional (cfg.autostart != null) "nm-online -q --timeout=30 || true; ${autostartCommand.${cfg.autostart}} > /dev/null 2>&1";
+
+      windowRulesConfig = ''
+        window_rule=is_floating:1,app_id:^discord$,title:^Discord Updater$
+        window_rule=is_floating:1,app_id:^discord$,title:^Checking for updates\.\.\.$
+        window_rule=is_floating:1,app_id:(?i)^vesktop$,title:^Vesktop$
+      '';
+    };
   };
 }

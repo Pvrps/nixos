@@ -5,6 +5,7 @@ lib.custom.mkScript {
   description = "Screenshot capture tool";
   requiresWayland = true;
   keybind = ''Mod+Shift+S { spawn "screenshot-tool"; }'';
+  mangoKeybind = "SUPER+SHIFT,s,spawn,screenshot-tool";
   runtimeInputs = pkgs: with pkgs; [grim slurp wl-clipboard libnotify coreutils];
   # Function form (see lib.custom.mkScript docs): keeps `config` access lazy,
   # evaluated only when the tool derivation is actually built, instead of

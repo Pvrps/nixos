@@ -5,6 +5,7 @@ lib.custom.mkScript {
   description = "Screen recording tool";
   requiresWayland = true;
   keybind = ''Mod+Shift+C { spawn "recording-tool"; }'';
+  mangoKeybind = "SUPER+SHIFT,c,spawn,recording-tool";
   runtimeInputs = pkgs:
     with pkgs; [
       gpu-screen-recorder
@@ -16,12 +17,14 @@ lib.custom.mkScript {
       gawk
       gnugrep
       coreutils
+      jq
       niri
+      mango
     ];
   text = ''
     set -uo pipefail
 
-    # Mode: "region" (default, slurp selection) or "monitor" (focused niri output)
+    # Mode: "region" (default, slurp selection) or "monitor" (focused output)
     MODE="''${1:-region}"
 
     STATE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/recording-tool"
@@ -63,8 +66,13 @@ lib.custom.mkScript {
 
     # Determine the gpu-screen-recorder capture target for the mode.
     if [ "$MODE" = "monitor" ]; then
-      # Extract connector name (e.g. "DP-3") from niri's focused output.
-      OUTPUT=$(niri msg focused-output 2>/dev/null | grep -oP '\(\K[^)]+' | head -1)
+      # Connector name (e.g. "DP-3") of the focused output, from whichever
+      # compositor is running.
+      if [ -n "''${MANGO_INSTANCE_SIGNATURE:-}" ]; then
+        OUTPUT=$(mmsg get all-monitors 2>/dev/null | jq -r '.monitors[] | select(.active) | .name' | head -1)
+      else
+        OUTPUT=$(niri msg focused-output 2>/dev/null | grep -oP '\(\K[^)]+' | head -1)
+      fi
       if [ -z "$OUTPUT" ]; then
         notify-send "Recording Failed" "Could not determine focused monitor"
         exit 1
@@ -96,10 +104,14 @@ lib.custom.mkScript {
 
     notify-send "Recording Started" "$STOP_HINT"
   '';
-  # The monitor mode is invoked via its own keybind; guarded behind niri.enable.
+  # The monitor mode is invoked via its own keybind; guarded behind each
+  # compositor's enable.
   extraConfig = {config, ...}: {
     custom.programs.niri.keybinds = lib.mkIf config.custom.programs.niri.enable [
       ''Mod+Shift+R { spawn "recording-tool" "monitor"; }''
+    ];
+    custom.programs.mango.keybinds = lib.mkIf config.custom.programs.mango.enable [
+      "SUPER+SHIFT,r,spawn,recording-tool monitor"
     ];
   };
 }

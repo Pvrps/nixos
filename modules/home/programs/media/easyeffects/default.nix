@@ -37,6 +37,9 @@ in {
     custom.programs.niri.startupCommands = lib.mkIf config.custom.programs.niri.enable [
       ''"bash" "-c" "for i in {1..20}; do ${pkgs.pulseaudio}/bin/pactl list short sources | grep -q 'easyeffects_source' && { ${pkgs.pulseaudio}/bin/pactl set-default-source easyeffects_source; break; }; sleep 0.5; done"''
     ];
+    custom.programs.mango.startupCommands = lib.mkIf config.custom.programs.mango.enable [
+      "for i in $(seq 20); do ${pkgs.pulseaudio}/bin/pactl list short sources | grep -q 'easyeffects_source' && { ${pkgs.pulseaudio}/bin/pactl set-default-source easyeffects_source; break; }; sleep 0.5; done"
+    ];
 
     home.activation.linkEasyEffectsPreset = lib.hm.dag.entryAfter ["writeBoundary"] ''
       PRESET_DIR="$HOME/.local/share/easyeffects/input"

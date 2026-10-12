@@ -5,6 +5,7 @@ lib.custom.mkScript {
   description = "Screen region OCR tool";
   requiresWayland = true;
   keybind = ''Mod+Shift+O { spawn "ocr-tool"; }'';
+  mangoKeybind = "SUPER+SHIFT,o,spawn,ocr-tool";
   runtimeInputs = pkgs: with pkgs; [slurp grim tesseract wl-clipboard libnotify coreutils];
   text = ''
     set -uo pipefail

@@ -7,6 +7,7 @@
 }: let
   cfg = config.custom.programs.noctalia;
   niriEnabled = config.custom.programs.niri.enable;
+  mangoEnabled = config.custom.programs.mango.enable;
 in {
   options.custom.programs.noctalia = {
     enable = lib.mkEnableOption "Noctalia shell (v5, native/Luau)";
@@ -20,7 +21,7 @@ in {
     assertions = [
       {
         assertion = config.custom.system.wayland.enable;
-        message = "noctalia module requires a Wayland compositor to be enabled (e.g. custom.programs.niri.enable = true).";
+        message = "noctalia module requires a Wayland compositor to be enabled (e.g. custom.programs.niri.enable or custom.programs.mango.enable).";
       }
     ];
 
@@ -28,8 +29,9 @@ in {
       enable = true;
       package = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
-      # Started by niri's `spawn-at-startup` below, as a plain compositor
-      # child (not a systemd user unit) — leave the module's own service off.
+      # Started by the compositor's autostart below (niri `spawn-at-startup`,
+      # mango `exec_once`), as a plain compositor child (not a systemd user
+      # unit) — leave the module's own service off.
       systemd.enable = false;
 
       settings = {
@@ -169,6 +171,29 @@ in {
             match namespace=r#"^noctalia-notification"#
             block-out-from "screen-capture"
         }
+      '';
+    };
+
+    # Same binds/autostart as niri. Mango's own theme template isn't enabled:
+    # its post-hook appends a `source=` line to config.conf, which is a
+    # read-only home-manager file; border/root colors come from Stylix in
+    # modules/home/programs/desktop/mango.nix instead.
+    custom.programs.mango = lib.mkIf mangoEnabled {
+      startupCommands = [
+        "noctalia"
+        "blueman-applet"
+      ];
+
+      keybinds = [
+        "SUPER,d,spawn,noctalia msg panel-toggle launcher"
+        "SUPER,c,spawn,noctalia msg panel-toggle control-center"
+        "SUPER+SHIFT,l,spawn,noctalia msg session lock"
+      ];
+
+      # Keep notifications out of screen captures (niri: block-out-from), and
+      # skip mango's layer animations on them so the shield isn't late.
+      layerRulesConfig = ''
+        layer_rule=shield_when_capture:1,no_animation:1,layer_name:^noctalia-notification
       '';
     };
   };

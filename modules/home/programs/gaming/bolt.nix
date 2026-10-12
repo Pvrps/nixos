@@ -211,5 +211,11 @@ in {
           open-maximized true
       }
     '';
+
+    # RuneLite/jagex_launcher need no rule: mango's scroller already opens
+    # every tiled window at full width (see the host's layoutConfig).
+    custom.programs.mango.windowRulesConfig = lib.mkIf config.custom.programs.mango.enable ''
+      window_rule=is_floating:1,app_id:^com\.adamcake\.Bolt$
+    '';
   };
 }
