@@ -3,11 +3,8 @@
 # but nothing lives in RAM (or gets pushed into swap under memory pressure).
 #
 # Pair with `ephemeral = "btrfs"` in the host's _disko.nix, which declares the
-# subvolumes. Previous roots are moved to `old_roots/<name>-<timestamp>` on the
-# top-level btrfs volume and deleted after `keepDays`, so a file you forgot to
-# persist can still be recovered:
-#   sudo mount -o subvolid=5 /dev/disk/by-partlabel/disk-main-root /mnt
-#   ls /mnt/old_roots
+# subvolumes. The previous boot's subvolumes are deleted outright — nothing is
+# kept, so anything not declared in environment/home persistence is gone.
 {
   config,
   lib,
@@ -29,13 +26,7 @@ in {
     subvolumes = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = ["root" "home"];
-      description = "Top-level subvolumes recreated empty on every boot.";
-    };
-
-    keepDays = lib.mkOption {
-      type = lib.types.ints.unsigned;
-      default = 7;
-      description = "Delete archived roots in old_roots/ older than this many days.";
+      description = "Top-level subvolumes deleted and recreated empty on every boot.";
     };
   };
 
@@ -48,7 +39,7 @@ in {
     ];
 
     boot.initrd.systemd.services.btrfs-rollback = {
-      description = "Archive and recreate ephemeral btrfs subvolumes";
+      description = "Delete and recreate ephemeral btrfs subvolumes";
       wantedBy = ["initrd.target"];
       requires = [deviceUnit];
       after = [deviceUnit];
@@ -60,8 +51,9 @@ in {
         mnt=/btrfs_tmp
         mkdir -p "$mnt"
         mount -t btrfs -o subvolid=5 ${lib.escapeShellArg cfg.device} "$mnt"
-        mkdir -p "$mnt/old_roots"
 
+        # Nested subvolumes (e.g. /var/lib/machines, container storage) must go
+        # before their parent can be deleted.
         delete_subvolume_recursively() {
           local IFS=$'\n'
           for child in $(btrfs subvolume list -o "$1" | cut -f 9- -d ' '); do
@@ -70,24 +62,10 @@ in {
           btrfs subvolume delete "$1"
         }
 
-        # Archive the previous boot's subvolumes.
         for sv in ${lib.escapeShellArgs cfg.subvolumes}; do
           if [ -e "$mnt/$sv" ]; then
-            ts=$(date --date="@$(stat -c %Y "$mnt/$sv")" "+%Y-%m-%d_%H-%M-%S")
-            dest="$mnt/old_roots/$sv-$ts"
-            n=0
-            while [ -e "$dest" ]; do n=$((n + 1)); dest="$mnt/old_roots/$sv-$ts.$n"; done
-            mv "$mnt/$sv" "$dest"
+            delete_subvolume_recursively "$mnt/$sv"
           fi
-        done
-
-        # Prune old archives. Failures here must not block boot.
-        for old in $(find "$mnt/old_roots" -mindepth 1 -maxdepth 1 -mtime +${toString cfg.keepDays}); do
-          delete_subvolume_recursively "$old" || echo "btrfs-rollback: failed to delete $old" >&2
-        done
-
-        # Fresh, empty subvolumes for this boot.
-        for sv in ${lib.escapeShellArgs cfg.subvolumes}; do
           btrfs subvolume create "$mnt/$sv"
         done
 
