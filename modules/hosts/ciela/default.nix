@@ -18,6 +18,10 @@
 
   custom = {
     profiles.workstation.enable = true;
+
+    # / and /home are btrfs subvolumes recreated on every boot (see _disko.nix),
+    # instead of RAM-backed tmpfs.
+    impermanence.btrfsRollback.enable = true;
     desktop.portals.backend = "kde";
 
     remoteAdmin = {
