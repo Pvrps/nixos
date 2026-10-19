@@ -72,7 +72,7 @@ in {
     home = {
       packages = with inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
         [
-          opencode
+          opencode2
         ]
         ++ lib.optionals context7.enable [opencodeTools];
 
