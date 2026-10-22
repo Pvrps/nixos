@@ -50,7 +50,7 @@ in {
         requiresMounts = false;
         networks = ["immich_internal"];
         containerConfig = {
-          # MAINTENANCE: image pinned by digest; bump manually.
+          # MAINTENANCE: image pinned by digest, see MAINTENANCE.md
           image = "docker.io/valkey/valkey:8-bookworm@sha256:fec42f399876eb6faf9e008570597741c87ff7662a54185593e74b09ce83d177";
         };
       };

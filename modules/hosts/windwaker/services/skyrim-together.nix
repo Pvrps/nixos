@@ -9,8 +9,7 @@ in {
   virtualisation.quadlet.containers.skyrim-together = lib.custom.mkContainer {
     tz = null;
     containerConfig = {
-      # MAINTENANCE: must match the clients' STR version. Pinned to an exact
-      # tag so podman-auto-update leaves it alone; bump alongside the mod.
+      # MAINTENANCE: exact tag, must match the clients' STR version, see MAINTENANCE.md
       image = "docker.io/tiltedphoques/st-reborn-server:1.8.2";
       publishPorts = ["${toString port}:${toString port}/udp"];
       # Upstream runs this with -it. Under systemd stdin is /dev/null, so give

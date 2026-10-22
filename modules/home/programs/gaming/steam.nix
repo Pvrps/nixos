@@ -33,7 +33,7 @@ in {
       });
       # Shared household plugin set. Setting this option in a user file
       # replaces the whole set — per-user divergence is one override away.
-      # MAINTENANCE: version-pinned release zips; bump url+sha256 together.
+      # MAINTENANCE: version-pinned release zips, see MAINTENANCE.md
       default = {
         extendium = {
           url = "https://github.com/BossSloth/Extendium/releases/download/v2.0.4/extendium-2.0.4.zip";

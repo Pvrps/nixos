@@ -41,9 +41,8 @@
 
     # v5 rewrite: native C++/Wayland shell (no Qt/Quickshell), config in TOML,
     # plugins in Luau. Not following nixpkgs here is required to hit the
-    # noctalia.cachix.org binary cache (see modules/nixos/core.nix); tracking
-    # the `cachix` branch instead of `main` guarantees the pinned commit has
-    # already been built by upstream CI, per docs.noctalia.dev/noctalia/getting-started/nixos.
+    # noctalia.cachix.org binary cache (see modules/nixos/core.nix).
+    # MAINTENANCE: `cachix` branch is deliberate, see MAINTENANCE.md
     noctalia.url = "github:noctalia-dev/noctalia/cachix";
 
     stylix = {
@@ -54,6 +53,7 @@
       };
     };
 
+    # MAINTENANCE: tag-pinned, see MAINTENANCE.md
     nix-flatpak.url = "github:gmodena/nix-flatpak/v0.7.0";
 
     llm-agents = {
@@ -88,6 +88,7 @@
     };
 
     lanzaboote = {
+      # MAINTENANCE: tag-pinned, see MAINTENANCE.md
       url = "github:nix-community/lanzaboote/v1.1.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -120,16 +121,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Pinned to the last version before a regression broke X11 popup
-    # pointer-grabs (Steam context menus closing instantly under niri).
-    # Remove once fixed upstream: https://github.com/Supreeeme/xwayland-satellite/issues/468
+    # WORKAROUND: xwayland-satellite 0.8.1 pin, see WORKAROUNDS.md
     nixpkgs-xwayland-satellite-fix.url = "github:nixos/nixpkgs/a5cbcfe954791221bfffe2307f7d1a1bf61a871e";
 
-    # niri fork with screen tearing (wp-tearing-control, `allow-tearing`
-    # window rule) plus explicit sync, rebased on upstream main periodically.
-    # Tracks the fork's latest commit via the nightly `flake update`; used on
-    # hosts with custom.niri.tearingFork.enable. Drop once upstream niri gets
-    # tearing (blocked on https://github.com/Smithay/smithay/pull/1948).
+    # WORKAROUND: niri fork with screen tearing, see WORKAROUNDS.md
     niri-tearing = {
       url = "github:urayde/niri";
       inputs.nixpkgs.follows = "nixpkgs";

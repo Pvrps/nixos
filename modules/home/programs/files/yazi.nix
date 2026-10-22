@@ -6,13 +6,7 @@
 }: let
   cfg = config.custom.programs.yazi;
 
-  # The Sixel encoder in yazi composites RGBA images onto black before
-  # palette-quantising them, making dark content on transparent backgrounds
-  # invisible (black-on-black).  This is specific to the Sixel protocol used
-  # by foot; KGP terminals like Ghostty carry RGBA natively so they are
-  # unaffected.  The patch replaces the `to_rgb8()` call with a proper
-  # alpha-composite onto a neutral grey checkerboard — the conventional way to
-  # display transparency when the background colour is unknown.
+  # WORKAROUND: yazi Sixel alpha compositing (foot), see WORKAROUNDS.md
   patched-yazi = pkgs.yazi.override {
     yazi-unwrapped = pkgs.yazi-unwrapped.overrideAttrs (old: {
       patches = (old.patches or []) ++ [../../patches/yazi-sixel-alpha.patch];
@@ -29,9 +23,7 @@ in {
       enableBashIntegration = true;
       enableZshIntegration = true;
       enableFishIntegration = true;
-      # The Sixel patch only matters when foot is the terminal in use; skip
-      # it everywhere else so those hosts get the cached, unmodified
-      # pkgs.yazi build instead of compiling it from source.
+      # Patch only with foot; other hosts keep the cached pkgs.yazi.
       package =
         if config.custom.programs.foot.enable
         then patched-yazi

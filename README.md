@@ -80,23 +80,12 @@ This repo uses [`nh`](https://github.com/nix-community/nh) through the included 
 
 Secrets are managed with `sops-nix`. Encrypted host secret files live beside each host under `modules/hosts/<host>/_secrets.yaml`. The age keys themselves are not stored in this repository. Use `lib.custom.mkUserSecrets` for user-owned secret declarations.
 
-## Maintenance: things `nix flake update` will NOT bump
+## Maintenance & workarounds
 
-The nightly CI updates branch-tracking flake inputs only. These pins need
-manual attention (each site carries a `MAINTENANCE:` or bump comment):
+- [MAINTENANCE.md](MAINTENANCE.md): pins that `nix flake update` will not bump (image digests, release zips, tags).
+- [WORKAROUNDS.md](WORKAROUNDS.md): temporary forks, patches, overlays and pins that should be removed once upstream catches up.
 
-| Pin                                        | Where                                                     | How to bump                                                                                                                                                      |
-| ------------------------------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| arrpc PR #143 commit                       | `modules/home/programs/communication/arrpc.nix`           | `git ls-remote ... refs/pull/143/head` + `nix-prefetch-github`; drop when merged upstream                                                                        |
-| Millennium plugin zips                     | `modules/home/programs/gaming/steam.nix`                  | new release URL + `just hash <url>` (nix32 via `nix-prefetch-url`)                                                                                               |
-| OpenCode npm tools (context7, claude-auth) | `modules/home/programs/development/opencode/package.json` | `just update` handles it                                                                                                                                         |
-| Valkey image digest                        | `modules/hosts/windwaker/services/immich.nix`             | update digest manually                                                                                                                                           |
-| wallpaperengine-gui commit                 | `modules/home/programs/desktop/linux-wallpaperengine.nix` | check nixpkgs first; bump rev+hash                                                                                                                               |
-| chatterino7-kick fork branch               | `modules/home/programs/communication/chatterino.nix`      | `git ls-remote https://github.com/sambegui/chatterino7 002-polish-kick-integration` + `nix-prefetch`; bump rev+hash                                              |
-| `noctalia` input on `cachix`               | `flake.nix`                                               | deliberate (guarantees a cached build, see docs.noctalia.dev/noctalia/getting-started/nixos#binary-cache); `nix flake update` still auto-bumps within the branch |
-| `nix-flatpak` / `lanzaboote` tags          | `flake.nix`                                               | bump tag when upstream releases                                                                                                                                  |
-| `nixpkgs-xwayland-satellite-fix` rev       | `flake.nix` + `modules/nixos/overlays.nix`                | drop once nixpkgs ships a release with Supreeeme/xwayland-satellite#468 fixed                                                                                    |
-| Skyrim Together server image tag           | `modules/hosts/windwaker/services/skyrim-together.nix`    | match the clients' STR version; list tags with `nix shell nixpkgs#skopeo -c skopeo list-tags docker://docker.io/tiltedphoques/st-reborn-server`                  |
+Each site in the code is tagged `# MAINTENANCE:` / `# WORKAROUND:`, so `grep -rn` finds them.
 
 ## Notes
 

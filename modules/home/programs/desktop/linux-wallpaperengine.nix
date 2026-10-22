@@ -6,6 +6,7 @@
 }: let
   cfg = config.custom.programs.linuxWallpaperengine;
 
+  # WORKAROUND: wallpaperengine-gui is not in nixpkgs, see WORKAROUNDS.md
   wallpaperengine-gui = pkgs.stdenv.mkDerivation {
     pname = "wallpaperengine-gui";
     version = "1.2.0";

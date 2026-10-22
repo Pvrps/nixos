@@ -6,21 +6,12 @@
 }: let
   cfg = config.custom.programs.arrpc;
 
-  # We use the PR #143 branch of arrpc which drastically improves Linux/Proton game detection.
-  # The patch adds:
-  #   - ARRPC_BRIDGE_HOST support (binds WebSocket bridge to 127.0.0.1 by default)
-  #   - broader path-segment matching for non-Steam Linux native game detection
-  #   - Steam reaper detection: parses AppId= from Steam's reaper wrapper process and
-  #     cross-references third_party_skus in the detectable DB, fixing games like
-  #     Forza Horizon 6 that have no executables[] entry
+  # WORKAROUND: arrpc PR #143 (Linux/Proton game detection), see WORKAROUNDS.md
   patched-arrpc = pkgs.arrpc.overrideAttrs (old: {
     src = pkgs.fetchFromGitHub {
       owner = "OpenAsar";
       repo = "arrpc";
-      # MAINTENANCE: pinned to the head of refs/pull/143/head at last bump.
-      # Update rev+hash together (git ls-remote https://github.com/OpenAsar/arrpc
-      # refs/pull/143/head; nix-prefetch-github OpenAsar arrpc --rev <rev>).
-      # Drop this override entirely once PR #143 lands in nixpkgs' arrpc.
+      # Bump rev+hash together, see WORKAROUNDS.md
       rev = "d2ecb61697f3986149350078dd9853592a9086ea";
       hash = "sha256-wDNt9kTccDTn1nQb8KCMhrSJ3YPfhxikuZBzBV8/EWo=";
     };

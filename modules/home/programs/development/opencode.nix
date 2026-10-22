@@ -11,8 +11,7 @@
   # Write the config file if any feature that needs it is enabled
   needsConfigFile = context7.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
 
-  # Single source of truth for pinned npm tool versions: package.json,
-  # which `just update` bumps (and which also feeds the store-built bundle).
+  # MAINTENANCE: pinned npm tool versions live in package.json, see MAINTENANCE.md
   npmDeps = (builtins.fromJSON (builtins.readFile ./opencode/package.json)).dependencies;
 in {
   options.custom.programs.opencode = {

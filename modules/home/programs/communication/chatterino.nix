@@ -6,24 +6,12 @@
 }: let
   cfg = config.custom.programs.chatterino;
 
-  # Chatterino7 fork with full Kick.com + Twitch merged-chat support.
-  # Upstream chatterino2 has no Kick support (only the IRC /kick command);
-  # this is the only fork that adds a real Kick.com chat integration while
-  # keeping all 7TV features (paints, personal emotes, animated avatars).
-  #
-  # MAINTENANCE: pinned to the head of the `002-polish-kick-integration`
-  # branch. Update rev+hash together:
-  #   git ls-remote https://github.com/sambegui/chatterino7 002-polish-kick-integration
-  #   nix run nixpkgs#nix-prefetch -- --unpack \
-  #     https://github.com/sambegui/chatterino7/archive/<rev>.tar.gz
-  # Drop this override if Kick support ever lands in upstream chatterino2.
+  # WORKAROUND: chatterino7 fork with Kick.com chat, see WORKAROUNDS.md
   chatterino7-kick = pkgs.chatterino2.overrideAttrs (old: {
     pname = "chatterino7";
     version = "7.5.4-kick";
 
-    # The fork's CMakeLists find_package()s Qt6::WebSockets (for the Kick
-    # WebSocket connection), which upstream chatterino2 does not pull in, so
-    # it is absent from nixpkgs' common.nix buildInputs.
+    # The fork needs Qt6::WebSockets, absent from nixpkgs' buildInputs.
     buildInputs = (old.buildInputs or []) ++ [pkgs.kdePackages.qtwebsockets];
 
     src = pkgs.fetchFromGitHub {

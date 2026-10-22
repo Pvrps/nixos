@@ -20,8 +20,7 @@
       "v4l2loopback"
     ];
     extraModulePackages = [
-      # Kernel 7.3's modules_install runs depmod itself, so the package ships
-      # modules.* index files that collide with the kernel's in buildEnv.
+      # WORKAROUND: v4l2loopback modules.* conflict on kernel 7.3, see WORKAROUNDS.md
       (config.boot.kernelPackages.v4l2loopback.overrideAttrs (old: {
         postInstall =
           (old.postInstall or "")

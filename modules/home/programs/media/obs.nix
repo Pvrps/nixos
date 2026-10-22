@@ -9,8 +9,8 @@
 
   hasNvidia = osConfig.hardware.nvidia.modesetting.enable or false;
 
-  # obs-backgroundremoval uses onnxruntime for inference; override it with a
-  # CUDA-enabled build on NVIDIA systems so the GPU is used instead of the CPU.
+  # WORKAROUND: CUDA onnxruntime + Flatpak LD_* hack for obs-backgroundremoval,
+  # see WORKAROUNDS.md
   onnxruntime-cuda = pkgs.onnxruntime.override {
     cudaSupport = true;
     inherit (pkgs) cudaPackages;
@@ -24,16 +24,7 @@
       }
     else pkgs.obs-studio-plugins.obs-backgroundremoval;
 
-  # onnxruntime dlopen()s libonnxruntime_providers_cuda.so at runtime without
-  # listing its deps in NEEDED. Two things are required for the load to succeed
-  # inside the Flatpak sandbox:
-  #
-  # 1. LD_LIBRARY_PATH — so the CUDA toolkit libs (cublas, cudart, etc.) can be
-  #    found transitively when the provider SO is opened.
-  # 2. LD_PRELOAD — libnvrtc.so.12 and libonnxruntime_providers_shared.so must
-  #    be in the global symbol table *before* the provider is dlopen'd, because
-  #    the provider has undefined references to symbols from both and they are
-  #    not listed in its NEEDED section.
+  # Libs for the LD_LIBRARY_PATH / LD_PRELOAD hack above.
   onnxruntimeCudaLibs = with pkgs.cudaPackages; [
     onnxruntime-cuda
     cuda_cudart
