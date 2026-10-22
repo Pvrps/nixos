@@ -13,28 +13,10 @@
   cfg = config.custom.niri.tearingFork;
   mangoEnabled = config.custom.mango.enable;
 
-  # WORKAROUND: niri fork Cargo.lock lacks `#SHA` fragments, see WORKAROUNDS.md
-  niriTearingLock = pkgs.writeText "Cargo.lock" (lib.concatMapStrings (
-    part:
-      if lib.isList part
-      then ''?rev=${lib.head part}#${lib.head part}"''
-      else part
-  ) (builtins.split ''\?rev=([0-9a-f]{40})"'' (builtins.readFile "${inputs.niri-tearing}/Cargo.lock")));
-
   # WORKAROUND: niri tearing fork (urayde/niri), see WORKAROUNDS.md
-  niriTearing = (inputs.niri-tearing.overlays.default pkgs pkgs).niri.overrideAttrs (old: {
+  niriTearing = (inputs.niri-tearing.overlays.default pkgs pkgs).niri.overrideAttrs {
     doCheck = false;
-    cargoDeps = pkgs.rustPlatform.importCargoLock {
-      lockFile = niriTearingLock;
-      allowBuiltinFetchGit = true;
-    };
-    # Must match the vendored copy (cargoSetupHook diffs against it).
-    postPatch =
-      (old.postPatch or "")
-      + ''
-        cp ${niriTearingLock} Cargo.lock
-      '';
-  });
+  };
 
   niriPackage =
     if cfg.enable

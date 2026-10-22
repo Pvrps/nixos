@@ -121,9 +121,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # WORKAROUND: xwayland-satellite 0.8.1 pin, see WORKAROUNDS.md
-    nixpkgs-xwayland-satellite-fix.url = "github:nixos/nixpkgs/a5cbcfe954791221bfffe2307f7d1a1bf61a871e";
-
     # WORKAROUND: niri fork with screen tearing, see WORKAROUNDS.md
     niri-tearing = {
       url = "github:urayde/niri";
