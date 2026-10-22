@@ -19,8 +19,16 @@
       "kvm-amd"
       "v4l2loopback"
     ];
-    extraModulePackages = with config.boot.kernelPackages; [
-      v4l2loopback
+    extraModulePackages = [
+      # Kernel 7.3's modules_install runs depmod itself, so the package ships
+      # modules.* index files that collide with the kernel's in buildEnv.
+      (config.boot.kernelPackages.v4l2loopback.overrideAttrs (old: {
+        postInstall =
+          (old.postInstall or "")
+          + ''
+            find $out/lib/modules -maxdepth 2 -name 'modules.*' -delete
+          '';
+      }))
     ];
     extraModprobeConfig = ''
       options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1

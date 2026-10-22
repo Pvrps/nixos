@@ -44,14 +44,10 @@
       '';
   });
 
-  # See niri-wrapped.nix: silences the import-environment deprecation warning
-  # printed on the TTY at login. Applies to both stock niri and the fork.
-  niriPackage = pkgs.callPackage ./niri-wrapped.nix {
-    niri =
-      if cfg.enable
-      then niriTearing
-      else pkgs.niri;
-  };
+  niriPackage =
+    if cfg.enable
+    then niriTearing
+    else pkgs.niri;
 
   mango = config.programs.mango.package;
 
