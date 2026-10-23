@@ -31,7 +31,11 @@ delete both.
 - **Where:** `modules/hosts/windwaker/services/qbittorrent.nix` (`image`)
 - **Why:** the `latest` tag moved to 5.3.0 (also bumps libtorrent 2.0.15 →
   2.1.2), which broke the private tracker. Pinned to the `5.2.4` tag (libtorrent
-  2.0.15); podman-auto-update only follows rebuilds of that tag.
+  2.0.15); podman-auto-update only follows rebuilds of that tag. 5.3's config
+  migration moves `[Preferences] WebUI\*` keys to a new `[WebUI]` section,
+  which 5.2 ignores (WebUI password lost). After any 5.3 → 5.2 downgrade, stop
+  the container and move those keys back under `[Preferences]` with the
+  `WebUI\` prefix. 5.3 re-migrates them on upgrade.
 - **Remove when:** the private tracker supports qBittorrent 5.3 / libtorrent
   2.1. Switch back to `:latest`.
 - **Bump:** there is no floating `5.2` tag, so check for a newer 5.2.x with
