@@ -24,6 +24,19 @@ delete both.
   merge commit `826905a0c695`). Replace the `overrideAttrs` with
   `with config.boot.kernelPackages; [ v4l2loopback ]`.
 
+## Pinned container images
+
+### qBittorrent pinned to 5.2.x
+
+- **Where:** `modules/hosts/windwaker/services/qbittorrent.nix` (`image`)
+- **Why:** the `latest` tag moved to 5.3.0 (also bumps libtorrent 2.0.15 →
+  2.1.2), which broke the private tracker. Pinned to the `5.2.4` tag (libtorrent
+  2.0.15); podman-auto-update only follows rebuilds of that tag.
+- **Remove when:** the private tracker supports qBittorrent 5.3 / libtorrent
+  2.1. Switch back to `:latest`.
+- **Bump:** there is no floating `5.2` tag, so check for a newer 5.2.x with
+  `nix shell nixpkgs#skopeo -c skopeo list-tags docker://ghcr.io/linuxserver/qbittorrent | grep '"5\.2\.'`.
+
 ## Forked or patched packages
 
 ### nvidia-x11 binaries re-patched in two patchelf calls

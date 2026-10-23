@@ -10,7 +10,8 @@ in {
 
   virtualisation.quadlet.containers.qbittorrent = lib.custom.mkContainer {
     containerConfig = {
-      image = "ghcr.io/linuxserver/qbittorrent:latest";
+      # WORKAROUND: 5.3 breaks the private tracker, pinned to 5.2.x, see WORKAROUNDS.md
+      image = "ghcr.io/linuxserver/qbittorrent:5.2.4";
       publishPorts = [
         "24535:8080" # WebUI (internal 8080 -> host 24535)
         "${toString torrentingPort}:${toString torrentingPort}/tcp"
