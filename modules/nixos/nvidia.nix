@@ -18,6 +18,20 @@
         branch = "latest";
         modesetting.enable = true;
         open = true;
+        # WORKAROUND: patchelf 0.19.2 breaks nvidia-smi & co., see WORKAROUNDS.md
+        package = config.boot.kernelPackages.nvidiaPackages.${config.hardware.nvidia.branch}.overrideAttrs (old: {
+          postFixup =
+            (old.postFixup or "")
+            + ''
+              for orig in "$bin"/origBin/*; do
+                i="$bin/bin/$(basename "$orig")"
+                rpath=$(patchelf --print-rpath "$i")
+                install -m755 "$orig" "$i"
+                patchelf --set-rpath "$rpath" "$i"
+                patchelf --interpreter "$(cat "$NIX_CC/nix-support/dynamic-linker")" "$i"
+              done
+            '';
+        });
       };
     };
 

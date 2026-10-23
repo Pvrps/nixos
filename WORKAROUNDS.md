@@ -25,6 +25,18 @@ delete both.
 
 ## Forked or patched packages
 
+### nvidia-x11 binaries re-patched in two patchelf calls
+
+- **Where:** `modules/nixos/nvidia.nix` (`hardware.nvidia.package`)
+- **Why:** patchelf 0.19.2 produces overlapping `LOAD` segments when the
+  interpreter and rpath are set in one call, so `nvidia-smi` (and the other
+  `bin/` tools) segfault in `ld.so` on start (NixOS/nixpkgs#576412). The Beszel
+  agent runs `nvidia-smi` every 5 s, flooding the journal and coredump dir.
+  `postFixup` re-patches the originals from `origBin/` with rpath and
+  interpreter set separately.
+- **Remove when:** the locked nixpkgs includes PR #576397 (merged 2026-10-21,
+  merge commit `ae9ba0c0ab39`). Drop the `package` override.
+
 ### niri tearing fork (`urayde/niri`)
 
 - **Where:** `flake.nix` (`niri-tearing`), `modules/hosts/navi/session.nix`,
