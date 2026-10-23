@@ -4,3 +4,5 @@ keys.txt
 .todos
 result
 node_modules/
+*-backup.tar*
+*-backup.manifest.txt

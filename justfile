@@ -50,6 +50,15 @@ build host=`hostname`:
 analyze host=`hostname`:
     @scripts/analyze {{ host }}
 
+# Shows a size overview of /persist, lets you pick which folders over the
+# threshold to keep, then writes <dest>/<host>-backup.tar.zst.age.
+# install.sh finds and restores it automatically.
+#   just backup /run/media/purps/External          → leave out folders >= 50G
+#   just backup /run/media/purps/External 20G      → custom threshold
+[doc("Back up /persist to an external drive (restored by install.sh)")]
+backup dest threshold="50G":
+    nix shell nixpkgs#age nixpkgs#zstd nixpkgs#pv nixpkgs#gum nixpkgs#gawk nixpkgs#btrfs-progs -c scripts/backup "{{ dest }}" "{{ threshold }}"
+
 # Delete old generations and perform garbage collection
 cleanup:
     nh clean all -k 3

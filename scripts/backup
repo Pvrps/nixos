@@ -1,0 +1,347 @@
+#!/usr/bin/env bash
+# Back up /persist to <dest>/<host>-backup.tar.zst.age; install.sh restores it.
+# Run through `just backup <dest> [threshold]`, which provides the tools.
+set -euo pipefail
+
+if [ "$EUID" -ne 0 ]; then
+  exec sudo env "PATH=$PATH" "$(realpath "$0")" "$@"
+fi
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
+
+if [ -z "${1:-}" ]; then
+  log_error "Usage: just backup <destination-dir> [threshold, default 50G]"
+  exit 1
+fi
+
+for cmd in age zstd pv gum btrfs gawk numfmt; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    log_error "Missing required command: $cmd (run this through \`just backup\`)"
+    exit 1
+  fi
+done
+
+PERSIST=/persist
+SNAP="$PERSIST/.backup-snapshot"
+HOST=$(hostname)
+REPO="$(cd "$(dirname "$(realpath "$0")")/.." && pwd)"
+
+THRESHOLD_ARG="${2:-50G}"
+if ! THRESHOLD=$(numfmt --from=iec "${THRESHOLD_ARG%[Bb]}" 2>/dev/null); then
+  log_error "Invalid threshold '$THRESHOLD_ARG' (examples: 50G, 500M, 1T)."
+  exit 1
+fi
+
+if [ ! -d "$1" ]; then
+  log_error "Destination '$1' is not a directory."
+  exit 1
+fi
+DEST=$(realpath "$1")
+ARCHIVE="$DEST/$HOST-backup.tar.zst.age"
+MANIFEST="$DEST/$HOST-backup.manifest.txt"
+PARTIAL="$ARCHIVE.partial"
+
+human() { numfmt --to=iec --format=%.1f "$1"; }
+
+# Physical disk (e.g. nvme0n1) that holds a path.
+disk_of() {
+  local src parent
+  src=$(findmnt -nvo SOURCE -T "$1" | head -n1)
+  parent=$(lsblk -ndo PKNAME "$src" 2>/dev/null || true)
+  if [ -n "$parent" ]; then echo "$parent"; else basename "$src"; fi
+}
+
+PERSIST_DISK=$(disk_of "$PERSIST")
+if [ "$(disk_of "$DEST")" = "$PERSIST_DISK" ]; then
+  log_error "$DEST is on $PERSIST_DISK, the same disk as /persist."
+  log_error "Wiping that disk would take the backup with it. Use an external drive."
+  exit 1
+fi
+
+OLD_SIZE=0
+if [ -e "$ARCHIVE" ]; then
+  log_warn "$ARCHIVE already exists."
+  read -r -p "Replace it? (y/N): " replace
+  if [[ ! $replace =~ ^[Yy]$ ]]; then exit 1; fi
+  OLD_SIZE=$(stat -c %s "$ARCHIVE")
+fi
+
+WORK=$(mktemp -d)
+cleanup() {
+  if [ -d "$SNAP" ]; then btrfs subvolume delete "$SNAP" >/dev/null || true; fi
+  rm -f "$PARTIAL"
+  rm -rf "$WORK"
+}
+trap cleanup EXIT
+
+# --- Config repo state --------------------------------------------------------
+# install.sh builds from a fresh clone, so anything not on GitHub is only in
+# the archive (under etc/nixos) and has to be recovered from it by hand.
+WARNINGS=()
+git_() { git -c safe.directory='*' -C "$REPO" "$@"; }
+if git_ rev-parse --git-dir >/dev/null 2>&1; then
+  dirty=$(git_ status --porcelain | wc -l)
+  unpushed=$(git_ log --branches --not --remotes --oneline | wc -l)
+  stashes=$(git_ stash list | wc -l)
+  [ "$dirty" -gt 0 ] && WARNINGS+=("$dirty uncommitted change(s) in $REPO")
+  [ "$unpushed" -gt 0 ] && WARNINGS+=("$unpushed commit(s) in $REPO not pushed to any remote")
+  [ "$stashes" -gt 0 ] && WARNINGS+=("$stashes git stash(es) in $REPO (local only)")
+  CONFIG_COMMIT=$(git_ log -1 --format='%h %s')
+else
+  CONFIG_COMMIT="unknown"
+fi
+
+# --- Snapshot & scan ----------------------------------------------------------
+if [ -e "$SNAP" ]; then
+  log_warn "Removing leftover snapshot from a previous run..."
+  btrfs subvolume delete "$SNAP" >/dev/null
+fi
+log_info "Taking a read-only snapshot of $PERSIST..."
+btrfs subvolume snapshot -r "$PERSIST" "$SNAP" >/dev/null
+
+log_info "Measuring folder sizes..."
+du -x -B1 --apparent-size "$SNAP" >"$WORK/du.tsv"
+
+# Prints a size tree and writes "<bytes>\t<path>" for every exclusion
+# candidate to $WORK/candidates.tsv. A candidate is the smallest folder that is
+# still >= threshold. Children of "container" folders (an app's data dir under
+# .local/share, a game under steamapps/common, ...) are treated as whole units,
+# so a 120G game is offered as one item instead of its biggest subfolder.
+gawk -F'\t' \
+  -v prefix="$SNAP" -v threshold="$THRESHOLD" -v candfile="$WORK/candidates.tsv" \
+  -v red="$RED" -v bold="$BOLD" -v nc="$NC" \
+  -f - "$WORK/du.tsv" <<'AWK'
+function parent(p) {
+  if (p == "") return "-"
+  if (index(p, "/") == 0) return ""
+  sub(/\/[^\/]*$/, "", p)
+  return p
+}
+function human(b,   u, i) {
+  split("B K M G T P", u, " ")
+  for (i = 1; b >= 1024 && i < 6; i++) b /= 1024
+  return i == 1 ? sprintf("%d%s", b, u[i]) : sprintf("%.1f%s", b, u[i])
+}
+function basename(p) {
+  sub(/.*\//, "", p)
+  return p
+}
+# Fills order[depth, 1..n] with p's largest children (>= minshow) and returns n.
+function topkids(p, depth,   n, i, j, c, tmp) {
+  n = 0
+  for (i = 1; i <= nkids[p]; i++) {
+    c = kids[p, i]
+    if (size[c] >= minshow) sel[++n] = c
+  }
+  for (i = 2; i <= n; i++)
+    for (j = i; j > 1 && size[sel[j]] > size[sel[j - 1]]; j--) {
+      tmp = sel[j]; sel[j] = sel[j - 1]; sel[j - 1] = tmp
+    }
+  if (n > maxkids) n = maxkids
+  for (i = 1; i <= n; i++) order[depth, i] = sel[i]
+  return n
+}
+function show(p, depth, indent,   n, i, c, top, shown, rest, more, last, name, line, expand) {
+  n = topkids(p, depth)
+  if (n == 0) return
+  shown = 0
+  for (i = 1; i <= n; i++) shown += size[order[depth, i]]
+  rest = size[p] - shown
+  more = rest >= minshow
+  for (i = 1; i <= n; i++) {
+    c = order[depth, i]
+    top = c
+    name = basename(c)
+    expand = !(c in cand) && ((c in hascand) || (size[c] >= expandmin && depth <= expanddepth))
+    # Fold single-child chains (home/purps, .local/share) into one line.
+    while (expand && topkids(c, depth + 1) == 1 && size[c] - size[order[depth + 1, 1]] < minshow) {
+      c = order[depth + 1, 1]
+      name = name "/" basename(c)
+      expand = !(c in cand)
+    }
+    last = (i == n && !more)
+    line = sprintf("%9s  %s%s%s", human(size[top]), indent, last ? "└─ " : "├─ ", name)
+    if (c in cand) print red line "   ✗ over threshold, excluded by default" nc
+    else print line
+    if (expand) show(c, depth + 1, indent (last ? "   " : "│  "))
+  }
+  if (more) printf "%9s  %s└─ (other)\n", human(rest), indent
+}
+BEGIN {
+  plen = length(prefix)
+  unitparent = "^home/[^/]+/\\.(local/share|config|var/app)$|/steamapps/(common|compatdata|shadercache)$|/steamapps/workshop/content/[0-9]+$|^var/lib$"
+  minshow = 1024 * 1024 * 1024
+  expandmin = 10 * minshow
+  expanddepth = 2
+  maxkids = 8
+}
+{
+  p = substr($2, plen + 2)
+  size[p] = $1 + 0
+  all[++count] = p
+  if (p != "") { par = parent(p); kids[par, ++nkids[par]] = p }
+}
+END {
+  for (i = 1; i <= count; i++) {
+    p = all[i]
+    if (p == "" || size[p] < threshold) continue
+    big[p] = 1
+    bigchild[parent(p)] = 1
+    if (parent(p) ~ unitparent) unit[p] = 1
+  }
+  # `x in arr` tests below: a plain arr[x] lookup would create the element.
+  for (p in unit)
+    for (a = parent(p); a != "-" && !(a in bigunitdesc); a = parent(a)) bigunitdesc[a] = 1
+  for (p in unit) if (!(p in bigunitdesc)) cand[p] = 1
+  for (p in big) {
+    if ((p in cand) || (p in bigchild)) continue
+    covered = 0
+    for (a = parent(p); a != "-"; a = parent(a)) if (a in cand) { covered = 1; break }
+    if (!covered) cand[p] = 1
+  }
+  for (p in cand)
+    for (a = parent(p); a != "-" && !(a in hascand); a = parent(a)) hascand[a] = 1
+  printf "" > candfile
+  for (p in cand) printf "%d\t%s\n", size[p], p > candfile
+  printf "%s%9s  /persist%s\n", bold, human(size[""]), nc
+  show("", 1, "")
+}
+AWK
+
+TOTAL=$(tail -n1 "$WORK/du.tsv" | cut -f1)
+sort -t$'\t' -k1,1nr "$WORK/candidates.tsv" -o "$WORK/candidates.tsv"
+
+# --- Choose what to keep ------------------------------------------------------
+EXCLUDED_SIZE=0
+touch "$WORK/excludes" "$WORK/excluded.tsv"
+if [ -s "$WORK/candidates.tsv" ]; then
+  echo
+  options=()
+  while IFS=$'\t' read -r bytes path; do
+    options+=("$(printf '%8s  %s' "$(human "$bytes")" "$path")"$'\t'"$path")
+  done <"$WORK/candidates.tsv"
+  height=$((${#options[@]} + 2))
+  [ "$height" -gt 20 ] && height=20
+  selected=$(gum choose --no-limit --height "$height" --label-delimiter=$'\t' \
+    --header "Folders over $THRESHOLD_ARG are excluded. Tick (space) the ones to back up anyway, then press enter:" \
+    "${options[@]}") || {
+    log_warn "Cancelled."
+    exit 1
+  }
+  while IFS=$'\t' read -r bytes path; do
+    if ! grep -qxF -- "$path" <<<"$selected"; then
+      EXCLUDED_SIZE=$((EXCLUDED_SIZE + bytes))
+      printf './%s\n' "$path" >>"$WORK/excludes"
+      printf '%8s  %s\n' "$(human "$bytes")" "$path" >>"$WORK/excluded.tsv"
+    fi
+  done <"$WORK/candidates.tsv"
+else
+  echo
+  log_info "Nothing is over $THRESHOLD_ARG; everything will be backed up."
+fi
+INCLUDED_SIZE=$((TOTAL - EXCLUDED_SIZE))
+
+# --- Summary & approval -------------------------------------------------------
+AVAIL=$(($(df -B1 --output=avail "$DEST" | tail -n1) + OLD_SIZE))
+
+echo
+echo -e "${BOLD}Backup summary${NC}"
+printf '  %-13s %s\n' "Source" "$PERSIST (read-only snapshot)"
+printf '  %-13s %s\n' "Destination" "$ARCHIVE"
+printf '  %-13s %s (before compression)\n' "Backing up" "$(human "$INCLUDED_SIZE")"
+if [ -s "$WORK/excluded.tsv" ]; then
+  printf '  %-13s %s\n' "Leaving out" "$(human "$EXCLUDED_SIZE")"
+  sed 's/^/    /' "$WORK/excluded.tsv"
+else
+  printf '  %-13s %s\n' "Leaving out" "nothing"
+fi
+printf '  %-13s %s\n' "Free space" "$(human "$AVAIL")"
+if [ "$AVAIL" -lt "$INCLUDED_SIZE" ]; then
+  log_warn "The destination may be too small. Compression helps, but game data barely compresses."
+fi
+if [ "${#WARNINGS[@]}" -gt 0 ]; then
+  echo
+  log_warn "Not on GitHub (install.sh uses a fresh clone, so this is only in the archive):"
+  for w in "${WARNINGS[@]}"; do echo "    - $w"; done
+fi
+echo
+read -r -p "Proceed with the backup? (y/N): " proceed
+if [[ ! $proceed =~ ^[Yy]$ ]]; then
+  log_warn "Aborted."
+  exit 1
+fi
+
+# --- Passphrase ---------------------------------------------------------------
+while true; do
+  read -r -s -p "Backup passphrase: " pass
+  echo
+  read -r -s -p "Confirm passphrase: " pass_confirm
+  echo
+  if [ -z "$pass" ]; then
+    log_error "Passphrase cannot be empty."
+  elif [ "$pass" != "$pass_confirm" ]; then
+    log_error "Passphrases do not match."
+  else
+    break
+  fi
+done
+unset pass_confirm
+# batchpass reads the passphrase from the environment so age doesn't prompt
+# mid-pipeline (and fight with the progress bar). The output is a standard
+# scrypt-encrypted age file: plain `age -d` decrypts it interactively.
+export AGE_PASSPHRASE="$pass"
+unset pass
+
+# --- Write & verify -----------------------------------------------------------
+[ "$OLD_SIZE" -gt 0 ] && rm -f "$ARCHIVE" "$MANIFEST"
+
+log_info "Writing $ARCHIVE..."
+tar --create --file=- --directory="$SNAP" \
+  --numeric-owner --xattrs --xattrs-include='*' --acls --one-file-system \
+  --warning=no-file-ignored \
+  --anchored --no-wildcards --exclude-from="$WORK/excludes" . |
+  pv -N backup -s "$INCLUDED_SIZE" |
+  zstd -T0 -q |
+  age -e -j batchpass |
+  tee "$PARTIAL" | sha256sum | cut -d' ' -f1 >"$WORK/sha256"
+
+log_info "Verifying the archive (decrypting and reading it back in full)..."
+pv -N verify "$PARTIAL" | age -d -j batchpass | zstd -dcq | tar --list --file=- >"$WORK/listing"
+unset AGE_PASSPHRASE
+if ! grep -qxF './system/sops/age/keys.txt' "$WORK/listing"; then
+  log_error "The archive does not contain system/sops/age/keys.txt. Not keeping it."
+  exit 1
+fi
+mv "$PARTIAL" "$ARCHIVE"
+
+{
+  echo "Host:           $HOST"
+  echo "Created:        $(date '+%Y-%m-%d %H:%M:%S %z')"
+  echo "Config commit:  $CONFIG_COMMIT"
+  echo "Archive:        $(basename "$ARCHIVE")"
+  echo "Archive size:   $(human "$(stat -c %s "$ARCHIVE")")"
+  echo "SHA-256:        $(cat "$WORK/sha256")"
+  echo "Threshold:      $THRESHOLD_ARG"
+  echo "Backed up:      $(human "$INCLUDED_SIZE") (before compression)"
+  if [ -s "$WORK/excluded.tsv" ]; then
+    echo "Left out:"
+    sed 's/^/  /' "$WORK/excluded.tsv"
+  fi
+  echo
+  echo "Restore: boot the NixOS installer, clone the config repo, then run"
+  echo "  sudo ./install.sh $HOST /path/to/$(basename "$ARCHIVE")"
+  echo "(install.sh also finds it automatically on a mounted USB drive.)"
+} >"$MANIFEST"
+
+echo
+log_info "Backup complete: $ARCHIVE ($(human "$(stat -c %s "$ARCHIVE")"))"
+log_info "Manifest: $MANIFEST"
+log_warn "Keep the passphrase safe. Without it the backup (and your sops age key) is unrecoverable."

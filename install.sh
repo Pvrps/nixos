@@ -28,7 +28,9 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 if [ -z "${1:-}" ]; then
-  log_error "Usage: $0 <hostname>"
+  log_error "Usage: $0 <hostname> [backup-file]"
+  log_info "Without backup-file, <hostname>-backup.tar.zst.age is looked for in this"
+  log_info 'directory and on mounted drives (/run/media, /media). See `just backup`.'
   log_info "Available hosts:"
   ls -1 modules/hosts/ | grep -v '^\.'
   exit 1
@@ -58,6 +60,58 @@ if ! ping -c 1 -W 3 8.8.8.8 >/dev/null 2>&1; then
 fi
 log_info "Internet connectivity: OK"
 
+# =========================================================================
+# BACKUP DETECTION (archive created by `just backup`)
+# =========================================================================
+BACKUP_NAME="$HOST-backup.tar.zst.age"
+BACKUP_FILE="${2:-}"
+
+if [ -n "$BACKUP_FILE" ]; then
+  if [ ! -f "$BACKUP_FILE" ]; then
+    log_error "Backup file '$BACKUP_FILE' not found."
+    exit 1
+  fi
+else
+  mapfile -t FOUND_BACKUPS < <(
+    {
+      find "$SCRIPT_DIR" -maxdepth 1 -type f -name "$BACKUP_NAME"
+      find /run/media -maxdepth 4 -type f -name "$BACKUP_NAME"
+      find /media -maxdepth 3 -type f -name "$BACKUP_NAME"
+    } 2>/dev/null || true
+  )
+  if [ "${#FOUND_BACKUPS[@]}" -eq 1 ]; then
+    BACKUP_FILE="${FOUND_BACKUPS[0]}"
+  elif [ "${#FOUND_BACKUPS[@]}" -gt 1 ]; then
+    log_info "Found several backups for '$HOST':"
+    select choice in "${FOUND_BACKUPS[@]}" "None (fresh install)"; do
+      if [ -n "$choice" ]; then break; fi
+    done
+    if [ "$choice" != "None (fresh install)" ]; then BACKUP_FILE="$choice"; fi
+  fi
+fi
+
+if [ -n "$BACKUP_FILE" ]; then
+  BACKUP_FILE=$(realpath "$BACKUP_FILE")
+  log_info "Found backup: $BACKUP_FILE"
+  MANIFEST_FILE="${BACKUP_FILE%.tar.zst.age}.manifest.txt"
+  if [ -f "$MANIFEST_FILE" ]; then sed 's/^/    /' "$MANIFEST_FILE" | head -n 12; fi
+  read -r -p "Restore /persist from this backup after partitioning? (Y/n): " restore
+  if [[ $restore =~ ^[Nn] ]]; then
+    BACKUP_FILE=""
+  else
+    TARGET_DEVICE=$(nix --experimental-features "nix-command flakes" eval --raw --file "./$HOST_DIR/_disko.nix" disko.devices.disk.main.device)
+    TARGET_DISK=$(basename "$(readlink -f "$TARGET_DEVICE")")
+    BACKUP_SOURCE=$(findmnt -nvo SOURCE -T "$BACKUP_FILE" | head -n1)
+    BACKUP_DISK=$(lsblk -ndo PKNAME "$BACKUP_SOURCE" 2>/dev/null || true)
+    BACKUP_DISK="${BACKUP_DISK:-$(basename "$BACKUP_SOURCE")}"
+    if [ "$BACKUP_DISK" = "$TARGET_DISK" ]; then
+      log_error "The backup is on $TARGET_DISK, the disk disko is about to wipe."
+      log_error "Copy it to another drive first."
+      exit 1
+    fi
+  fi
+fi
+
 log_info "Running disko to partition and format the disk for host '$HOST'..."
 log_warn "This will WIPE THE DISK specified in $HOST_DIR/_disko.nix!"
 read -r -p "Are you sure you want to continue? (Y/n): " confirm
@@ -71,6 +125,41 @@ else
     exit 1
   fi
   log_info "Disk partitioning completed successfully."
+fi
+
+# =========================================================================
+# RESTORE /persist FROM BACKUP
+# =========================================================================
+# The restored age key, encrypted secrets and home directories make every
+# generation step below skip itself. etc/nixos is left out: this fresh clone
+# is copied in later, as on a normal install.
+if [ -n "$BACKUP_FILE" ]; then
+  if ! mountpoint -q /mnt/persist; then
+    log_error "/mnt/persist is not mounted (was partitioning skipped?)."
+    log_error "Refusing to restore into the live system's RAM. Re-run and let disko partition."
+    exit 1
+  fi
+  log_info "Restoring /persist from $BACKUP_FILE..."
+  while true; do
+    log_info "Enter the backup passphrase when asked."
+    if BACKUP_FILE="$BACKUP_FILE" nix-shell -p age zstd pv --run '
+      set -o pipefail
+      age -d "$BACKUP_FILE" |
+        pv -W -N restore -s "$(stat -c %s "$BACKUP_FILE")" |
+        zstd -dcq |
+        tar --extract --file=- --directory=/mnt/persist \
+          --numeric-owner --same-permissions --xattrs --xattrs-include="*" --acls \
+          --anchored --exclude=./etc/nixos
+    '; then
+      log_info "Backup restored to /mnt/persist."
+      break
+    fi
+    read -r -p "Restore failed. Try again? (Y/n): " retry
+    if [[ $retry =~ ^[Nn] ]]; then
+      log_error "Restore aborted."
+      exit 1
+    fi
+  done
 fi
 
 if [ -f "$SCRIPT_DIR/$HOST_DIR/_hardware.nix" ] && grep -q "fileSystems" "$SCRIPT_DIR/$HOST_DIR/_hardware.nix"; then

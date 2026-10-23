@@ -80,6 +80,13 @@ This repo uses [`nh`](https://github.com/nix-community/nh) through the included 
 
 Secrets are managed with `sops-nix`. Encrypted host secret files live beside each host under `modules/hosts/<host>/_secrets.yaml`. The age keys themselves are not stored in this repository. Use `lib.custom.mkUserSecrets` for user-owned secret declarations.
 
+## Backup & restore
+
+Everything that survives a reboot lives in `/persist`, so that is all a reinstall needs back.
+
+- `just backup <dest> [threshold]` snapshots `/persist`, shows a size tree, and lets you tick which folders over the threshold (default `50G`) to keep. It then writes a passphrase-encrypted `<dest>/<host>-backup.tar.zst.age` plus a manifest, and reads the archive back to verify it. The destination must be on a different disk.
+- `sudo ./install.sh <host> [backup-file]` finds that archive (repo directory, `/run/media`, `/media`) and restores it into `/mnt/persist` right after disko. The restored age key, secrets and home directories make the key, password and wormhole steps skip themselves. `etc/nixos` is not restored; the fresh clone is used instead.
+
 ## Maintenance & workarounds
 
 - [MAINTENANCE.md](MAINTENANCE.md): pins that `nix flake update` will not bump (image digests, release zips, tags).
