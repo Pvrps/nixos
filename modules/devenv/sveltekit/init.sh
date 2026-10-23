@@ -7,11 +7,6 @@ set -euo pipefail
 #
 # Uses the official `sv` CLI for all project scaffolding (template, types,
 # add-ons, adapter, tailwind) — no hand-written configs.
-#
-# Placeholder @MODULES_DIR@ is replaced at build time by the home-manager
-# devenv module with the absolute path to modules/devenv/.
-
-MODULES_DIR="@MODULES_DIR@"
 
 # ---------------------------------------------------------------------------
 # Validation
@@ -34,8 +29,19 @@ ADAPTER=$(gum choose --header "SvelteKit adapter" node static vercel)
 # ---------------------------------------------------------------------------
 # devenv.yaml
 # ---------------------------------------------------------------------------
-cat >devenv.yaml <<EOF
-imports: [path:${MODULES_DIR}/sveltekit]
+# Imports the shared profile from GitHub rather than a local path, so the
+# project works on any machine. Imports from inputs don't merge the profile's
+# own devenv.yaml, so nixpkgs and allowUnfree have to be set here.
+cat >devenv.yaml <<'EOF'
+inputs:
+  nixpkgs:
+    url: github:cachix/devenv-nixpkgs/rolling
+  pvrps-nixos:
+    url: github:Pvrps/nixos
+    flake: false
+imports:
+  - pvrps-nixos/modules/devenv/sveltekit
+allowUnfree: true
 EOF
 
 # ---------------------------------------------------------------------------

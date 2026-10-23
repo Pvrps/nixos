@@ -4,11 +4,6 @@ set -euo pipefail
 # Scaffolding script for new Python devenv projects.
 # Run `dev-init-python` in an empty directory to create a complete, ready-to-dev
 # Python project with devenv + direnv + uv + ruff + just.
-#
-# Placeholder @MODULES_DIR@ is replaced at build time by the home-manager
-# devenv module with the absolute path to modules/devenv/.
-
-MODULES_DIR="@MODULES_DIR@"
 
 # ---------------------------------------------------------------------------
 # Validation
@@ -39,8 +34,19 @@ USE_RUFF=$(gum choose --header "Enable ruff?" yes no)
 # ---------------------------------------------------------------------------
 # devenv.yaml
 # ---------------------------------------------------------------------------
-cat >devenv.yaml <<EOF
-imports: [path:${MODULES_DIR}/python]
+# Imports the shared profile from GitHub rather than a local path, so the
+# project works on any machine. Imports from inputs don't merge the profile's
+# own devenv.yaml, so nixpkgs and allowUnfree have to be set here.
+cat >devenv.yaml <<'EOF'
+inputs:
+  nixpkgs:
+    url: github:cachix/devenv-nixpkgs/rolling
+  pvrps-nixos:
+    url: github:Pvrps/nixos
+    flake: false
+imports:
+  - pvrps-nixos/modules/devenv/python
+allowUnfree: true
 EOF
 
 # ---------------------------------------------------------------------------

@@ -4,11 +4,6 @@ set -euo pipefail
 # Scaffolding script for new Java devenv projects.
 # Run `dev-init-java` in an empty directory to create a complete, ready-to-dev
 # Java project with devenv + direnv + just + Gradle/Maven.
-#
-# Placeholder @MODULES_DIR@ is replaced at build time by the home-manager
-# devenv module with the absolute path to modules/devenv/.
-
-MODULES_DIR="@MODULES_DIR@"
 
 # ---------------------------------------------------------------------------
 # Validation
@@ -40,8 +35,19 @@ PKG_NAME="com.example.$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr -
 # ---------------------------------------------------------------------------
 # devenv.yaml
 # ---------------------------------------------------------------------------
-cat >devenv.yaml <<EOF
-imports: [path:${MODULES_DIR}/java]
+# Imports the shared profile from GitHub rather than a local path, so the
+# project works on any machine. Imports from inputs don't merge the profile's
+# own devenv.yaml, so nixpkgs and allowUnfree have to be set here.
+cat >devenv.yaml <<'EOF'
+inputs:
+  nixpkgs:
+    url: github:cachix/devenv-nixpkgs/rolling
+  pvrps-nixos:
+    url: github:Pvrps/nixos
+    flake: false
+imports:
+  - pvrps-nixos/modules/devenv/java
+allowUnfree: true
 EOF
 
 # ---------------------------------------------------------------------------

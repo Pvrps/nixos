@@ -21,17 +21,13 @@
     profileEntries;
 
   # For each profile with an init.sh, create a dev-init-<lang> binary.
-  # The @MODULES_DIR@ placeholder in init.sh is replaced with the absolute
-  # path to modules/devenv/ so the script can write correct devenv.yaml imports.
   initPackages =
     map (
       lang:
         pkgs.writeShellApplication {
           name = "dev-init-${lang}";
           runtimeInputs = [pkgs.devenv pkgs.direnv pkgs.git pkgs.gum];
-          text = lib.replaceStrings ["@MODULES_DIR@"] [modulesDir] (
-            builtins.readFile "${modulesDir}/${lang}/init.sh"
-          );
+          text = builtins.readFile "${modulesDir}/${lang}/init.sh";
         }
     )
     profilesWithInit;
