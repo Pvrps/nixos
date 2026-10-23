@@ -20,8 +20,9 @@ delete both.
 - **Why:** Kernel 7.3's `modules_install` runs `depmod` itself, so the package
   ships `modules.*` files that collide with the kernel's in `buildEnv`
   (NixOS/nixpkgs#575851).
-- **Remove when:** nixpkgs includes PR #575861 (merged 2026-10-21). Replace the
-  `overrideAttrs` with `with config.boot.kernelPackages; [ v4l2loopback ]`.
+- **Remove when:** the locked nixpkgs includes PR #575861 (merged 2026-10-21,
+  merge commit `826905a0c695`). Replace the `overrideAttrs` with
+  `with config.boot.kernelPackages; [ v4l2loopback ]`.
 
 ## Forked or patched packages
 

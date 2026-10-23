@@ -13,8 +13,8 @@
     src = pkgs.fetchFromGitHub {
       owner = "MikiDevLog";
       repo = "wallpaperengine-gui";
-      rev = "c22671ad24fcf754f461fd7ac969497ee3964cc3";
-      hash = "sha256-F/wjdfKTRprOmQ3Ad4dXWfdCx6BNfZpc9Ud4EVeewig=";
+      rev = "c109483936c4b2b26b0cad145fa59bb9d4c2c673";
+      hash = "sha256-ICS/NI+xS7U1POSG2yTWOw9DNU4CFFnitoHiKJNaEhM=";
     };
     nativeBuildInputs = [pkgs.cmake pkgs.qt6.wrapQtAppsHook];
     buildInputs = [pkgs.qt6.qtbase];
