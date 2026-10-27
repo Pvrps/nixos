@@ -39,7 +39,7 @@
       "wet": 0.0
     },
     "deepfilternet#0": {
-      "attenuation-limit": 100.0,
+      "attenuation-limit": 50.0,
       "bypass": false,
       "input-gain": 0.0,
       "max-df-processing-threshold": 20.0,
@@ -102,7 +102,7 @@
       "link-to-sidechain": 0.0,
       "lookahead": 5.0,
       "mode": "Herm Thin",
-      "output-gain": -6.0,
+      "output-gain": 0.0,
       "oversampling": "None",
       "release": 20.0,
       "sidechain-preamp": 0.0,
@@ -114,11 +114,23 @@
     },
     "plugins_order": [
       "stereo_tools#0",
+      "rnnoise#0",
       "deepfilternet#0",
       "gate#0",
       "compressor#0",
       "limiter#0"
     ],
+    "rnnoise#0": {
+      "bypass": false,
+      "enable-vad": true,
+      "input-gain": 0.0,
+      "model-name": "\"\"",
+      "output-gain": 0.0,
+      "release": 100.0,
+      "use-standard-model": true,
+      "vad-thres": 75.0,
+      "wet": 0.0
+    },
     "stereo_tools#0": {
       "balance-in": 0.0,
       "balance-out": 0.0,
