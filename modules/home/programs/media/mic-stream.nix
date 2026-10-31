@@ -78,10 +78,13 @@ in {
       # module-roc-sink creates a sink node that streams whatever is played
       # into it; the loopback pins the mic (sourceNode) to that sink. Both run
       # in-daemon, so game load can't starve the stream and xrun the graph.
+      # nofail: roc-sink fails to load if remoteHost doesn't resolve (e.g.
+      # Tailscale/MagicDNS down), which would otherwise abort PipeWire entirely.
       xdg.configFile."pipewire/pipewire.conf.d/94-mic-stream-send.conf".text = ''
         context.modules = [
           {
             name = libpipewire-module-roc-sink
+            flags = [ nofail ]
             args = {
               fec.code = rs8m
               remote.ip = "${cfg.remoteHost}"
@@ -97,6 +100,7 @@ in {
           }
           {
             name = libpipewire-module-loopback
+            flags = [ nofail ]
             args = {
               node.description = "Mic Stream loopback"
               capture.props = {
@@ -123,6 +127,7 @@ in {
         context.modules = [
           {
             name = libpipewire-module-roc-source
+            flags = [ nofail ]
             args = {
               fec.code = rs8m
               local.ip = 0.0.0.0
