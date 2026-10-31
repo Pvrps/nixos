@@ -113,6 +113,10 @@ in {
                 node.name = "mic-stream-loopback-playback"
                 target.object = "mic-stream-roc-sink"
                 node.dont-reconnect = true
+                # If the roc-sink failed to load (nofail), don't fall back to
+                # the default sink -- that would play her mic into her own ears.
+                node.dont-fallback = true
+                node.linger = true
               }
             }
           }
