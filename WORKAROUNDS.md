@@ -131,3 +131,15 @@ delete both.
      `dlopen()`ed, since the provider has undefined references to both.
 - **Remove when:** the plugin or nixpkgs ships a working CUDA provider, or the
   Flatpak sandbox loads it without the preload hack.
+
+### npm override for `@modelcontextprotocol/node`
+
+- **Where:** `modules/home/programs/development/opencode/package.json`
+  (`overrides`). JSON has no comments, so the site is untagged.
+- **Why:** `@upstash/context7-mcp` pins `@modelcontextprotocol/node@2.1.1`,
+  which only allows `@hono/node-server` 1.x. Every 1.x release has an open
+  advisory, and `npm audit fix` downgrades to 1.19.9 (high severity), failing
+  the audit gate in `scripts/update-opencode-tools`. 2.1.2 also allows
+  `@hono/node-server` `^2.1.3`, which is clean.
+- **Remove when:** `@upstash/context7-mcp` depends on
+  `@modelcontextprotocol/node >=2.1.2`.
