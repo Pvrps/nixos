@@ -20,7 +20,6 @@
       theme = "bgrt"; # Manufacturer logo with a spinner
     };
     consoleLogLevel = 0; # Hide kernel output during boot
-    initrd.verbose = false; # Hide initrd output
     # `loglevel` is intentionally absent: consoleLogLevel = 0 above already
     # appends loglevel=0, and the kernel honours the last one on the cmdline.
     kernelParams = [

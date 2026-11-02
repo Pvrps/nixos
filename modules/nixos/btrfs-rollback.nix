@@ -31,13 +31,6 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.boot.initrd.systemd.enable;
-        message = "custom.impermanence.btrfsRollback requires boot.initrd.systemd.enable";
-      }
-    ];
-
     boot.initrd.systemd.services.btrfs-rollback = {
       description = "Delete and recreate ephemeral btrfs subvolumes";
       wantedBy = ["initrd.target"];
