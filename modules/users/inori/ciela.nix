@@ -29,6 +29,7 @@
     # discordRpc.enable = true;
     bolt.enable = true;
     prismlauncher.enable = true;
+    osu.enable = true;
 
     stremio.enable = true;
     celluloid.enable = true;
