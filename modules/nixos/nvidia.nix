@@ -14,8 +14,8 @@
         enable32Bit = true;
       };
       nvidia = {
-        # Use the newest available driver branch (production or new_feature).
-        branch = "latest";
+        # WORKAROUND: 615.x shader compiler crash in libnvidia-gpucomp, see WORKAROUNDS.md
+        branch = "production";
         modesetting.enable = true;
         open = true;
         # WORKAROUND: patchelf 0.19.2 breaks nvidia-smi & co., see WORKAROUNDS.md

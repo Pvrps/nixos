@@ -24,6 +24,21 @@ delete both.
   merge commit `826905a0c695`). Replace the `overrideAttrs` with
   `with config.boot.kernelPackages; [ v4l2loopback ]`.
 
+## Driver branches
+
+### NVIDIA held on the production branch
+
+- **Where:** `modules/nixos/nvidia.nix` (`hardware.nvidia.branch`)
+- **Why:** the 615 new-feature branch (615.71.09, 615.78.08) has a shader
+  compiler regression: a NULL+0x44 read at `libnvidia-gpucomp.so+0x433e9e9`
+  during Vulkan pipeline compilation. It crashes DXVK/vkd3d-proton games
+  (Overwatch on ciela, Dead by Daylight, Star Ocean), and 610.57.04 was fine.
+  `latest` resolves to 615, so the branch is set to `production` (595).
+  The standalone reproducer from
+  https://forums.developer.nvidia.com/t/383466/10 crashes on 615.78.08 on navi.
+- **Remove when:** a newer new-feature driver passes that reproducer (the
+  `original` shader compiles). Switch back to `branch = "latest"`.
+
 ## Pinned container images
 
 ### qBittorrent pinned to 5.2.x
