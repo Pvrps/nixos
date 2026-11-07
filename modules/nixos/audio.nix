@@ -63,6 +63,25 @@ in {
                 }
               ];
             };
+            # USB audio is flagged "batch", which makes PipeWire keep an extra
+            # period of headroom in the hardware ring (~37-47ms measured on the
+            # fifine at period 512). Smaller periods and ignoring the flag cut
+            # that to a few ms.
+            "11-usb-low-latency" = {
+              "monitor.alsa.rules" = [
+                {
+                  matches = [
+                    {"node.name" = "~alsa_output.usb-.*";}
+                  ];
+                  actions = {
+                    update-props = {
+                      "api.alsa.period-size" = 256;
+                      "api.alsa.disable-batch" = true;
+                    };
+                  };
+                }
+              ];
+            };
           };
         };
 
@@ -71,7 +90,8 @@ in {
             "context.properties" = {
               "default.clock.rate" = 48000;
               "default.clock.quantum" = 512;
-              "default.clock.min-quantum" = 512;
+              # Apps that ask for less (osu!) may shrink the graph while active.
+              "default.clock.min-quantum" = 128;
               "default.clock.max-quantum" = 2048;
               # Run two RT data loops so a heavy filter chain (e.g.
               # DeepFilterNet on the mic path, kept hot 24/7 by roc-send)

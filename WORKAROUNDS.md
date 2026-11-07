@@ -147,6 +147,19 @@ delete both.
 - **Remove when:** the plugin or nixpkgs ships a working CUDA provider, or the
   Flatpak sandbox loads it without the preload hack.
 
+### osu! BASS device period via testing env var
+
+- **Where:** `modules/home/programs/gaming/osu.nix` (`osu` wrapper)
+- **Why:** on Linux osu!lazer always asks BASS for a 10 ms device buffer and
+  has no latency setting (the low-latency path, experimental WASAPI, is
+  Windows-only). osu-framework reads `OSU_TEMP_TESTING_BASS_CONFIG_DEV_PERIOD`
+  for testing. `-256` gives a 256-sample period, so the PipeWire graph drops to
+  quantum 256 while osu! plays. This only helps because `min-quantum` in
+  `modules/nixos/audio.nix` is below 256.
+- **Remove when:** osu! gets an audio latency/period setting, or osu-framework
+  drops the env var. Check `InitBass` in
+  `osu.Framework/Audio/AudioManager.cs`.
+
 ### npm override for `@modelcontextprotocol/node`
 
 - **Where:** `modules/home/programs/development/opencode/package.json`

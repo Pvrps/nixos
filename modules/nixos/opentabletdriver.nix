@@ -30,5 +30,14 @@ in {
     services.udev.extraRules = ''
       SUBSYSTEM=="input", ATTRS{idVendor}=="056a", ENV{LIBINPUT_IGNORE_DEVICE}="1"
     '';
+
+    # libinput smooths tablet tool motion by default, which adds drag on top
+    # of OTD's own (optional) filters. libinput only reads overrides from
+    # /etc/libinput, so this can't live in the user's ~/.config.
+    environment.etc."libinput/local-overrides.quirks".text = ''
+      [OpenTabletDriver Virtual Tablet]
+      MatchName=OpenTabletDriver*
+      AttrTabletSmoothing=0
+    '';
   };
 }

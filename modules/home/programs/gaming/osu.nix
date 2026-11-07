@@ -2,9 +2,22 @@
   pkgs,
   lib,
   config,
+  osConfig,
   ...
 }: let
   cfg = config.custom.programs.osu;
+
+  # WORKAROUND: no Linux audio latency setting in osu!, see WORKAROUNDS.md
+  osu = pkgs.symlinkJoin {
+    name = "osu-lazer-bin-low-latency";
+    paths = [pkgs.osu-lazer-bin];
+    nativeBuildInputs = [pkgs.makeWrapper];
+    postBuild = ''
+      rm "$out/bin/osu!"
+      makeWrapper "${pkgs.osu-lazer-bin}/bin/osu!" "$out/bin/osu!" \
+        --set-default OSU_TEMP_TESTING_BASS_CONFIG_DEV_PERIOD -256
+    '';
+  };
 
   # shared-mime-info entry registering osu!'s custom file extensions so XDG
   # file managers / portals dispatch .osk, .osz, .olz and .osr files to the
@@ -32,12 +45,29 @@ in {
   options.custom.programs.osu.enable = lib.mkEnableOption "osu!lazer (AppImage build with score submission and multiplayer)";
 
   config = lib.mkIf cfg.enable {
-    home.packages = [pkgs.osu-lazer-bin];
+    home.packages = [osu];
 
-    xdg.configFile."libinput/local-overrides.quirks".text = ''
-      [OpenTabletDriver Virtual Tablet]
-      MatchName=OpenTabletDriver*
-      AttrTabletSmoothing=0
+    # Present immediately (tear) instead of waiting for the next vblank, with
+    # VRR while visible: same "G-Sync + V-Sync off" setup as Steam games
+    # (see steam.nix). allow-tearing needs the urayde/niri fork.
+    custom.programs.niri.windowRulesConfig = lib.mkIf config.custom.programs.niri.enable (
+      ''
+        window-rule {
+            match app-id=r#"^osu!$"#
+            variable-refresh-rate true
+        }
+      ''
+      + lib.optionalString (osConfig.custom.niri.tearingFork.enable or false) ''
+
+        window-rule {
+            match app-id=r#"^osu!$"#
+            allow-tearing true
+        }
+      ''
+    );
+
+    custom.programs.mango.windowRulesConfig = lib.mkIf config.custom.programs.mango.enable ''
+      window_rule=force_tearing:1,app_id:^osu!$
     '';
 
     # Drop the custom mime-info into the user mime DB so .osk etc. resolve to
