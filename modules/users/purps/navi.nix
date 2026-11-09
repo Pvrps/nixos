@@ -15,6 +15,8 @@
     ".ssh"
     ".putty"
     "Development"
+    # Lichii/Eden (Switch 2 emulator) shader cache.
+    ".cache/eden"
   ];
 
   custom.programs = {
