@@ -52,7 +52,7 @@ in
   lib.custom.mkScript {
     name = "abd";
     description = "Audiobook Downloader - download and convert audiobooks to M4B";
-    runtimeInputs = pkgs: with pkgs; [curl python3 (ffmpeg-full.override {withUnfree = true;}) coreutils gnugrep gnused];
+    runtimeInputs = pkgs: with pkgs; [curl python3 ffmpeg coreutils gnugrep gnused];
     extraAssertions = config: [
       {
         assertion = config.custom.scripts."2m4b".enable;
