@@ -58,6 +58,20 @@ delete both.
 
 ## Forked or patched packages
 
+### rustdesk-flutter libsodium build input
+
+- **Where:** `modules/nixos/overlays.nix`
+- **Why:** the `libsodium-sys` crate (enabled through rustdesk's
+  `linux-pkg-config` feature) finds libsodium with pkg-config, but the package
+  never lists `libsodium` in `buildInputs`. It used to arrive transitively
+  (ffmpeg_7 → libssh → libsodium) until libsodium switched to strictDeps
+  (NixOS/nixpkgs#575697), so the build fails with "The system library
+  `libsodium` required by crate `libsodium-sys` was not found". Hydra fails
+  too, so there is no cached build.
+- **Remove when:** nixpkgs' `rustdesk-flutter` lists `libsodium` in
+  `buildInputs` (check `pkgs/by-name/ru/rustdesk-flutter/package.nix`). Delete
+  the overlay, and `modules/nixos/overlays.nix` if it is then empty.
+
 ### nvidia-x11 binaries re-patched in two patchelf calls
 
 - **Where:** `modules/nixos/nvidia.nix` (`hardware.nvidia.package`)
