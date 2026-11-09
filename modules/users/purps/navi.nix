@@ -17,6 +17,9 @@
     "Development"
     # Lichii/Eden (Switch 2 emulator) shader cache.
     ".cache/eden"
+    # Nix fetcher cache: keeps locked git revs (e.g. the niri fork's smithay)
+    # resolvable after the upstream force-pushes them away.
+    ".cache/nix"
   ];
 
   custom.programs = {

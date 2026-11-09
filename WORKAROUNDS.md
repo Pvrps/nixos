@@ -80,6 +80,10 @@ delete both.
   nixpkgs through the fork's overlay (tests skipped), with no binary cache.
 - **Remove when:** upstream niri gets tearing (blocked on
   https://github.com/Smithay/smithay/pull/1948).
+- **If eval fails** with `Cannot find Git revision ... urayde/smithay`: the
+  fork was rebased and force-pushed, orphaning the smithay rev in the locked
+  `Cargo.lock`. Run `nix flake update niri-tearing`. `.cache/nix` is persisted
+  on navi so an already-fetched rev survives reboots.
 
 ### arrpc (OpenAsar/arrpc PR #143)
 
