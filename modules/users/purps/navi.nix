@@ -41,20 +41,9 @@
     zen = {
       enable = true;
       homepage = "https://homepage.windwaker.ca/";
-      settings = {
-        # Hardware video decoding — VA-API via nvidia-vaapi-driver.
-        # force-enabled bypasses gfxInfo blocklist which blocks HW decode on NVIDIA.
-        "media.ffmpeg.vaapi.enabled" = true;
-        "media.hardware-video-decoding.force-enabled" = true;
-        "gfx.webrender.all" = true;
-        # Force DMABuf WebGL — blocklisted by gfxInfo on NVIDIA but works fine.
-        "webgl.force-enabled" = true;
-        "webgl.disable-fail-if-major-performance-caveat" = true;
-        # Use Vulkan backend for WebRender — bypasses thread-unsafe OpenGL issue on NVIDIA.
-        # Fixes CANVAS_RENDERER_THREAD being blocked by FEATURE_FAILURE_THREAD_UNSAFE_GL.
-        "gfx.webrender.compositor.force-enabled" = true;
-        "gfx.canvas.accelerated.force-enabled" = true;
-      };
+      # No forced gfx/webgl/media prefs: since Zen Twilight 1.25t (2026-11-11
+      # build) forcing them past gfxInfo on NVIDIA renders video as a green
+      # frame and hangs the browser. Zen's defaults play video fine here.
       extraExtensions = {
         "@windscribeff" = {
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/windscribe/latest.xpi";
