@@ -12,18 +12,6 @@ comment, so `grep -rn WORKAROUND` lists them all. Pins that are not workarounds
 When adding a workaround: tag the site, add an entry here. When removing one:
 delete both.
 
-## Kernel modules
-
-### v4l2loopback `modules.*` index files
-
-- **Where:** `modules/hosts/navi/_hardware.nix` (`extraModulePackages`)
-- **Why:** Kernel 7.3's `modules_install` runs `depmod` itself, so the package
-  ships `modules.*` files that collide with the kernel's in `buildEnv`
-  (NixOS/nixpkgs#575851).
-- **Remove when:** the locked nixpkgs includes PR #575861 (merged 2026-10-21,
-  merge commit `826905a0c695`). Replace the `overrideAttrs` with
-  `with config.boot.kernelPackages; [ v4l2loopback ]`.
-
 ## Driver branches
 
 ### NVIDIA held on the production branch
@@ -57,32 +45,6 @@ delete both.
   `nix shell nixpkgs#skopeo -c skopeo list-tags docker://ghcr.io/linuxserver/qbittorrent | grep '"5\.2\.'`.
 
 ## Forked or patched packages
-
-### rustdesk-flutter libsodium build input
-
-- **Where:** `modules/nixos/overlays.nix`
-- **Why:** the `libsodium-sys` crate (enabled through rustdesk's
-  `linux-pkg-config` feature) finds libsodium with pkg-config, but the package
-  never lists `libsodium` in `buildInputs`. It used to arrive transitively
-  (ffmpeg_7 → libssh → libsodium) until libsodium switched to strictDeps
-  (NixOS/nixpkgs#575697), so the build fails with "The system library
-  `libsodium` required by crate `libsodium-sys` was not found". Hydra fails
-  too, so there is no cached build.
-- **Remove when:** nixpkgs' `rustdesk-flutter` lists `libsodium` in
-  `buildInputs` (check `pkgs/by-name/ru/rustdesk-flutter/package.nix`). Delete
-  the overlay, and `modules/nixos/overlays.nix` if it is then empty.
-
-### nvidia-x11 binaries re-patched in two patchelf calls
-
-- **Where:** `modules/nixos/nvidia.nix` (`hardware.nvidia.package`)
-- **Why:** patchelf 0.19.2 produces overlapping `LOAD` segments when the
-  interpreter and rpath are set in one call, so `nvidia-smi` (and the other
-  `bin/` tools) segfault in `ld.so` on start (NixOS/nixpkgs#576412). The Beszel
-  agent runs `nvidia-smi` every 5 s, flooding the journal and coredump dir.
-  `postFixup` re-patches the originals from `origBin/` with rpath and
-  interpreter set separately.
-- **Remove when:** the locked nixpkgs includes PR #576397 (merged 2026-10-21,
-  merge commit `ae9ba0c0ab39`). Drop the `package` override.
 
 ### niri tearing fork (`urayde/niri`)
 

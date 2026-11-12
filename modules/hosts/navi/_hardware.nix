@@ -19,16 +19,7 @@
       "kvm-amd"
       "v4l2loopback"
     ];
-    extraModulePackages = [
-      # WORKAROUND: v4l2loopback modules.* conflict on kernel 7.3, see WORKAROUNDS.md
-      (config.boot.kernelPackages.v4l2loopback.overrideAttrs (old: {
-        postInstall =
-          (old.postInstall or "")
-          + ''
-            find $out/lib/modules -maxdepth 2 -name 'modules.*' -delete
-          '';
-      }))
-    ];
+    extraModulePackages = with config.boot.kernelPackages; [v4l2loopback];
     extraModprobeConfig = ''
       options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1
     '';
