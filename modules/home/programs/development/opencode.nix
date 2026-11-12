@@ -6,13 +6,31 @@
   ...
 }: let
   cfg = config.custom.programs.opencode;
-  inherit (cfg) context7 superpowers claudeAuth;
+  inherit (cfg) context7 superpowers;
 
   # Write the config file if any feature that needs it is enabled
-  needsConfigFile = context7.enable || claudeAuth.enable || cfg.mcp-nixos.enable;
+  needsConfigFile = context7.enable || cfg.mcp-nixos.enable;
 
   # MAINTENANCE: pinned npm tool versions live in package.json, see MAINTENANCE.md
-  npmDeps = (builtins.fromJSON (builtins.readFile ./opencode/package.json)).dependencies;
+  opencodeTools = pkgs.buildNpmPackage {
+    pname = "opencode-pinned-tools";
+    version = "1.0.0";
+    src = ./opencode;
+    npmDepsHash = "sha256-5wXLhmVetVV7LJM/IXI3Y9o4Qmeukw2uJDy09whnYgw=";
+    dontNpmBuild = true;
+    nativeBuildInputs = [pkgs.makeWrapper];
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/lib/node_modules/opencode-pinned-tools $out/bin
+      cp -r node_modules package.json package-lock.json $out/lib/node_modules/opencode-pinned-tools
+
+      makeWrapper ${pkgs.nodejs}/bin/node $out/bin/context7-mcp \
+        --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@upstash/context7-mcp/dist/index.js
+
+      runHook postInstall
+    '';
+  };
 in {
   options.custom.programs.opencode = {
     enable = lib.mkEnableOption "OpenCode AI coding assistant";
@@ -27,40 +45,19 @@ in {
     superpowers = {
       enable = lib.mkEnableOption "Superpowers skills and plugin for OpenCode";
     };
-    claudeAuth = {
-      enable = lib.mkEnableOption "opencode-claude-auth plugin (use Claude Code credentials in OpenCode)";
-    };
     mcp-nixos = {
       enable = lib.mkEnableOption "MCP-NixOS server for NixOS packages, options, and resources";
     };
+    pinnedTools = lib.mkOption {
+      type = lib.types.package;
+      default = opencodeTools;
+      readOnly = true;
+      internal = true;
+      description = "Pinned npm tools (context7-mcp), shared with the claude-code module";
+    };
   };
 
-  config = lib.mkIf cfg.enable (let
-    opencodeTools = pkgs.buildNpmPackage {
-      pname = "opencode-pinned-tools";
-      version = "1.0.0";
-      src = ./opencode;
-      npmDepsHash = "sha256-/RdNh8RS8CIl3eA9/EC3Or4rszR1XEvzveQBlxKeGbE=";
-      dontNpmBuild = true;
-      nativeBuildInputs = [pkgs.makeWrapper];
-      installPhase = ''
-        runHook preInstall
-
-        mkdir -p $out/lib/node_modules/opencode-pinned-tools $out/bin
-        cp -r node_modules package.json package-lock.json $out/lib/node_modules/opencode-pinned-tools
-
-        makeWrapper ${pkgs.nodejs}/bin/node $out/bin/context7-mcp \
-          --add-flags $out/lib/node_modules/opencode-pinned-tools/node_modules/@upstash/context7-mcp/dist/index.js
-
-        runHook postInstall
-      '';
-    };
-  in {
-    home.persistence."/persist" = {
-      directories = [".claude"];
-      files = [".claude.json"];
-    };
-
+  config = lib.mkIf cfg.enable {
     assertions = [
       {
         assertion = !context7.enable || context7.apiKeyPath != "";
@@ -80,12 +77,6 @@ in {
           text = builtins.toJSON (
             {
               "$schema" = "https://opencode.ai/config.json";
-            }
-            // lib.optionalAttrs claudeAuth.enable {
-              # OpenCode installs npm plugins itself at startup (cached in
-              # ~/.cache/opencode); the version tracks package.json so
-              # `just update` bumps it.
-              plugin = ["opencode-claude-auth@${npmDeps."opencode-claude-auth"}"];
             }
             // lib.optionalAttrs (context7.enable || cfg.mcp-nixos.enable) {
               mcp =
@@ -145,5 +136,5 @@ in {
           '';
       };
     };
-  });
+  };
 }

@@ -113,7 +113,15 @@
         enable = true;
         apiKeyPath = osConfig.sops.secrets."context7-api-key".path;
       };
-      claudeAuth.enable = true;
+      mcp-nixos.enable = true;
+    };
+
+    claude-code = {
+      enable = true;
+      context7 = {
+        enable = true;
+        apiKeyPath = osConfig.sops.secrets."context7-api-key".path;
+      };
       mcp-nixos.enable = true;
     };
 
