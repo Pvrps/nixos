@@ -15,8 +15,6 @@
     ".ssh"
     ".putty"
     "Development"
-    # Lichii (Switch 2 emulator) shader cache.
-    ".cache/lichii"
     # Nix fetcher cache: keeps locked git revs (e.g. the niri fork's smithay)
     # resolvable after the upstream force-pushes them away.
     ".cache/nix"
