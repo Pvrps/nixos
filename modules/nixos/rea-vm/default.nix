@@ -27,6 +27,27 @@
   reportPort = 8471;
   ext = cfg.externalInterface;
 
+  # First host address of an IPv4 CIDR ("10.0.20.0/24" -> "10.0.20.1"), i.e.
+  # the router's interface on that subnet. null for /31 and /32 (no router).
+  firstHost = cidr: let
+    parts = lib.splitString "/" cidr;
+    len =
+      if lib.length parts == 2
+      then lib.toInt (lib.elemAt parts 1)
+      else 32;
+    addr = lib.foldl (acc: o: acc * 256 + lib.toInt o) 0 (lib.splitString "." (lib.head parts));
+    size = lib.foldl (acc: _: acc * 2) 1 (lib.range 1 (32 - len));
+    host = addr - lib.mod addr size + 1;
+    octet = i: toString (lib.mod (host / (lib.foldl (acc: _: acc * 256) 1 (lib.range 1 (3 - i)))) 256);
+  in
+    if len >= 31
+    then null
+    else lib.concatMapStringsSep "." octet (lib.range 0 3);
+
+  lanBlocked =
+    lib.optionals cfg.lanBlockRouters (lib.filter (ip: ip != null) (map firstHost cfg.lanAllowed))
+    ++ cfg.lanBlocked;
+
   caseTool = pkgs.callPackage ../../home/programs/development/rea/_case.nix {};
 
   # Live, read-only report of ~/rea; content is untrusted, see the script.
@@ -83,7 +104,7 @@
     ${lib.concatMapStrings (ip: ''
         iptables -w -t mangle -A rea-vm-fwd -i ${net.tap} -d ${ip} -j DROP
       '')
-      cfg.lanBlocked}
+      lanBlocked}
     ${lib.concatMapStrings (r: ''
         iptables -w -t mangle -A rea-vm-fwd -i ${net.tap} -d ${r} -j RETURN
       '')
@@ -127,17 +148,26 @@ in {
       default = [];
       example = ["10.0.20.0/24"];
       description = ''
-        LAN subnets/addresses the VM may reach (e.g. the IoT network with the
-        TV, for adb), still behind per-connection OpenSnitch prompts. Every
+        LAN subnets/addresses the VM may reach (e.g. a VLAN with a TV to reach
+        over adb), still behind per-connection OpenSnitch prompts. Every
         other private range, this host and tailscale stay blocked. Empty =
         no LAN access at all.
+      '';
+    };
+    lanBlockRouters = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Block the first host address of every lanAllowed subnet (where the
+        router sits, e.g. 10.0.20.1 for 10.0.20.0/24), so adding a subnet is
+        a one-line change.
       '';
     };
     lanBlocked = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [];
-      example = ["10.0.20.1"];
-      description = "Addresses inside lanAllowed the VM may never reach (e.g. the router's interface on that subnet)";
+      example = ["10.0.20.254"];
+      description = "Extra addresses inside lanAllowed the VM may never reach (e.g. a router that isn't on the subnet's first address)";
     };
   };
 

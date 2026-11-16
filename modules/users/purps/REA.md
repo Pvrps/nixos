@@ -106,15 +106,18 @@ NixOS's own rules, and kept in place if the firewall reload fails):
 | Destination from the VM                                                                         | Result                           |
 | ----------------------------------------------------------------------------------------------- | -------------------------------- |
 | navi itself                                                                                     | blocked (except the prompt port) |
-| router on the IoT network (`10.0.20.1`)                                                         | blocked                          |
-| PCs (`10.0.0.x`), servers (`10.0.10.x`), other private ranges, tailscale, link-local, multicast | blocked                          |
+| routers on the allowed VLANs (`10.0.20.1`, `10.10.30.1`)                                        | blocked                          |
+| other VLANs (Default, Server, DMZ, Work, Hotspot), other private ranges, tailscale, link-local, multicast | blocked                |
 | anything not leaving via `eno1`, IPv6                                                           | blocked                          |
-| IoT network `10.0.20.0/24` (TV, ...)                                                            | prompt                           |
+| WiFi `10.0.20.0/24` (TCL TV, ...), IoT `10.10.30.0/24` (Blink, ...)                             | prompt                           |
 | internet                                                                                        | prompt (Anthropic pre-allowed)   |
 
-Nothing can connect _into_ the VM from the LAN. The allowed and blocked
-addresses are `custom.reaVm.lanAllowed` / `lanBlocked` in
-`modules/hosts/navi/default.nix`.
+Nothing can connect _into_ the VM from the LAN. To give the VM another
+subnet, add it to `custom.reaVm.lanAllowed` in
+`modules/hosts/navi/default.nix` and `just switch` (applies right away, even
+with the VM running). Its first address (`.1`, the router) is blocked
+automatically; put any other address to keep out in `lanBlocked`. Your
+router must also let navi reach that VLAN.
 
 ## Android TV
 

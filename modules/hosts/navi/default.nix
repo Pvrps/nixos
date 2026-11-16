@@ -35,11 +35,13 @@
     reaVm = {
       enable = true;
       externalInterface = "eno1";
-      # The VM may reach the IoT network (e.g. the TV over adb), never the
-      # router's interface there; everything else private (incl. 10.0.0.x
-      # PCs and 10.0.10.x servers) stays blocked.
-      lanAllowed = ["10.0.20.0/24"];
-      lanBlocked = ["10.0.20.1"];
+      # VLANs the VM may reach (behind OpenSnitch prompts). Their routers
+      # (.1) are blocked automatically; every other VLAN (Default, Server,
+      # DMZ, Work, Hotspot) and private range stays blocked.
+      lanAllowed = [
+        "10.0.20.0/24" # WiFi, VLAN 20 (TCL TV)
+        "10.10.30.0/24" # IoT, VLAN 130 (Blink sync module)
+      ];
     };
 
     services.sshfs = {
