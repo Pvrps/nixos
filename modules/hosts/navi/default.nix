@@ -31,6 +31,17 @@
 
     #secureboot.enable = true;
 
+    # Reverse-engineering microVM + `rea` launcher (modules/users/purps/REA.md)
+    reaVm = {
+      enable = true;
+      externalInterface = "eno1";
+      # The VM may reach the IoT network (e.g. the TV over adb), never the
+      # router's interface there; everything else private (incl. 10.0.0.x
+      # PCs and 10.0.10.x servers) stays blocked.
+      lanAllowed = ["10.0.20.0/24"];
+      lanBlocked = ["10.0.20.1"];
+    };
+
     services.sshfs = {
       enable = true;
       mounts = {

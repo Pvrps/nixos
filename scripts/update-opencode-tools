@@ -72,3 +72,35 @@ if (next === text) {
   console.log(`npmDepsHash: ${hash}`);
 }
 NODE
+
+# REA ships as a self-contained npm tarball pinned by version + integrity.
+REA_FILE="$ROOT/modules/home/programs/development/rea/_package.nix"
+export REA_FILE
+node <<'NODE'
+const cp = require("node:child_process");
+const fs = require("node:fs");
+
+const file = process.env.REA_FILE;
+const meta = JSON.parse(cp.execFileSync("npm", ["view", "rea-agents", "version", "dist.integrity", "--json"], {
+  encoding: "utf8",
+  stdio: ["ignore", "pipe", "inherit"],
+}));
+const version = meta.version;
+const integrity = meta["dist.integrity"];
+
+const text = fs.readFileSync(file, "utf8");
+const versionRe = /version = "[^"]+";/;
+const integrityRe = /integrity = "sha512-[^"]+";/;
+if (!versionRe.test(text) || !integrityRe.test(text)) {
+  throw new Error(`Could not find version/integrity in ${file}`);
+}
+const current = text.match(versionRe)[0];
+const next = text.replace(versionRe, `version = "${version}";`).replace(integrityRe, `integrity = "${integrity}";`);
+if (next === text) {
+  console.log(`rea-agents: ${version} (current)`);
+} else {
+  fs.writeFileSync(file, next);
+  console.log(`rea-agents: ${current} -> ${version}`);
+  console.log("  check the JADX jar REA pins (src/android/JadxRelease.ts) still matches _package.nix");
+}
+NODE

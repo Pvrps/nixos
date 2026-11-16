@@ -31,6 +31,10 @@
         args = [];
       };
     };
+  # No `rea` server here: OpenCode's Claude provider runs this same `claude`
+  # CLI underneath, so every server listed here is loaded a second time, in
+  # full, on every request (REA alone measured ~120k tokens). REA is reached
+  # through OpenCode's own (Code Mode) MCP entry instead.
 
   mcpConfig = pkgs.writeText "claude-code-mcp.json" (builtins.toJSON {inherit mcpServers;});
 

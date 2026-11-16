@@ -2,7 +2,7 @@
 default:
     @just --list
 
-# Update flake inputs and pinned OpenCode MCP tools
+# Update flake inputs, pinned OpenCode MCP tools and REA
 update:
     nix flake update
     nix shell nixpkgs#nodejs nixpkgs#prefetch-npm-deps -c scripts/update-opencode-tools

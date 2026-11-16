@@ -18,6 +18,9 @@
     # Nix fetcher cache: keeps locked git revs (e.g. the niri fork's smithay)
     # resolvable after the upstream force-pushes them away.
     ".cache/nix"
+    # Shared with the rea-vm microVM (see REA.md)
+    "rea"
+    ".config/opensnitch"
   ];
 
   custom.programs = {
@@ -103,14 +106,10 @@
       mcp-nixos.enable = true;
     };
 
-    claude-code = {
-      enable = true;
-      context7 = {
-        enable = true;
-        apiKeyPath = osConfig.sops.secrets."context7-api-key".path;
-      };
-      mcp-nixos.enable = true;
-    };
+    # Claude Code is only the runtime behind OpenCode's Claude provider (and
+    # its login). OpenCode already provides context7/nixos; MCP servers given
+    # to Claude Code would be loaded a second time on every request.
+    claude-code.enable = true;
 
     devenv.enable = true;
 

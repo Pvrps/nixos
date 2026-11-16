@@ -151,3 +151,20 @@ delete both.
   `@hono/node-server` `^2.1.3`, which is clean.
 - **Remove when:** `@upstash/context7-mcp` depends on
   `@modelcontextprotocol/node >=2.1.2`.
+
+## Config overrides
+
+### Hidden `build` agent in rea-vm
+
+- **Where:** `modules/home/programs/development/rea.nix`
+  (`custom.programs.opencode.settings.agents.build`)
+- **Why:** with `opencode --prompt`, the TUI can submit before the server has
+  applied the config's agents. `Agent.select` then finds no default and falls
+  back to the hard-coded id `build`, which is saved on the session. With
+  `build` disabled, the queued prompt never runs (`Failed to drain Session …
+  Agent not found: "build"`) and the TUI hangs. So `build` stays defined as a
+  hidden copy of `re-lead`, and a session that loses the race still gets the
+  lead's model and permissions. Seen on opencode2 2.2.7.
+- **Remove when:** OpenCode resolves the session agent after config load
+  (`rea -m <question>` in a fresh VM never creates a `build` session). Then
+  go back to `build.disabled = true`.

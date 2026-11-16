@@ -7,9 +7,35 @@
 }: let
   cfg = config.custom.programs.opencode;
   inherit (cfg) context7 superpowers;
+  rea = config.custom.programs.rea;
 
-  # Write the config file if any feature that needs it is enabled
-  needsConfigFile = context7.enable || cfg.mcp-nixos.enable;
+  # OpenCode V2 config shape: servers live under mcp.servers and connect
+  # unless `disabled = true`.
+  mcpServers =
+    lib.optionalAttrs context7.enable {
+      context7 = {
+        type = "local";
+        # Pass the API key via env var (CONTEXT7_API_KEY) rather than
+        # --api-key, so it never appears in the process argv / ps output.
+        command = [
+          "${pkgs.bash}/bin/bash"
+          "-c"
+          "CONTEXT7_API_KEY=$(cat ${context7.apiKeyPath} | tr -d '\n') ${opencodeTools}/bin/context7-mcp"
+        ];
+      };
+    }
+    // lib.optionalAttrs cfg.mcp-nixos.enable {
+      nixos = {
+        type = "local";
+        command = ["${pkgs.mcp-nixos}/bin/mcp-nixos"];
+      };
+    }
+    // lib.optionalAttrs rea.enable {
+      rea = {
+        type = "local";
+        command = ["${rea.package}/bin/rea" "mcp"];
+      };
+    };
 
   # MAINTENANCE: pinned npm tool versions live in package.json, see MAINTENANCE.md
   opencodeTools = pkgs.buildNpmPackage {
@@ -48,6 +74,16 @@ in {
     mcp-nixos = {
       enable = lib.mkEnableOption "MCP-NixOS server for NixOS packages, options, and resources";
     };
+    settings = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = {};
+      description = "Extra opencode.json settings (agents, default_agent, permissions, ...), merged over the generated config";
+    };
+    extraInstructions = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Extra sections appended to the global AGENTS.md";
+    };
     pinnedTools = lib.mkOption {
       type = lib.types.package;
       default = opencodeTools;
@@ -73,37 +109,11 @@ in {
         ++ lib.optionals context7.enable [opencodeTools];
 
       file = {
-        ".config/opencode/opencode.json" = lib.mkIf needsConfigFile {
-          text = builtins.toJSON (
-            {
-              "$schema" = "https://opencode.ai/config.json";
-            }
-            // lib.optionalAttrs (context7.enable || cfg.mcp-nixos.enable) {
-              mcp =
-                (lib.optionalAttrs context7.enable {
-                  context7 = {
-                    type = "local";
-                    # Pass the API key via env var (CONTEXT7_API_KEY) rather than
-                    # --api-key, so it never appears in the process argv / ps output.
-                    command = [
-                      "${pkgs.bash}/bin/bash"
-                      "-c"
-                      "CONTEXT7_API_KEY=$(cat ${context7.apiKeyPath} | tr -d '\n') ${opencodeTools}/bin/context7-mcp"
-                    ];
-                    enabled = true;
-                  };
-                })
-                // (lib.optionalAttrs cfg.mcp-nixos.enable {
-                  nixos = {
-                    type = "local";
-                    command = [
-                      "${pkgs.mcp-nixos}/bin/mcp-nixos"
-                    ];
-                    enabled = true;
-                  };
-                });
-            }
-          );
+        ".config/opencode/opencode.json" = lib.mkIf (mcpServers != {} || cfg.settings != {}) {
+          text = builtins.toJSON (lib.recursiveUpdate
+            ({"$schema" = "https://opencode.ai/config.json";}
+              // lib.optionalAttrs (mcpServers != {}) {mcp.servers = mcpServers;})
+            cfg.settings);
         };
 
         ".config/opencode/plugins/superpowers.js" = lib.mkIf superpowers.enable {
@@ -133,7 +143,10 @@ in {
             - Use `skill` tool to list available skills (e.g. brainstorming, test-driven-development, etc)
             - Do NOT write design docs or plans to disk; keep plans in-context only
             - Do NOT commit documentation or plans as part of the workflow
-          '';
+          ''
+          + lib.optionalString (cfg.extraInstructions != "") ''
+
+            ${cfg.extraInstructions}'';
       };
     };
   };

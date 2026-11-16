@@ -70,6 +70,11 @@
       flake = false;
     };
 
+    microvm = {
+      url = "github:microvm-nix/microvm.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     impermanence = {
       url = "github:nix-community/impermanence";
       inputs = {
@@ -197,7 +202,51 @@
               }
             ];
           };
+        # MicroVM guests: a hand-picked module list rather than mkHost's
+        # import-trees, which assume a bare-metal host (bootloader, sops,
+        # NetworkManager) and the full desktop home-manager setup.
+        mkVm = {
+          host,
+          user,
+          homeModules,
+        }:
+          nixpkgs.lib.nixosSystem {
+            inherit lib;
+            specialArgs = {
+              inherit inputs self;
+              hostName = host;
+            };
+            modules = [
+              inputs.microvm.nixosModules.microvm
+              inputs.impermanence.nixosModules.impermanence
+              home-manager.nixosModules.home-manager
+              ./modules/hosts/${host}
+              {
+                nixpkgs = {
+                  hostPlatform = "x86_64-linux";
+                  config.allowUnfree = true;
+                };
+                home-manager = {
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  extraSpecialArgs = {inherit inputs self;};
+                  sharedModules = homeModules;
+                  users = user;
+                };
+              }
+            ];
+          };
       in {
+        nixosConfigurations.rea-vm = mkVm {
+          host = "rea-vm";
+          user.purps = import ./modules/users/purps/rea-vm.nix;
+          homeModules = [
+            ./modules/home/programs/development/opencode.nix
+            ./modules/home/programs/development/claude-code.nix
+            ./modules/home/programs/development/rea.nix
+          ];
+        };
+
         nixosConfigurations.navi = mkHost {
           host = "navi";
           users.purps = import ./modules/users/purps/navi.nix;
