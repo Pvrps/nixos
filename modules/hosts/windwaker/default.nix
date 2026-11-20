@@ -91,8 +91,10 @@
   # Auto-update containers: the podman-auto-update timer pulls newer images for
   # every container labelled io.containers.autoupdate=registry (mkContainer sets
   # this by default) and restarts the unit, rolling back on failure. Images
-  # pinned by digest (e.g. immich's valkey) or by an exact version tag are left
-  # alone and must still be bumped manually in their service .nix.
+  # pinned by an exact version tag are left alone and must still be bumped
+  # manually in their service .nix. Digest-pinned images (e.g. immich's valkey)
+  # must set `autoUpdate = null`: a tag+digest reference makes the whole
+  # podman-auto-update run fail.
   virtualisation.quadlet.autoUpdate = {
     enable = true;
     calendar = "*-*-* 04:00:00"; # daily at 04:00 America/Toronto

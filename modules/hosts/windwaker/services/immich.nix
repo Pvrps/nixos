@@ -49,6 +49,9 @@ in {
         tz = null;
         requiresMounts = false;
         networks = ["immich_internal"];
+        # podman auto-update errors out (exit 125) on tag+digest references;
+        # the digest pin means it would never update anyway.
+        autoUpdate = null;
         containerConfig = {
           # MAINTENANCE: image pinned by digest, see MAINTENANCE.md
           image = "docker.io/valkey/valkey:8-bookworm@sha256:fec42f399876eb6faf9e008570597741c87ff7662a54185593e74b09ce83d177";
