@@ -27,6 +27,28 @@ delete both.
 - **Remove when:** a newer new-feature driver passes that reproducer (the
   `original` shader compiles). Switch back to `branch = "latest"`.
 
+## Pinned nixpkgs
+
+### mickey's KDE stack held on Plasma 6.7 (X11)
+
+- **Where:** `flake.nix` (`nixpkgs-plasma-x11`),
+  `modules/hosts/mickey/default.nix` (`kdePackages` overlay, `kwin-x11`)
+- **Why:** Plasma 6.8 is Wayland-only and nixpkgs removed `kwin-x11`. mickey
+  needs X11 for unattended RustDesk: on Wayland RustDesk's root service
+  captures through the ScreenCast portal, which KDE's `kde-authorized`
+  pre-authorization does not cover (remote-desktop only), so someone at the
+  machine has to approve a dialog. Only `kdePackages` (Plasma, Frameworks,
+  their Qt 6.11, SDDM) comes from the pin. The kernel, Mesa, Xorg, Firefox,
+  RustDesk etc. stay on the shared nixpkgs. A VM test with this overlay, the
+  current Mesa and the `plasmax11` session booted to a working desktop.
+- **Remove when:** RustDesk's unattended Wayland capture (DRM/KMS, upstream
+  PR #15420, a separate preview build as of 2026-10) ships in nixpkgs'
+  `rustdesk-flutter`. Or switch mickey to KRdp with `kde-authorized`
+  pre-authorization. Then drop the input and overlay and use
+  `defaultSession = "plasma"` (SDDM can stay on X11).
+- **Bump:** don't. `55bfb4d` is the last nixos-unstable rev with `kwin-x11`.
+  Plasma 6.7 gets no more fixes from nixpkgs.
+
 ## Pinned container images
 
 ### qBittorrent pinned to 5.2.x
@@ -162,7 +184,7 @@ delete both.
   applied the config's agents. `Agent.select` then finds no default and falls
   back to the hard-coded id `build`, which is saved on the session. With
   `build` disabled, the queued prompt never runs (`Failed to drain Session …
-  Agent not found: "build"`) and the TUI hangs. So `build` stays defined as a
+Agent not found: "build"`) and the TUI hangs. So `build` stays defined as a
   hidden copy of `re-lead`, and a session that loses the race still gets the
   lead's model and permissions. Seen on opencode2 2.2.7.
 - **Remove when:** OpenCode resolves the session agent after config load

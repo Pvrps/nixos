@@ -1,9 +1,22 @@
 # Mickey: low-end kiosk-style desktop (Plasma X11) administered via RustDesk.
 {
   config,
+  inputs,
   pkgs,
   ...
 }: {
+  # WORKAROUND: Plasma 6.8 dropped X11; KDE stack held at 6.7, see WORKAROUNDS.md
+  # Only kdePackages (Plasma, Frameworks, their Qt, SDDM) comes from the pinned
+  # nixpkgs; kernel, Mesa, Xorg, Firefox, RustDesk etc. stay on the shared one.
+  nixpkgs.overlays = [
+    (final: prev: {
+      inherit (inputs.nixpkgs-plasma-x11.legacyPackages.${prev.stdenv.hostPlatform.system}) kdePackages;
+    })
+  ];
+  # The current plasma6 module no longer installs kwin-x11 (the plasmax11
+  # session needs it); the pinned plasma-workspace still ships the session.
+  environment.systemPackages = [pkgs.kdePackages.kwin-x11];
+
   imports = [
     ./_hardware.nix
     ./_disko.nix
