@@ -25,13 +25,18 @@ in {
   # moves with each release, so podman-auto-update picks new ones up by itself.
   # To take one straight away: `systemctl start podman-auto-update`.
   #
-  # In NPM, point purps.ca and osu.purps.ca at 10.0.10.16:48080 (scheme http).
+  # It is the only thing here that answers requests from the internet, so it
+  # lives in the DMZ (see dmz_bridge in network.nix) and publishes no port on
+  # the host. cloudflared-tunnel reaches it at 10.10.20.11:3000 over the same
+  # macvlan; NPM is not involved.
   virtualisation.quadlet.containers.purps-ca = lib.custom.mkContainer {
     tz = null;
     requiresMounts = false;
+    network = "dmz_bridge";
     containerConfig = {
       image = "ghcr.io/pvrps/purps.ca:latest";
-      publishPorts = ["48080:3000"];
+      ip = "10.10.20.11";
+      dns = ["10.0.10.16"];
       # The login is needed twice over: to start the container, and for
       # podman-auto-update to look for a newer image.
       podmanArgs = ["--authfile=${auth}"];

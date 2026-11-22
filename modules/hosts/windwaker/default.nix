@@ -62,23 +62,27 @@
         };
       };
 
-      # VLAN 120 — DMZ: static 10.10.20.16/24, no gateway
-      # Cloudflared tunnel routes outbound traffic; no default gateway needed here
+      # VLAN 120 — DMZ: brought up with no address. It is only the parent of
+      # the dmz_bridge macvlan (services/network.nix); the host itself has no
+      # business in the DMZ. An address here also breaks the DMZ containers'
+      # DNS: Pi-hole's replies would leave by this interface rather than back
+      # through the router, and a macvlan parent cannot reach its children.
       "20-vlan120" = {
         matchConfig.Name = "eno1.120";
+        linkConfig.RequiredForOnline = "no";
         networkConfig = {
-          Address = "10.10.20.16/24";
           LinkLocalAddressing = "no";
         };
       };
     };
   };
 
-  # Firewall: SSH + Cockpit on the internal LAN interface (eno1, native VLAN 10)
+  # Firewall: SSH + Cockpit are opened on eno1 (native VLAN 10) further down.
   networking.firewall = {
     enable = true;
-    # Podman manages its own iptables rules for container port exposure
-    # podman1/podman2 are the bridge interfaces for quadlet networks (lan_bridge, immich_internal)
+    # Podman manages its own rules for published container ports, so those
+    # bypass this firewall. podmanN are the bridge interfaces of the quadlet
+    # networks (lan_bridge, immich_internal).
     trustedInterfaces = ["podman0" "podman1" "podman2" "tailscale0"];
   };
 

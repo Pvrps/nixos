@@ -8,9 +8,8 @@
     purps = {
       isNormalUser = true;
       uid = 1000;
-      # docker group: manage containers without sudo
       # wheel: sudo for anything requiring root
-      extraGroups = ["wheel" "docker" "video" "audio" "input"];
+      extraGroups = ["wheel" "video" "audio" "input"];
       shell = pkgs.fish;
       hashedPassword = "!"; # SSH-key-only login
       openssh.authorizedKeys.keys = [
@@ -21,7 +20,7 @@
     podman-admin = {
       isNormalUser = true;
       uid = 1001;
-      extraGroups = ["docker" "podman"];
+      extraGroups = ["podman"];
       shell = pkgs.bash;
       hashedPasswordFile = config.sops.secrets."podman-admin-password".path;
     };
