@@ -25,8 +25,8 @@ in {
       # the public site stays in that VLAN.
       #
       # Addresses are fixed and kept below the UDM's DHCP range (.128-.250):
-      #   10.10.20.10  cloudflared-tunnel
-      #   10.10.20.11  purps-ca
+      #   10.10.20.10  cloudflared-tunnel  (26:5a:88:97:e6:36)
+      #   10.10.20.11  purps-ca            (fe:6e:fe:fc:a5:ec)
       dmz_bridge = {
         networkConfig = {
           driver = "macvlan";
@@ -52,6 +52,10 @@ in {
           image = "docker.io/cloudflare/cloudflared";
           exec = "tunnel run";
           ip = "10.10.20.10";
+          # Fixed MAC: podman would otherwise pick a new one every time the
+          # container is recreated, and the UDM would list a new unknown
+          # device on each image update.
+          podmanArgs = ["--mac-address=26:5a:88:97:e6:36"];
           dns = ["10.0.10.16"];
           environmentFiles = [config.sops.secrets."cloudflared-env".path];
         };

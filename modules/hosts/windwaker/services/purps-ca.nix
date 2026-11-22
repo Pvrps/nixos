@@ -39,7 +39,9 @@ in {
       dns = ["10.0.10.16"];
       # The login is needed twice over: to start the container, and for
       # podman-auto-update to look for a newer image.
-      podmanArgs = ["--authfile=${auth}"];
+      # The MAC is fixed so the UDM keeps seeing the same device across
+      # image updates instead of a new unknown one each time.
+      podmanArgs = ["--authfile=${auth}" "--mac-address=fe:6e:fe:fc:a5:ec"];
       labels = ["io.containers.autoupdate.authfile=${auth}"];
     };
     serviceConfig = {
