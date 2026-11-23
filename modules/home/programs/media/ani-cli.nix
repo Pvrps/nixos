@@ -5,8 +5,6 @@
   ...
 }: let
   cfg = config.custom.programs.aniCli;
-  celluloid = config.custom.programs.celluloid.package;
-  upscale = config.custom.programs.celluloid.upscale.enable;
 
   # Plays ani-cli episodes in Celluloid.
   #
@@ -58,10 +56,6 @@
       fi
       extra+=(--save-position-on-quit=yes --watch-later-options=start "--watch-later-directory=$dir")
     ''}
-    ${lib.optionalString upscale ''
-      # ArtCNN instead of the default FSRCNNX (see celluloid.nix).
-      extra+=(--profile=anime)
-    ''}
 
     opts=()
     files=()
@@ -86,7 +80,7 @@
     done
 
     started=$(date +%s)
-    ${lib.getExe celluloid} --no-existing-session "''${opts[@]}" -- "''${files[@]}"
+    ${lib.getExe pkgs.celluloid} --no-existing-session "''${opts[@]}" -- "''${files[@]}"
     status=$?
 
     ${lib.optionalString cfg.resumePlayback ''

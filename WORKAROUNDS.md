@@ -177,36 +177,6 @@ delete both.
   only on change; draft PR #1039 only helps at GTK scale ≥ 2), or the lag
   turns out the same without these.
 
-### Celluloid forced onto desktop OpenGL
-
-- **Where:** `modules/home/programs/media/celluloid.nix` (`GDK_DISABLE=gles-api`
-  in the wrapper)
-- **Why:** GTK 4 gives Celluloid's GLArea an OpenGL ES 3.2 context on NVIDIA.
-  On GLES, mpv's libmpv renderer compiles user shaders as
-  `precision mediump float`, so Anime4K's CNNs render red/green halos and
-  FSRCNNX loses most of its effect. Without GLES, GTK picks desktop GL 4.6
-  (full precision, compute shaders). Checked with Celluloid 0.30 and GTK 4.24
-  (`--mpv-log-file` shows `GL_VERSION`).
-- **Remove when:** mpv uses highp for user shaders on GLES, or GTK prefers
-  desktop GL by default. The log then shows a non-ES `GL_VERSION` with the
-  variable unset. (ArtCNN, the current anime shader, also needs compute
-  shaders, which the GLES context lacked.)
-
-### ArtCNN shaders adapted to libmpv's renderer
-
-- **Where:** `modules/home/programs/media/celluloid.nix` (`prepareShader`,
-  `forLibmpv = true`)
-- **Why:** ArtCNN's GLSL targets `vo=gpu-next`. Celluloid embeds libmpv,
-  whose render API only has the old `gpu` backend (mpv 0.42), and there the
-  shaders fail. They put `#extension` mid-shader (compile error) and their
-  last pass hooks LUMA with 4 components (vo_gpu allows 1), so playback
-  turns solid blue. The build drops the f16 `#extension` lines (the shader
-  falls back to plain float) and makes the last pass 1-component (it only
-  writes `.x`).
-- **Remove when:** libmpv's render API gets a gpu-next backend that
-  Celluloid uses (`render_backends` in mpv's `video/out/vo_libmpv.c`), or
-  ArtCNN ships vo_gpu-compatible shaders. Then set `forLibmpv = false`.
-
 ### ani-cli `-c` resumes unfinished episodes
 
 - **Where:** `modules/home/patches/ani-cli-resume-continue.patch`, applied in
