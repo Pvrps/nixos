@@ -1,9 +1,12 @@
 # Nuvio desktop: upstream's release AppImage (a jpackage'd Compose app with
 # its own JRE), wrapped with appimageTools. Not in nixpkgs or on Flathub.
 #
-# The AppImage doesn't bundle its native playback libraries: libmpv (loaded
-# via JNA) and GStreamer for the built-in player. appimageTools already
-# provides GStreamer core/base/ugly and SDL2; extraPkgs adds the rest.
+# The AppImage doesn't bundle its native playback libraries. The player is a
+# bridge .so unpacked to ~/.cache/nuvio/native-player-bridge at runtime; it
+# links libmpv and WebKitGTK 4.1 (player controls overlay), and without them
+# streams just show a black screen. GStreamer backs the fallback player.
+# appimageTools already provides GTK3, GStreamer core/base/ugly and SDL2;
+# extraPkgs adds the rest.
 #
 # Underscore prefix: import-tree skips this file; nuvio.nix callPackages it.
 {
@@ -24,6 +27,7 @@ in
 
     extraPkgs = pkgs: [
       pkgs.mpv-unwrapped # libmpv playback engine
+      pkgs.webkitgtk_4_1 # player controls overlay
       pkgs.gst_all_1.gst-plugins-good
       pkgs.gst_all_1.gst-plugins-bad
       pkgs.gst_all_1.gst-libav
