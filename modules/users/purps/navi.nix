@@ -123,6 +123,7 @@
     osu.enable = true;
 
     stremio.enable = true;
+    nuvio.enable = true;
     celluloid.enable = true;
     aniCli.enable = true;
     spotify.enable = true;
