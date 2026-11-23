@@ -162,6 +162,21 @@ delete both.
   drops the env var. Check `InitBass` in
   `osu.Framework/Audio/AudioManager.cs`.
 
+### Nuvio lag mitigations via env vars
+
+- **Where:** `modules/home/programs/media/nuvio/_package.nix` (`profile`)
+- **Why:** Nuvio Desktop's Linux UI and player controls are sluggish
+  (NuvioMedia/NuvioDesktop#925, #1012). The player snapshots its WebKitGTK
+  controls page and pushes it into mpv on every tick, pinning one core.
+  Upstream reports suggest `-Dskiko.vsync.enabled=false` (Compose menus) and
+  `WEBKIT_DISABLE_COMPOSITING_MODE=1` (controls) help a little; on navi the
+  difference was not clearly noticeable. Do not add
+  `NUVIO_MPV_GPU_CONTEXT=x11`: under niri/xwayland-satellite it splits the
+  player into a second, unclickable window.
+- **Remove when:** upstream fixes the controls overlay loop (e.g. snapshots
+  only on change; draft PR #1039 only helps at GTK scale ≥ 2), or the lag
+  turns out the same without these.
+
 ### npm override for `@modelcontextprotocol/node`
 
 - **Where:** `modules/home/programs/development/opencode/package.json`

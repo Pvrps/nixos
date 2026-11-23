@@ -33,6 +33,12 @@ in
       pkgs.gst_all_1.gst-libav
     ];
 
+    # WORKAROUND: Linux UI/player-controls lag, see WORKAROUNDS.md
+    profile = ''
+      export _JAVA_OPTIONS="-Dskiko.vsync.enabled=false''${_JAVA_OPTIONS:+ $_JAVA_OPTIONS}"
+      export WEBKIT_DISABLE_COMPOSITING_MODE=1
+    '';
+
     extraInstallCommands = ''
       install -Dm444 ${finalAttrs.contents}/Nuvio.desktop $out/share/applications/nuvio.desktop
       install -Dm444 ${finalAttrs.contents}/Nuvio.png $out/share/icons/hicolor/256x256/apps/Nuvio.png
