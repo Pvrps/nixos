@@ -188,8 +188,24 @@ delete both.
   (full precision, compute shaders). Checked with Celluloid 0.30 and GTK 4.24
   (`--mpv-log-file` shows `GL_VERSION`).
 - **Remove when:** mpv uses highp for user shaders on GLES, or GTK prefers
-  desktop GL by default. The log then shows a non-ES `GL_VERSION`, or Anime4K
-  looks right with the variable unset.
+  desktop GL by default. The log then shows a non-ES `GL_VERSION` with the
+  variable unset. (ArtCNN, the current anime shader, also needs compute
+  shaders, which the GLES context lacked.)
+
+### ArtCNN shaders adapted to libmpv's renderer
+
+- **Where:** `modules/home/programs/media/celluloid.nix` (`prepareShader`,
+  `forLibmpv = true`)
+- **Why:** ArtCNN's GLSL targets `vo=gpu-next`. Celluloid embeds libmpv,
+  whose render API only has the old `gpu` backend (mpv 0.42), and there the
+  shaders fail. They put `#extension` mid-shader (compile error) and their
+  last pass hooks LUMA with 4 components (vo_gpu allows 1), so playback
+  turns solid blue. The build drops the f16 `#extension` lines (the shader
+  falls back to plain float) and makes the last pass 1-component (it only
+  writes `.x`).
+- **Remove when:** libmpv's render API gets a gpu-next backend that
+  Celluloid uses (`render_backends` in mpv's `video/out/vo_libmpv.c`), or
+  ArtCNN ships vo_gpu-compatible shaders. Then set `forLibmpv = false`.
 
 ### ani-cli `-c` resumes unfinished episodes
 

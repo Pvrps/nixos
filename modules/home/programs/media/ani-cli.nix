@@ -59,7 +59,7 @@
       extra+=(--save-position-on-quit=yes --watch-later-options=start "--watch-later-directory=$dir")
     ''}
     ${lib.optionalString upscale ''
-      # Anime4K instead of the default FSRCNNX (see celluloid.nix).
+      # ArtCNN instead of the default FSRCNNX (see celluloid.nix).
       extra+=(--profile=anime)
     ''}
 
