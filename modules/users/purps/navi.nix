@@ -124,7 +124,11 @@
 
     stremio.enable = true;
     nuvio.enable = true;
-    celluloid.enable = true;
+    celluloid = {
+      enable = true;
+      upscale.enable = true;
+      openFromBrowser.enable = true;
+    };
     aniCli.enable = true;
     spotify.enable = true;
     okular.enable = true;

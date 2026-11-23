@@ -177,6 +177,31 @@ delete both.
   only on change; draft PR #1039 only helps at GTK scale ≥ 2), or the lag
   turns out the same without these.
 
+### Celluloid forced onto desktop OpenGL
+
+- **Where:** `modules/home/programs/media/celluloid.nix` (`GDK_DISABLE=gles-api`
+  in the wrapper)
+- **Why:** GTK 4 gives Celluloid's GLArea an OpenGL ES 3.2 context on NVIDIA.
+  On GLES, mpv's libmpv renderer compiles user shaders as
+  `precision mediump float`, so Anime4K's CNNs render red/green halos and
+  FSRCNNX loses most of its effect. Without GLES, GTK picks desktop GL 4.6
+  (full precision, compute shaders). Checked with Celluloid 0.30 and GTK 4.24
+  (`--mpv-log-file` shows `GL_VERSION`).
+- **Remove when:** mpv uses highp for user shaders on GLES, or GTK prefers
+  desktop GL by default. The log then shows a non-ES `GL_VERSION`, or Anime4K
+  looks right with the variable unset.
+
+### ani-cli `-c` resumes unfinished episodes
+
+- **Where:** `modules/home/patches/ani-cli-resume-continue.patch`, applied in
+  `modules/home/programs/media/ani-cli.nix`
+- **Why:** upstream `-c` always moves to the episode after the last one
+  played, even when it was closed halfway. The patch keeps the episode while
+  the player wrapper's per-episode watch-later directory has a position.
+- **Remove when:** upstream ani-cli gains a resume-aware continue (drop the
+  patch and the wrapper's watch-later handling together). If the patch stops
+  applying after an update, re-diff it against `process_hist_entry`.
+
 ### npm override for `@modelcontextprotocol/node`
 
 - **Where:** `modules/home/programs/development/opencode/package.json`

@@ -1,0 +1,14 @@
+--- a/ani-cli
++++ b/ani-cli
+@@ -311,7 +311,10 @@
+ 
+ process_hist_entry() {
+     ep_list=$(hianime_episodes "$anime_id" | cut -f 2)
+-    ep_no=$(printf "%s" "$ep_list" | sed -n "/^${ep_no}$/{n;p;}") 2>/dev/null
++    # Stay on the last watched episode while it has a saved resume position
++    # (written by the player on quit, keyed on "<title> Episode <n>").
++    resume_dir="$hist_dir/watch-later/$(printf "%s" "$anime_title Episode $ep_no" | tr -cs '[:alnum:]._-' '_')"
++    grep -qs '^start=' "$resume_dir"/* || ep_no=$(printf "%s" "$ep_list" | sed -n "/^${ep_no}$/{n;p;}") 2>/dev/null
+     [ -n "$ep_no" ] && printf "%s\t%s - episode %s\n" "$anime_id" "$anime_title" "$ep_no"
+ }
+ 
